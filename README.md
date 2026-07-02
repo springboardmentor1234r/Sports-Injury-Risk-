@@ -1,4 +1,4 @@
-cat > README.md << 'EOF'
+
 # Sports Injury Risk Detection from Video
 
 AI-powered platform that analyzes athlete movement videos to detect
@@ -6,7 +6,7 @@ biomechanical risk factors and predict potential injuries before they occur.
 
 Built as part of the Infosys Springboard Virtual Internship (June-Aug 2026).
 
-##  Tech Stack
+## Tech Stack
 - Frontend: React
 - Backend: FastAPI (Python)
 - Database: PostgreSQL
