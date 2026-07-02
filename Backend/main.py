@@ -4,4 +4,4 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Sports Injury Risk Detection API"}
+    return {"Hello": "Krishna", "Message": "FastAPI is working perfectly!"}
