@@ -73,3 +73,10 @@ CREATE TABLE coach_athlete (
 --     recommendations     TEXT,
 --     created_at          TIMESTAMP DEFAULT NOW()
 -- );
+
+# If local Postgres:
+createdb sports_injury_db
+psql sports_injury_db < ../db/schema.sql
+
+# If hosted (Neon/Supabase): use their SQL editor in the dashboard,
+# paste the contents of db/schema.sql, and run it there.
