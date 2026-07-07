@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
+
+function Profile() {
+  return <h2>Profile page (Day 8-9 builds this out)</h2>;
+}
 
 function App() {
-  const [status, setStatus] = useState('checking...');
-
-  useEffect(() => {
-    axios.get('http://localhost:8000/health')
-      .then(res => setStatus(res.data.status))
-      .catch(() => setStatus('backend not reachable'));
-  }, []);
-
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Sports Injury Risk Detection</h1>
-      <p>Backend status: <strong>{status}</strong></p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
