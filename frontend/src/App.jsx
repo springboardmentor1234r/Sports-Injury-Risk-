@@ -2,10 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/Profile';
 
-function Profile() {
-  return <h2>Profile page (Day 8-9 builds this out)</h2>;
-}
+
 
 function App() {
   return (
