@@ -1,12 +1,15 @@
 from fastapi import FastAPI
 from models.athlete import Athlete
+from routes.athlete_routes import router as athlete_router
+from routes.auth_routes import router as auth_router
 
 app = FastAPI(
     title="Sports Injury Risk Detection API",
     description="Backend API for the Infosys Springboard Virtual Internship project.",
     version="1.0.0"
 )
-
+app.include_router(athlete_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def home():
@@ -33,27 +36,5 @@ def health():
         "backend": "FastAPI"
     }
 
-@app.get("/athlete", response_model=Athlete)
-def athlete():
-    return Athlete(
-        name="Sejal Chintala",
-        age=20,
-        sport="Cricket",
-        experience="Beginner"
-    )
 
-@app.post("/register")
-def register():
-    return {
-        "message": "User registration endpoint created successfully",
-        "status": "Registration API ready"
-    }
-
-
-@app.post("/login")
-def login():
-    return {
-        "message": "User login endpoint created successfully",
-        "status": "Login API ready"
-    }
 
