@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from models.athlete import Athlete
 
 app = FastAPI(
     title="Sports Injury Risk Detection API",
@@ -32,13 +33,27 @@ def health():
         "backend": "FastAPI"
     }
 
-@app.get("/athlete")
+@app.get("/athlete", response_model=Athlete)
 def athlete():
+    return Athlete(
+        name="Sejal Chintala",
+        age=20,
+        sport="Cricket",
+        experience="Beginner"
+    )
+
+@app.post("/register")
+def register():
     return {
-        "name": "Sejal Chintala",
-        "age": 20,
-        "sport": "Cricket",
-        "experience": "Beginner",
-        "status": "Profile Created"
+        "message": "User registration endpoint created successfully",
+        "status": "Registration API ready"
+    }
+
+
+@app.post("/login")
+def login():
+    return {
+        "message": "User login endpoint created successfully",
+        "status": "Login API ready"
     }
 
