@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+__pycache__/
+*.pyc
+.env
+node_modules/
+
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Database files
+*.db
+*.sqlite3
+
+# Upload files
+uploads/
+media/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Egg files
+*.egg-info/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Python cache
+*.pyo
+*.pyd
