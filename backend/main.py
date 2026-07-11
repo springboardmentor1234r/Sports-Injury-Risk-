@@ -23,3 +23,22 @@ def about():
         "milestone": "Milestone 1",
         "backend": "FastAPI"
     }
+
+@app.get("/health")
+def health():
+    return {
+        "status": "Healthy",
+        "server": "Running",
+        "backend": "FastAPI"
+    }
+
+@app.get("/athlete")
+def athlete():
+    return {
+        "name": "Sejal Chintala",
+        "age": 20,
+        "sport": "Cricket",
+        "experience": "Beginner",
+        "status": "Profile Created"
+    }
+
