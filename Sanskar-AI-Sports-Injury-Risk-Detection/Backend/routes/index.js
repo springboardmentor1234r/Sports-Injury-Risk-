@@ -1,12 +1,14 @@
 import express from 'express';
 import authRoutes from './authRoutes.js';
 import athleteRoutes from './athleteRoutes.js';
+import videoRoutes from './videoRoutes.js';
 
 const router = express.Router();
 
 // Mount Auth routes
 router.use('/auth', authRoutes);
 router.use('/athletes', athleteRoutes);
+router.use('/videos', videoRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
