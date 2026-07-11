@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#Uploaded video (Later change to object storage)
+uploads/
+
+# Project Specific
+steps.md
+models/
+data/raw_videos/*.mp4
+data/raw_videos/*.mov
+data/raw_videos/*.avi
+outputs/csv/*.csv
+outputs/annotated_videos/*.mp4
