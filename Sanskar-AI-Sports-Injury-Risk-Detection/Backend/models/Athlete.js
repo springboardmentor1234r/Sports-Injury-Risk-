@@ -7,10 +7,9 @@ const athleteSchema = new mongoose.Schema(
       required: [true, 'Full name is required'],
       trim: true,
     },
-    age: {
-      type: Number,
-      required: [true, 'Age is required'],
-      min: [0, 'Age cannot be negative'],
+    dateOfBirth: {
+      type: Date,
+      required: [true, 'Date of birth is required'],
     },
     gender: {
       type: String,

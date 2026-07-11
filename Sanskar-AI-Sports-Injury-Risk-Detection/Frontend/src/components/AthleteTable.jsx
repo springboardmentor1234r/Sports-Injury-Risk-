@@ -1,6 +1,21 @@
 import React from 'react';
 
-const AthleteTable = ({ athletes, loading }) => {
+const calculateAgeFromDob = (dateOfBirth) => {
+  if (!dateOfBirth) return '—';
+
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const hasHadBirthday = today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+
+  if (hasHadBirthday) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : '—';
+};
+
+const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center text-sm text-slate-400">
@@ -37,7 +52,7 @@ const AthleteTable = ({ athletes, loading }) => {
               <td className="px-4 py-3 font-medium text-white">{athlete.fullName}</td>
               <td className="px-4 py-3">{athlete.sport}</td>
               <td className="px-4 py-3">{athlete.playingPosition}</td>
-              <td className="px-4 py-3">{athlete.age}</td>
+              <td className="px-4 py-3">{calculateAgeFromDob(athlete.dateOfBirth)}</td>
               <td className="px-4 py-3">
                 <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-xs text-slate-300">
                   {athlete.trainingLoad}
@@ -46,11 +61,21 @@ const AthleteTable = ({ athletes, loading }) => {
               <td className="px-4 py-3">{new Date(athlete.createdAt).toLocaleDateString()}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <button type="button" className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-brand-500 hover:text-brand-300">
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(athlete)}
+                    disabled={deletingId === athlete._id}
+                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-brand-500 hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
                     Edit
                   </button>
-                  <button type="button" className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-red-500 hover:text-red-300">
-                    Delete
+                  <button
+                    type="button"
+                    onClick={() => onDelete?.(athlete)}
+                    disabled={deletingId === athlete._id}
+                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-red-500 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingId === athlete._id ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </td>

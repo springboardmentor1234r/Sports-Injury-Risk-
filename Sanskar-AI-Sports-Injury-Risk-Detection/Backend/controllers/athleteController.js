@@ -5,7 +5,7 @@ export const createAthlete = async (req, res, next) => {
   try {
     const {
       fullName,
-      age,
+      dateOfBirth,
       gender,
       height,
       weight,
@@ -18,7 +18,7 @@ export const createAthlete = async (req, res, next) => {
 
     const requiredFields = {
       fullName,
-      age,
+      dateOfBirth,
       gender,
       height,
       weight,
@@ -38,7 +38,7 @@ export const createAthlete = async (req, res, next) => {
 
     const athlete = await Athlete.create({
       fullName,
-      age,
+      dateOfBirth,
       gender,
       height,
       weight,
@@ -82,9 +82,15 @@ export const getAthleteById = async (req, res, next) => {
 
 export const updateAthlete = async (req, res, next) => {
   try {
+    const updateData = { ...req.body };
+
+    if (updateData.dateOfBirth === undefined) {
+      delete updateData.dateOfBirth;
+    }
+
     const athlete = await Athlete.findOneAndUpdate(
       { _id: req.params.id, createdBy: req.user._id },
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
