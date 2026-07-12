@@ -1,0 +1,65 @@
+
+const mongoose=require("mongoose");
+const athleteSchema=new mongoose.Schema({
+    name:{
+        type:String,
+        required:true,
+        trim:true     
+    },
+    age:{
+        type:Number,
+        required:true,
+        min:5,
+        max:100
+    },
+    gender:{
+        type:String,
+        required:true,
+        enum:["Male","Female","Other"]
+    },
+    sport:{
+        type:String,
+        required:true,
+        trim:true,
+    },
+    team:{
+        type:String,
+        trim:true,
+        default:"N/A",
+    },
+    position:{
+        type:String,
+        trim:true,
+        default:"N/A",
+    },
+    height:{
+        type:Number,
+        required:true,
+        min:10,
+    },
+    weight:{
+        type:Number,
+        required:true,
+        min:10,
+    },
+    dominantLeg:{
+        type:String,
+        enum:["Left","Right","Both"],
+        default:"Right",
+    },
+    injuryHistory:[
+        {
+            type:String,
+        }
+    ],
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true,
+    },
+
+},{
+    timestamps:true,
+});
+
+module.exports=mongoose.model("Athlete",athleteSchema)
