@@ -1,0 +1,1 @@
+# Injury record model placeholder

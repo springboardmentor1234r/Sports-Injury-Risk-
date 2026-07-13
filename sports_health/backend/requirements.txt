@@ -1,0 +1,23 @@
+# Web Framework
+fastapi[all]
+uvicorn
+python-multipart
+
+# Database
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Security
+python-jose[cryptography]
+passlib[bcrypt]
+
+# AI & Data Processing (From Page 14 of PDF)
+mediapipe #devolped by google for the video streaming processing
+opencv-python-headless
+numpy
+pandas
+scikit-learn
+
+# Utilities
+python-dotenv
