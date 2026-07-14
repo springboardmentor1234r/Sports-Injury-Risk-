@@ -314,7 +314,8 @@ def save_summary_csv(summary_df: pd.DataFrame, video_name: str) -> str:
     return path
 
 
-if __name__ == "__main__":
+def run_full_biomechanics_pipeline() -> str:
+    """Runs the interactive pipeline to extract landmarks and calculate biomechanics. Returns video_name."""
     # --- Step 1: Pose extraction (same interactive menu as pose_extractor.py) ---
     source, is_webcam = choose_input_source_interactively()
 
@@ -350,5 +351,11 @@ if __name__ == "__main__":
     summary_df = calculate_range_of_motion(biomechanics_df)
     summary_path = save_summary_csv(summary_df, video_name)
     print(f"Saved summary CSV to: {summary_path}")
+    
+    return video_name
+
+
+if __name__ == "__main__":
+    run_full_biomechanics_pipeline()
 
     
