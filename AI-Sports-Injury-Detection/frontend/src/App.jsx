@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import  AthleteProfile from "./pages/AthleteProfile"
 import ProtectedRoute  from "./components/ProtectedRoute";
 import UploadVideo from "./pages/UploadVideo";
+import ViewVideos from "./pages/ViewVideos";
 function App(){
     return(
         <BrowserRouter>
@@ -17,7 +18,7 @@ function App(){
                     <ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/athlete-profile" element={<AthleteProfile />} />
                 <Route path="/upload-video" element={<UploadVideo />} />
-                
+                <Route path="/videos" element={<ViewVideos />} />
 
             </Routes>
         </BrowserRouter>

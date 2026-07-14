@@ -14,11 +14,29 @@ function Dashboard(){
                 <button>Athlete Profiles</button>
             </Link>
             <br /><br />
-            <button>Upload Video</button>
+            <Link to="/upload-video">
+                <button>Upload Video</button>
+            </Link>
             <br /><br />
-            <button>Injury Detection</button>
+            <Link to="/videos">
+                <button>View Videos</button>
+            </Link>
+            <br /> <br />
+
+            <Link to="/injury-detection">
+                <button>Injury Detection</button>
+            </Link>
             <br /><br />
-            <button>Reports</button>
+            <Link to="/reports">
+                <button>Reports</button>
+            </Link>
+            <br /><br />
+
+            <button onClick={handleLogout}>
+                Logout
+            </button>
+
+
         </div>
     )
 }
