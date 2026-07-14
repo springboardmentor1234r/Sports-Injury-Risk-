@@ -228,3 +228,7 @@ data/raw_videos/*.mov
 data/raw_videos/*.avi
 outputs/csv/*.csv
 outputs/annotated_videos/*.mp4
+outputs/summary/*.csv
+outputs/risk_scores/
+data/processed/
+test_mp.py

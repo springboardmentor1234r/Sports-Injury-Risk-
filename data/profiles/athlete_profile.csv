@@ -1,0 +1,2 @@
+athlete_id,has_previous_injury,previous_injury_type,injury_recency,weekly_training_sessions,training_intensity
+athlete_001,Yes,ACL,Moderate,5,High

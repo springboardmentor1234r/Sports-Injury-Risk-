@@ -31,3 +31,11 @@ LANDMARK_NAMES = [
 RAW_VIDEOS_DIR = "data/raw_videos"
 CSV_OUTPUT_DIR = "outputs/csv"
 ANNOTATED_VIDEO_DIR = "outputs/annotated_videos"
+SUMMARY_OUTPUT_DIR = "outputs/summary"
+
+# Athlete profile (manually filled in) -- provides Historical Injury Factors
+# and Training Load data, which cannot be derived from video.
+ATHLETE_PROFILE_PATH = "data/profiles/athlete_profile.csv"
+
+# Where the final risk score results get saved
+RISK_SCORE_OUTPUT_DIR = "outputs/risk_scores"
