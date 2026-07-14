@@ -319,7 +319,7 @@ def run_full_biomechanics_pipeline() -> str:
     # --- Step 1: Pose extraction (same interactive menu as pose_extractor.py) ---
     source, is_webcam = choose_input_source_interactively()
 
-    frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam)
+    frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=False)
 
     # Work out a clean name to use for both output files
     video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]

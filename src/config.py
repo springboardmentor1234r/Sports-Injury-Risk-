@@ -29,9 +29,9 @@ LANDMARK_NAMES = [
 
 # Folder paths (relative to project root)
 RAW_VIDEOS_DIR = "data/raw_videos"
-CSV_OUTPUT_DIR = "outputs/csv"
+CSV_OUTPUT_DIR = "outputs/csv's"
 ANNOTATED_VIDEO_DIR = "outputs/annotated_videos"
-SUMMARY_OUTPUT_DIR = "outputs/summary"
+SUMMARY_OUTPUT_DIR = "outputs/csv's/summary"
 
 # Athlete profile (manually filled in) -- provides Historical Injury Factors
 # and Training Load data, which cannot be derived from video.

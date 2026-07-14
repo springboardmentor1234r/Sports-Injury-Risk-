@@ -226,9 +226,9 @@ models/
 data/raw_videos/*.mp4
 data/raw_videos/*.mov
 data/raw_videos/*.avi
-outputs/csv/*.csv
+outputs/csv's/*.csv
 outputs/annotated_videos/*.mp4
-outputs/summary/*.csv
+outputs/csv's/summary/*.csv
 outputs/risk_scores/
 data/processed/
 test_mp.py

@@ -163,33 +163,32 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
                 row[f"{name}_z"] = landmark.z
                 row[f"{name}_visibility"] = getattr(landmark, 'visibility', 0.0)
 
-            # Draw the skeleton on the frame (for the annotated video output)
-            if save_annotated_video:
-                h, w, _ = frame.shape
-                POSE_CONNECTIONS = [
-                    (0, 1), (1, 2), (2, 3), (3, 7), (0, 4), (4, 5), (5, 6), (6, 8), (9, 10),
-                    (11, 12), (11, 13), (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
-                    (12, 14), (14, 16), (16, 18), (16, 20), (16, 22), (18, 20), (11, 23),
-                    (12, 24), (23, 24), (23, 25), (24, 26), (25, 27), (26, 28), (27, 29),
-                    (28, 30), (29, 31), (30, 32), (27, 31), (28, 32)
-                ]
-                
-                # Draw lines
-                for connection in POSE_CONNECTIONS:
-                    start_idx, end_idx = connection
-                    if start_idx < len(landmarks) and end_idx < len(landmarks):
-                        start = landmarks[start_idx]
-                        end = landmarks[end_idx]
-                        if getattr(start, 'visibility', 0.0) > 0.5 and getattr(end, 'visibility', 0.0) > 0.5:
-                            pt1 = (int(start.x * w), int(start.y * h))
-                            pt2 = (int(end.x * w), int(end.y * h))
-                            cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
-                
-                # Draw points
-                for lm in landmarks:
-                    if getattr(lm, 'visibility', 0.0) > 0.5:
-                        pt = (int(lm.x * w), int(lm.y * h))
-                        cv2.circle(frame, pt, 4, (0, 0, 255), -1)
+            # Draw the skeleton on the frame (for the live preview and optional video output)
+            h, w, _ = frame.shape
+            POSE_CONNECTIONS = [
+                (0, 1), (1, 2), (2, 3), (3, 7), (0, 4), (4, 5), (5, 6), (6, 8), (9, 10),
+                (11, 12), (11, 13), (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
+                (12, 14), (14, 16), (16, 18), (16, 20), (16, 22), (18, 20), (11, 23),
+                (12, 24), (23, 24), (23, 25), (24, 26), (25, 27), (26, 28), (27, 29),
+                (28, 30), (29, 31), (30, 32), (27, 31), (28, 32)
+            ]
+            
+            # Draw lines
+            for connection in POSE_CONNECTIONS:
+                start_idx, end_idx = connection
+                if start_idx < len(landmarks) and end_idx < len(landmarks):
+                    start = landmarks[start_idx]
+                    end = landmarks[end_idx]
+                    if getattr(start, 'visibility', 0.0) > 0.5 and getattr(end, 'visibility', 0.0) > 0.5:
+                        pt1 = (int(start.x * w), int(start.y * h))
+                        pt2 = (int(end.x * w), int(end.y * h))
+                        cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
+            
+            # Draw points
+            for lm in landmarks:
+                if getattr(lm, 'visibility', 0.0) > 0.5:
+                    pt = (int(lm.x * w), int(lm.y * h))
+                    cv2.circle(frame, pt, 4, (0, 0, 255), -1)
         else:
             # No person detected in this frame -> fill landmark columns with None
             # (kept as a row so frame_number/timestamp stay aligned with the video)
