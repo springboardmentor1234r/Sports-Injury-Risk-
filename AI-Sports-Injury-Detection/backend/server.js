@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/atheletes",athleteRoutes);
+app.use("/api/athletes",athleteRoutes);
 app.use("/api/videos",videoRoutes);
 
 

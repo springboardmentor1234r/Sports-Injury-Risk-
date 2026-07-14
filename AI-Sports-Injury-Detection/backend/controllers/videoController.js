@@ -26,7 +26,7 @@ const uploadVideo=async(req,res)=>{
         console.log(error)
         return res.status(500).json({
             
-            success:true,
+            success:false,
             message:"Video upload failed",
            
         })
@@ -34,6 +34,27 @@ const uploadVideo=async(req,res)=>{
 
 }
 
+const getAllVideos=async(req,res)=>{
+    try{
+        const videos=await Video.find()
+        .populate("athlete","name sport")
+        .populate("uploadedBy","name email role")
+        .sort({createdAt:-1});
+        return res.status(200).json({
+            success:true,
+            count:videos.length,
+            videos,
+        })
+    }catch{
+        console.log(error)
+        return res.status(500).json({
+            success:false,
+            message:"Failed to fetch videos"
+        })
+    }
+}
+
 module.exports={
     uploadVideo,
+    getAllVideos,
 }

@@ -7,9 +7,14 @@ function UploadVideo() {
     const [sport, setSport] = useState("");
 
     const handleUpload = async () => {
+        if (!video){
+            alert("Please select a video first")
+            return 
+        }
         try {
+            // get jwt token from local storage
             const token = localStorage.getItem("token");
-
+            // create formData object
             const formData = new FormData();
 
             formData.append("video", video);
@@ -28,6 +33,10 @@ function UploadVideo() {
             );
 
             alert(response.data.message);
+
+            setVideo(null);
+            setAthlete("");
+            setSport("");
 
         } catch (error) {
             alert(error.response?.data?.message || "Upload Failed");
