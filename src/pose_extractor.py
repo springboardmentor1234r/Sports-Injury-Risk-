@@ -1,21 +1,3 @@
-"""
-pose_extractor.py
-
-Step 1 of the Sports Injury Risk Detection pipeline.
-
-What this script does:
-1. Opens a video file frame by frame (using OpenCV)
-2. Sends each frame to MediaPipe Pose
-3. Collects the 33 body landmarks (x, y, z, visibility) for every frame
-4. Saves everything to a single CSV file
-5. (Optional) Also saves a copy of the video with the skeleton drawn on top,
-   so you can visually confirm it worked.
-
-Usage (from the project root folder):
-    python src/pose_extractor.py --video data/raw_videos/squat_test.mp4
-    python src/pose_extractor.py --webcam
-    python src/pose_extractor.py            (no flags -> asks you interactively)
-"""
 
 import os
 import argparse
@@ -121,7 +103,7 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
 
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        fourcc = cv2.VideoWriter_fourcc(*"avc1")
         video_writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
 
     all_frames_data = []  # this list holds one dict per frame -> becomes the CSV rows

@@ -1,29 +1,10 @@
-"""
-risk_scoring_engine.py
 
-Step 3 of the Sports Injury Risk Detection pipeline.
-
-What this script does:
-1. Reads sports_summary.csv       -> Biomechanical Deviations + Movement Asymmetry
-2. Reads sports_biomechanics.csv  -> Fatigue (compares early vs late frames)
-3. Reads athlete_profile.csv      -> Historical Injury Factors + Training Load
-4. Calculates 5 sub-scores (0-100 each), combines them using the weighted
-   formula from the project document, and produces a final Risk Score +
-   Risk Category (Low / Moderate / High / Critical).
-5. Also records WHICH specific checks were flagged, so the (future)
-   Recommendation Engine can suggest relevant corrective exercises.
-6. Saves everything to outputs/risk_scores/<video_name>_risk_score.csv
-
-Usage (from the project root folder):
-    python src/risk_scoring_engine.py --video_name sports
-"""
 
 import os
 import argparse
 import pandas as pd
 
 from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, ATHLETE_PROFILE_PATH, RISK_SCORE_OUTPUT_DIR
-from biomechanics_analyzer import run_full_biomechanics_pipeline
 
 
 # =========================================================================
@@ -331,6 +312,29 @@ def run_risk_scoring(video_name: str, quiet: bool = False):
     return result_df
 
 
+def choose_biomechanics_csv_interactively() -> str:
+    """Finds all _biomechanics.csv files and asks the user to pick one interactively."""
+    if not os.path.isdir(CSV_OUTPUT_DIR):
+        raise FileNotFoundError(f"Folder not found: {CSV_OUTPUT_DIR}. Run biomechanics analyzer first.")
+        
+    available_files = [f for f in os.listdir(CSV_OUTPUT_DIR) if f.endswith("_biomechanics.csv")]
+    if not available_files:
+        raise FileNotFoundError(f"No biomechanics CSVs found in {CSV_OUTPUT_DIR}. Run biomechanics analyzer first.")
+        
+    print(f"\nBiomechanics files found in {CSV_OUTPUT_DIR}:")
+    for i, filename in enumerate(available_files, start=1):
+        video_name = filename.replace("_biomechanics.csv", "")
+        print(f"  {i}. {video_name}")
+        
+    selected = input(f"Enter the number of the data to score (1-{len(available_files)}): ").strip()
+    
+    try:
+        selected_index = int(selected) - 1
+        chosen_filename = available_files[selected_index]
+        return chosen_filename.replace("_biomechanics.csv", "")
+    except (ValueError, IndexError):
+        raise ValueError("Invalid selection. Please run the script again and enter a valid number.")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate injury risk score from biomechanics data.")
     parser.add_argument(
@@ -341,7 +345,6 @@ if __name__ == "__main__":
 
     video_name = args.video_name
     if not video_name:
-        print("No video_name provided. Launching full pipeline...")
-        video_name = run_full_biomechanics_pipeline()
+        video_name = choose_biomechanics_csv_interactively()
 
     run_risk_scoring(video_name)

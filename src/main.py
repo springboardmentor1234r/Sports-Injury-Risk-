@@ -1,14 +1,4 @@
-"""
-main.py
 
-Master pipeline script.
-Runs:
-1. Biomechanics extraction (if needed)
-2. Risk Scoring Engine (Step 3)
-3. Recommendation Engine (Step 4)
-
-Prints a beautifully formatted dashboard to the terminal.
-"""
 
 import argparse
 import sys
@@ -47,11 +37,21 @@ def main():
 
     video_name = args.video_name
     if not video_name:
-        from biomechanics_analyzer import run_full_biomechanics_pipeline
+        from pose_extractor import choose_input_source_interactively, extract_landmarks_from_video, save_to_csv
+        import os
+        
         print(f"{Colors.BLUE}No video_name provided. Launching full pipeline from the beginning...{Colors.ENDC}")
-        video_name = run_full_biomechanics_pipeline()
+        print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor...{Colors.ENDC}")
+        source, is_webcam = choose_input_source_interactively()
+        frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True)
+        save_to_csv(frames_data, source, is_webcam=is_webcam)
+        video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
 
-    print(f"\n{Colors.BLUE}Running Risk Scoring Engine...{Colors.ENDC}")
+    print(f"\n{Colors.BLUE}Step 2: Running Biomechanics Analyzer...{Colors.ENDC}")
+    from biomechanics_analyzer import run_biomechanics_only
+    run_biomechanics_only(video_name)
+
+    print(f"\n{Colors.BLUE}Step 3: Running Risk Scoring Engine...{Colors.ENDC}")
     # Import and run risk scoring silently
     from risk_scoring_engine import run_risk_scoring
     risk_df = run_risk_scoring(video_name, quiet=True)
@@ -61,7 +61,7 @@ def main():
     
     risk_data = risk_df.iloc[0].to_dict()
 
-    print(f"{Colors.BLUE}Running Recommendation Engine (LLM Analysis)...{Colors.ENDC}")
+    print(f"{Colors.BLUE}Step 4: Running Recommendation Engine (LLM Analysis)...{Colors.ENDC}")
     # Import and run recommendation engine
     from recommendation_engine import build_graph, RecommendationState
     

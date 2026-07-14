@@ -3,30 +3,22 @@ biomechanics_analyzer.py
 
 Step 2 of the Sports Injury Risk Detection pipeline.
 
-This script now runs the FULL pipeline in one go:
-1. Runs pose extraction (same logic as pose_extractor.py -- asks you to pick
-   a video from data/raw_videos/ or use the webcam)
-2. Takes the extracted landmarks directly (no need to manually run
-   pose_extractor.py first)
-3. Calculates biomechanical features (Sub-step 1: left/right knee angle)
-4. Saves BOTH csvs into outputs/csv/ :
-      <video_name>_landmarks.csv       (from pose_extractor, raw joint positions)
-      <video_name>_biomechanics.csv    (this script's output, calculated angles)
+This script only performs biomechanical math.
+It reads an existing `outputs/csv/` <video_name>_landmarks.csv file,
+calculates joint angles, symmetry, valgus, etc., and saves the results to:
+      <video_name>_biomechanics.csv    (per-frame angles)
+      outputs/csv/summary/<video_name>_summary.csv (whole-video summary)
 
 Usage (from the project root folder):
-    python src/biomechanics_analyzer.py
-    (it will ask you interactively which video/webcam to use, same as pose_extractor.py)
+    python src/biomechanics_analyzer.py --video_name <video_name>
 """
 
 import os
 import numpy as np
 import pandas as pd
 
+import argparse
 from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR
-from pose_extractor import (
-    choose_input_source_interactively,
-    extract_landmarks_from_video,
-)
 
 
 def calculate_angle(ax, ay, bx, by, cx, cy):
@@ -314,22 +306,16 @@ def save_summary_csv(summary_df: pd.DataFrame, video_name: str) -> str:
     return path
 
 
-def run_full_biomechanics_pipeline() -> str:
-    """Runs the interactive pipeline to extract landmarks and calculate biomechanics. Returns video_name."""
-    # --- Step 1: Pose extraction (same interactive menu as pose_extractor.py) ---
-    source, is_webcam = choose_input_source_interactively()
-
-    frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=False)
-
-    # Work out a clean name to use for both output files
-    video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
-
-    # Save the raw landmarks CSV (Step 1 output)
-    landmarks_path = save_landmarks_csv(frames_data, video_name)
-    print(f"Saved landmarks CSV to: {landmarks_path}")
+def run_biomechanics_only(video_name: str) -> str:
+    """Reads existing landmarks CSV and calculates biomechanics. Returns video_name."""
+    landmarks_path = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_landmarks.csv")
+    
+    if not os.path.exists(landmarks_path):
+        raise FileNotFoundError(f"Landmarks file not found: {landmarks_path}. Run pose_extractor.py first.")
+        
+    landmarks_df = pd.read_csv(landmarks_path)
 
     # --- Step 2: Biomechanical analysis ---
-    landmarks_df = pd.DataFrame(frames_data)
     biomechanics_df = calculate_joint_angles_and_symmetry(landmarks_df)
 
     # Add trunk lean, knee valgus, and hip stability (merge on frame_number/timestamp)
@@ -355,7 +341,38 @@ def run_full_biomechanics_pipeline() -> str:
     return video_name
 
 
-if __name__ == "__main__":
-    run_full_biomechanics_pipeline()
-
+def choose_landmark_csv_interactively() -> str:
+    """Finds all _landmarks.csv files and asks the user to pick one interactively."""
+    if not os.path.isdir(CSV_OUTPUT_DIR):
+        raise FileNotFoundError(f"Folder not found: {CSV_OUTPUT_DIR}. Run pose extraction first.")
+        
+    available_files = [f for f in os.listdir(CSV_OUTPUT_DIR) if f.endswith("_landmarks.csv")]
+    if not available_files:
+        raise FileNotFoundError(f"No landmarks CSVs found in {CSV_OUTPUT_DIR}. Run pose extraction first.")
+        
+    print(f"\nLandmark files found in {CSV_OUTPUT_DIR}:")
+    for i, filename in enumerate(available_files, start=1):
+        # Extract the video_name (everything before _landmarks.csv)
+        video_name = filename.replace("_landmarks.csv", "")
+        print(f"  {i}. {video_name}")
+        
+    selected = input(f"Enter the number of the data to process (1-{len(available_files)}): ").strip()
     
+    try:
+        selected_index = int(selected) - 1
+        chosen_filename = available_files[selected_index]
+        return chosen_filename.replace("_landmarks.csv", "")
+    except (ValueError, IndexError):
+        raise ValueError("Invalid selection. Please run the script again and enter a valid number.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Calculate biomechanics from existing landmarks CSV.")
+    parser.add_argument("--video_name", required=False, help="Base name of the video (e.g. 'sports')")
+    args = parser.parse_args()
+    
+    video_name = args.video_name
+    if not video_name:
+        video_name = choose_landmark_csv_interactively()
+        
+    run_biomechanics_only(video_name)
