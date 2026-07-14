@@ -39,3 +39,6 @@ ATHLETE_PROFILE_PATH = "data/profiles/athlete_profile.csv"
 
 # Where the final risk score results get saved
 RISK_SCORE_OUTPUT_DIR = "outputs/risk_scores"
+
+# Where the final recommendations get saved
+RECOMMENDATION_OUTPUT_DIR = "outputs/recommendations"

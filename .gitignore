@@ -1,3 +1,4 @@
+AI_Sports Injury Risk Detection from Video (1).pdf
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -230,5 +231,6 @@ outputs/csv's/*.csv
 outputs/annotated_videos/*.mp4
 outputs/csv's/summary/*.csv
 outputs/risk_scores/
+outputs/recommendations/
 data/processed/
 test_mp.py

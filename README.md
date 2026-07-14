@@ -1,35 +1,68 @@
 # Sports Injury Risk Detection
 
-A computer vision pipeline to analyze athletic movements (like squats, jumps, etc.) and calculate a risk score for potential injuries.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-The project is now a fully automated, end-to-end pipeline consisting of three integrated steps:
+An advanced, AI-assisted computer vision pipeline designed to analyze athletic movements (like squats, jumps, etc.), calculate injury risk scores, and provide actionable, personalized recommendations.
 
-1. **Pose Extraction (`src/pose_extractor.py`)**: 
-   - Reads videos or a live webcam feed using OpenCV.
-   - Extracts 33 body landmarks using the MediaPipe Tasks API (`PoseLandmarker`).
-   - Generates raw `x, y, z` coordinates for every frame.
+## Description
 
-2. **Biomechanical Analysis (`src/biomechanics_analyzer.py`)**: 
-   - Converts raw landmarks into meaningful physical metrics.
-   - Calculates joint angles (knee flexion, hip/elbow angles), balance sway, knee valgus, and left-vs-right body asymmetry.
-   - Outputs summarized biomechanical data.
+This project provides a fully automated, end-to-end pipeline that bridges the gap between raw video footage and professional-level biomechanical feedback. It is designed to help athletes and coaches identify risky movement patterns before they lead to injuries. 
 
-3. **Risk Scoring Engine (`src/risk_scoring_engine.py`)**: 
-   - The master script that drives the entire pipeline.
-   - Merges biomechanical deviations, movement asymmetries, fatigue analysis, and the athlete's historical injury/training load (from `data/profiles/athlete_profile.csv`).
-   - Calculates a final Risk Score (0-100) and assigns a Risk Category (Low / Moderate / High / Critical) while flagging specific issues.
+The system operates in four seamless stages:
+1. **Pose Extraction**: Tracks 33 critical body landmarks frame-by-frame from video or webcam feeds.
+2. **Biomechanical Analysis**: Evaluates joint angles, balance sway, knee valgus, and left-vs-right body asymmetries.
+3. **Risk Scoring Engine**: Merges biomechanics with historical injury data to assign a Health Score and Risk Category.
+4. **AI Recommendation Engine**: Uses Large Language Models (LLMs) to translate raw flaws into plain-English and assigns pre-approved corrective exercises.
+
+## Installation
+
+1. Clone the repository and navigate into the directory:
+   ```bash
+   git clone <repository-url>
+   cd Sports-Injury-Risk-
+   ```
+
+2. (Optional but recommended) Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
-You can run the entire pipeline with a single command from the project root:
+To run the full pipeline, execute the main script and pass the name of a video located in your `data/raw_videos` folder (e.g., `sports.mp4`):
 
 ```bash
-python src/risk_scoring_engine.py
+python src/main.py --video_name sports
 ```
 
-- It will prompt you to select a video from `data/raw_videos/` or use your webcam.
-- It will automatically process the pose extraction, calculate the biomechanics, and print the **Risk Score Report** in your terminal.
-- Finally, it will clean up all temporary data and save your final risk score report to `outputs/risk_scores/`.
+*Note: If you run `python src/main.py` without arguments, it will prompt you to select a video or use a live webcam feed.*
 
-## Configurations (`src/config.py`)
-Stores constants like landmark names and directory paths (e.g., `outputs/csv's/`).
+The pipeline will execute, print a clean summary to your terminal, and save a full, detailed recommendation report to the `outputs/risk_scores` directory.
+
+## Configuration
+
+- **API Keys**: This project uses Groq's LLM for the recommendation engine. You must add your Groq API key to a `.env` file in the root directory:
+  ```env
+  GROQ_API_KEY=your_api_key_here
+  ```
+- **Directories and Thresholds**: General configurations, file paths, and joint angle thresholds can be modified in `src/config.py`.
+- **Athlete Profiles**: You can update historical injury and training load data by editing `data/profiles/athlete_profile.csv`.
+
+## Features
+
+- **Automated Video Processing**: Hands-free biomechanical analysis from raw video files or live webcams.
+- **Detailed Dashboards**: Quickly view an athlete's Overall Health Score, Movement Quality, Biomechanical Efficiency, and Fatigue Levels.
+- **Plain-English Feedback**: AI translates technical, medical jargon into easy-to-understand summaries for coaches and athletes.
+- **Personalized Rehab Plans**: Automatically generated corrective exercise recommendations based on specific detected flaws.
+- **Exportable Reports**: All findings are saved as both structured `.csv` data and clean `.txt` reports for tracking over time.
+
+---
+*Disclaimer: This is an AI-assisted movement screening tool based on video pose estimation and rule-based analysis. It is not a medical diagnosis. Please consult a physiotherapist or doctor for professional evaluation and treatment.*
