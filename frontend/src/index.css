@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-color: #0b0f19;
+  --bg-darker: #070a12;
+  --panel-bg: rgba(17, 24, 39, 0.7);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --input-bg: #111827;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-text: #f3f4f6;
+  
+  --brand-blue: #3b82f6;
+  --brand-blue-hover: #2563eb;
+  --brand-blue-glow: rgba(59, 130, 246, 0.15);
+  
+  --brand-green: #10b981;
+  --brand-green-glow: rgba(16, 185, 129, 0.15);
+  
+  --brand-danger: #ef4444;
+  --brand-warning: #f59e0b;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  
+  --grid-color: rgba(255, 255, 255, 0.015);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-color: #f8fafc;
+  --bg-darker: #f1f5f9;
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --panel-border: rgba(0, 0, 0, 0.06);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.12);
+  --input-text: #0f172a;
+  
+  --brand-blue: #2563eb;
+  --brand-blue-hover: #1d4ed8;
+  --brand-blue-glow: rgba(37, 99, 235, 0.12);
+  
+  --brand-green: #059669;
+  --brand-green-glow: rgba(5, 150, 105, 0.12);
+  
+  --brand-danger: #dc2626;
+  --brand-warning: #d97706;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  
+  --grid-color: rgba(0, 0, 0, 0.01);
+  color-scheme: light;
+}
+
+@theme {
+  --color-hud-black: var(--bg-color);
+  --color-hud-dark: var(--bg-darker);
+  --color-hud-card: var(--panel-bg);
+  --color-hud-blue: var(--brand-blue);
+  --color-hud-blue-glow: var(--brand-blue-glow);
+  --color-hud-green: var(--brand-green);
+  --color-hud-green-glow: var(--brand-green-glow);
+  --color-hud-danger: var(--brand-danger);
+  --color-hud-warning: var(--brand-warning);
+  --color-hud-border: var(--panel-border);
+  
+  --font-hud-mono: 'Space Mono', 'Courier New', monospace;
+  --font-hud-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-hud-sans);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  
+  /* Soft, clean professional line grids */
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism Panel / Sleek SaaS cards */
+.hud-glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* SaaS interactive hover styles */
+.hud-glass-panel-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hud-glass-panel-hover:hover {
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Professional Telemetry Buttons */
+.btn-hud-primary {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-hud-primary:hover:not(:disabled) {
+  background: var(--brand-blue-hover);
+  box-shadow: 0 4px 12px var(--brand-blue-glow);
+}
+
+.btn-hud-secondary {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-hud-secondary:hover:not(:disabled) {
+  border-color: var(--brand-blue);
+  color: var(--text-primary);
+  background: var(--panel-bg);
+}
+
+.btn-hud-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--brand-danger);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-hud-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--brand-danger);
+}
+
+/* Premium Inputs */
+.input-hud {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--input-text);
+  transition: all 0.2s ease-in-out;
+}
+.input-hud:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 2px var(--brand-blue-glow);
+}
+
+/* Table elements */
+.hud-table th {
+  font-family: var(--font-hud-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--panel-border);
+}
+.hud-table td {
+  border-bottom: 1px solid var(--panel-border);
+}
+.hud-table tr:hover td {
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.hud-mono-value {
+  font-family: var(--font-hud-mono);
+  font-variant-numeric: tabular-nums;
+}
