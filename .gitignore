@@ -3,9 +3,8 @@ venv/
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
 # VS Code
 .vscode/
@@ -23,13 +22,12 @@ reports/
 *.png
 *.jpg
 
-# Videos
-videos/*.mp4
-videos/*.avi
-videos/*.mov
+# Original videos (don't upload large test videos)
+Milestone 2/videos/
 
-# Extracted frames
-videos/frames/
+# Generated outputs
+Milestone 2/outputs/
 
-# Keep the folder itself
-!videos/.gitkeep
+# Keep folder structure
+!Milestone 2/videos/.gitkeep
+!Milestone 2/outputs/.gitkeep
