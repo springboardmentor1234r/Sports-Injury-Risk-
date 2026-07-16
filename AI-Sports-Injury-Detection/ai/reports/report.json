@@ -1,0 +1,17 @@
+{
+    "Frames Analysed": 484,
+    "Left Knee": {
+        "Maximum": 176.17391672943384,
+        "Minimum": 65.94409555219605,
+        "Average": 138.87
+    },
+    "Right Knee": {
+        "Maximum": 179.47781128377707,
+        "Minimum": 59.41704833995805,
+        "Average": 136.12
+    },
+    "Risk Score": {
+        "Maximum": 50,
+        "Average": 7.98
+    }
+}

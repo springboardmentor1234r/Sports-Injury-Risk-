@@ -1,0 +1,16 @@
+===== AI Sports Injury Report =====
+
+Joint Angles
+-------------------------
+Left Elbow: 125°
+Right Elbow: 52°
+Left Knee: 118°
+Right Knee: 167°
+
+Risk Score: 0%
+
+Warnings
+-------------------------
+[MEDIUM] Moderate Knee Risk
+
+===============================
