@@ -13,8 +13,14 @@ This project provides a fully automated, end-to-end pipeline that bridges the ga
 The system operates in four seamless stages:
 1. **Pose Extraction**: Tracks 33 critical body landmarks frame-by-frame from video or webcam feeds.
 2. **Biomechanical Analysis**: Evaluates joint angles, balance sway, knee valgus, and left-vs-right body asymmetries.
-3. **Risk Scoring Engine**: Merges biomechanics with historical injury data to assign a Health Score and Risk Category.
+3. **Risk Scoring Engine**: Merges biomechanics with historical injury data (from MongoDB) to assign a Health Score and Risk Category.
 4. **AI Recommendation Engine**: Uses Large Language Models (LLMs) to translate raw flaws into plain-English and assigns pre-approved corrective exercises.
+
+### Backend Architecture
+This pipeline is designed for seamless web frontend integration:
+- **Stateless Operation**: Intermediate CSV files are automatically deleted after processing to keep the server clean.
+- **Database Persistence**: All biomechanics data, risk scores, and generated reports are stored permanently in **MongoDB**.
+- **Decoupled Engines**: The heavy LLM processing (Recommendation Engine) runs completely independently of the fast video processing engine.
 
 ## Installation
 
@@ -37,32 +43,53 @@ The system operates in four seamless stages:
 
 ## Usage
 
-To run the full pipeline, execute the main script and pass the name of a video located in your `data/raw_videos` folder (e.g., `sports.mp4`):
+The pipeline is split into two independent flows to optimize speed and frontend integration.
+
+### Step 1: Process Video & Calculate Risk
+Execute the main script and pass the athlete's ID (for MongoDB linkage) and optionally the name of a video located in your `data/raw_videos` folder:
 
 ```bash
-python src/main.py --video_name sports
+python src/main.py --athlete_id "athlete_001" --video_name sports
+```
+*(If you do not provide `--video_name`, the script will prompt you to select a video or use a live webcam feed).*
+
+The script will:
+1. Process the video and calculate biomechanical flaws.
+2. Pull the athlete's historical data from MongoDB.
+3. Print a fast "Risk Score Report" directly to the terminal.
+4. Save the risk data to MongoDB and **clean up/delete** all temporary CSV files on your hard drive.
+
+### Step 2: Generate Premium Recommendations (Optional)
+Once a session is processed, you can generate detailed, AI-driven corrective exercises by running the recommendation engine manually using the Session ID generated in Step 1:
+
+```bash
+python src/recommendation_engine.py --video_name "sports" --session_id "YOUR_SESSION_ID"
 ```
 
-*Note: If you run `python src/main.py` without arguments, it will prompt you to select a video or use a live webcam feed.*
-
-The pipeline will execute, print a clean summary to your terminal, and save a full, detailed recommendation report to the `outputs/risk_scores` directory.
+The script will:
+1. Query MongoDB for the specific session's risk scores.
+2. Connect to Groq/LangGraph to generate a personalized rehab plan.
+3. Save the full, massive text report string directly to the `full_recommendation_reports` collection in MongoDB for your frontend to download.
 
 ## Configuration
 
-- **API Keys**: This project uses Groq's LLM for the recommendation engine. You must add your Groq API key to a `.env` file in the root directory:
+- **API Keys & Database**: This project requires a MongoDB instance and a Groq API key. You must add these to a `.env` file in the root directory:
   ```env
   GROQ_API_KEY=your_api_key_here
+  MONGO_URI=mongodb://localhost:27017
+  MONGO_DB_NAME=sports_injury_db
   ```
 - **Directories and Thresholds**: General configurations, file paths, and joint angle thresholds can be modified in `src/config.py`.
-- **Athlete Profiles**: You can update historical injury and training load data by editing `data/profiles/athlete_profile.csv`.
+- **Athlete Profiles**: Athlete history is read from the `athlete_profiles` collection in MongoDB. (Insert a document with `athlete_id`, `has_previous_injury`, `weekly_training_sessions`, etc., before running the pipeline).
 
 ## Features
 
 - **Automated Video Processing**: Hands-free biomechanical analysis from raw video files or live webcams.
+- **Database Persistence**: Fully integrated with MongoDB to permanently save session data, risk scores, and final textual reports.
+- **Auto-Cleanup**: Intermediate CSV files are automatically wiped after processing to preserve hard drive space.
 - **Detailed Dashboards**: Quickly view an athlete's Overall Health Score, Movement Quality, Biomechanical Efficiency, and Fatigue Levels.
 - **Plain-English Feedback**: AI translates technical, medical jargon into easy-to-understand summaries for coaches and athletes.
 - **Personalized Rehab Plans**: Automatically generated corrective exercise recommendations based on specific detected flaws.
-- **Exportable Reports**: All findings are saved as both structured `.csv` data and clean `.txt` reports for tracking over time.
 
 ---
 *Disclaimer: This is an AI-assisted movement screening tool based on video pose estimation and rule-based analysis. It is not a medical diagnosis. Please consult a physiotherapist or doctor for professional evaluation and treatment.*
