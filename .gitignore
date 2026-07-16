@@ -234,3 +234,4 @@ outputs/risk_scores/
 outputs/recommendations/
 data/processed/
 test_mp.py
+frontend_architecture_plan.md

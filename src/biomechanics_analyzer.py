@@ -18,7 +18,15 @@ import numpy as np
 import pandas as pd
 
 import argparse
+import sys
 from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR
+
+# Import database module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from database import mongo_utils
+except ImportError:
+    pass
 
 
 def calculate_angle(ax, ay, bx, by, cx, cy):
@@ -306,8 +314,15 @@ def save_summary_csv(summary_df: pd.DataFrame, video_name: str) -> str:
     return path
 
 
-def run_biomechanics_only(video_name: str) -> str:
+def run_biomechanics_only(video_name: str, athlete_id: str, session_id: str) -> str:
     """Reads existing landmarks CSV and calculates biomechanics. Returns video_name."""
+    
+    # Save the initial session document to MongoDB
+    try:
+        mongo_utils.save_session(session_id, athlete_id, video_name, "Processing Biomechanics")
+    except NameError:
+        pass # mongo_utils not imported
+        
     landmarks_path = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_landmarks.csv")
     
     if not os.path.exists(landmarks_path):
@@ -337,6 +352,14 @@ def run_biomechanics_only(video_name: str) -> str:
     summary_df = calculate_range_of_motion(biomechanics_df)
     summary_path = save_summary_csv(summary_df, video_name)
     print(f"Saved summary CSV to: {summary_path}")
+    
+    # Save biomechanics data to MongoDB
+    try:
+        frames_data = biomechanics_df.to_dict(orient="records")
+        summary_data = summary_df.iloc[0].to_dict()
+        mongo_utils.save_biomechanics_data(session_id, frames_data, summary_data)
+    except NameError:
+        pass # mongo_utils not imported
     
     return video_name
 
@@ -369,10 +392,12 @@ def choose_landmark_csv_interactively() -> str:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate biomechanics from existing landmarks CSV.")
     parser.add_argument("--video_name", required=False, help="Base name of the video (e.g. 'sports')")
+    parser.add_argument("--athlete_id", required=True, help="Athlete ID for the database")
     args = parser.parse_args()
     
     video_name = args.video_name
     if not video_name:
         video_name = choose_landmark_csv_interactively()
         
-    run_biomechanics_only(video_name)
+    session_id = mongo_utils.generate_session_id()
+    run_biomechanics_only(video_name, args.athlete_id, session_id)

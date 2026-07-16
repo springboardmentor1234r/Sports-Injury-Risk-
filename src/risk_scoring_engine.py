@@ -3,8 +3,15 @@
 import os
 import argparse
 import pandas as pd
+import sys
+from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, RISK_SCORE_OUTPUT_DIR
 
-from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, ATHLETE_PROFILE_PATH, RISK_SCORE_OUTPUT_DIR
+# Import database module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from database import mongo_utils
+except ImportError:
+    pass
 
 
 # =========================================================================
@@ -222,17 +229,23 @@ def calculate_overall_health_score(final_risk_score: float) -> float:
     return round(100 - final_risk_score, 1)
 
 
-def run_risk_scoring(video_name: str, quiet: bool = False):
-    # --- Load the three input files ---
+def run_risk_scoring(video_name: str, athlete_id: str, session_id: str, quiet: bool = False):
+    # --- Load the input files ---
     summary_path = os.path.join(SUMMARY_OUTPUT_DIR, f"{video_name}_summary.csv")
     biomechanics_path = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_biomechanics.csv")
 
     summary_df = pd.read_csv(summary_path)
     biomechanics_df = pd.read_csv(biomechanics_path)
-    profile_df = pd.read_csv(ATHLETE_PROFILE_PATH)
+    
+    # Load athlete profile from MongoDB instead of CSV
+    try:
+        profile_dict = mongo_utils.get_athlete_profile(athlete_id)
+        profile_row = pd.Series(profile_dict)
+    except NameError:
+        print("mongo_utils not imported, falling back to dummy profile")
+        profile_row = pd.Series({"has_previous_injury": "No", "training_intensity": "Medium", "weekly_training_sessions": 3})
 
     summary_row = summary_df.iloc[0]     # one row per video
-    profile_row = profile_df.iloc[0]     # for now, just use the first athlete profile row
 
     # --- Calculate each sub-score ---
     deviation_score, rom_score, alignment_balance_score, deviation_flags = calculate_biomechanical_deviation_score(summary_row)
@@ -280,6 +293,12 @@ def run_risk_scoring(video_name: str, quiet: bool = False):
     os.makedirs(RISK_SCORE_OUTPUT_DIR, exist_ok=True)
     output_path = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
     result_df.to_csv(output_path, index=False)
+
+    # Save to MongoDB
+    try:
+        mongo_utils.save_risk_score(session_id, athlete_id, result)
+    except NameError:
+        pass # mongo_utils not imported
 
     if not quiet:
         # --- Print a readable summary ---
@@ -341,10 +360,12 @@ if __name__ == "__main__":
         "--video_name", required=False,
         help="Base name of the video (e.g. 'sports', matching sports_summary.csv / sports_biomechanics.csv)"
     )
+    parser.add_argument("--athlete_id", required=True, help="Athlete ID for the database")
     args = parser.parse_args()
 
     video_name = args.video_name
     if not video_name:
         video_name = choose_biomechanics_csv_interactively()
 
-    run_risk_scoring(video_name)
+    session_id = mongo_utils.generate_session_id()
+    run_risk_scoring(video_name, args.athlete_id, session_id)

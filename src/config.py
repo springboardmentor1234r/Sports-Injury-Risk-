@@ -42,3 +42,11 @@ RISK_SCORE_OUTPUT_DIR = "outputs/risk_scores"
 
 # Where the final recommendations get saved
 RECOMMENDATION_OUTPUT_DIR = "outputs/recommendations"
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "sports_injury_db")

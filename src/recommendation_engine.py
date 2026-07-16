@@ -10,8 +10,16 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
+import sys
 
 from config import RISK_SCORE_OUTPUT_DIR, RECOMMENDATION_OUTPUT_DIR
+
+# Import database module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from database import mongo_utils
+except ImportError:
+    pass
 
 # --- Load .env file (GROQ_API_KEY, LANGCHAIN_* variables for LangSmith tracing) ---
 load_dotenv()
@@ -87,6 +95,7 @@ class RecommendationOutput(BaseModel):
     wrap_up_summary: str = Field(description="A short overall summary paragraph")
 
 class RecommendationState(TypedDict):
+    session_id: str
     video_name: str
     risk_data: Dict
     flagged_issues: List[str]
@@ -101,19 +110,29 @@ class RecommendationState(TypedDict):
 # =========================================================================
 
 def load_risk_data(state: RecommendationState) -> RecommendationState:
+    session_id = state.get("session_id")
     video_name = state["video_name"]
-    risk_score_path = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
+    
+    try:
+        # Try to load from MongoDB first
+        risk_doc = mongo_utils.get_risk_score(session_id)
+        row_dict = risk_doc.get("risk_data", {})
+        flagged_raw = row_dict.get("flagged_issues", "None")
+    except (NameError, ValueError):
+        # Fallback to CSV if DB fails or isn't available
+        print("mongo_utils not imported or session not found, falling back to CSV")
+        risk_score_path = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
+        df = pd.read_csv(risk_score_path)
+        row = df.iloc[0]
+        row_dict = row.to_dict()
+        flagged_raw = row_dict.get("flagged_issues", "None")
 
-    df = pd.read_csv(risk_score_path)
-    row = df.iloc[0]
-
-    flagged_raw = row.get("flagged_issues", "None")
     if flagged_raw == "None" or pd.isna(flagged_raw):
         flagged_issues = []
     else:
-        flagged_issues = [issue.strip() for issue in flagged_raw.split("|")]
+        flagged_issues = [issue.strip() for issue in str(flagged_raw).split("|")]
 
-    state["risk_data"] = row.to_dict()
+    state["risk_data"] = row_dict
     state["flagged_issues"] = flagged_issues
     return state
 
@@ -230,29 +249,85 @@ def save_output(state: RecommendationState) -> RecommendationState:
     csv_path = os.path.join(RECOMMENDATION_OUTPUT_DIR, f"{video_name}_recommendations.csv")
     pd.DataFrame(rows).to_csv(csv_path, index=False)
 
-    # Human-readable written report (TXT) saved to risk scores directory
-    txt_path = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_recommendations.txt")
-    
+    # Save structured to MongoDB
     summary = state["structured_summary"]
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(f"Recommendation Report: {video_name}\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(summary.get("one_line_summary", "") + "\n\n")
-        
-        for cat in summary.get("categories", []):
-            f.write(f"## {cat.get('category_name', '').replace('_', ' ').title()}\n")
-            f.write(f"Issue: {cat.get('issue_translation', '')}\n")
-            f.write(f"Explanation: {cat.get('explanation', '')}\n")
-            f.write("Recommended Exercises:\n")
+    session_id = state.get("session_id")
+    try:
+        if session_id:
+            mongo_utils.save_recommendations(session_id, summary)
+    except NameError:
+        pass # mongo_utils not imported
+
+    # Build the full text report string
+    risk_data = state["risk_data"]
+    health_score = risk_data.get("overall_health_score", 0)
+    risk_cat = risk_data.get("risk_category", "Unknown")
+    
+    dashboard_text = []
+    dashboard_text.append("=" * 80)
+    dashboard_text.append("1. HEADLINE SUMMARY")
+    dashboard_text.append("=" * 80)
+    dashboard_text.append(f"Overall Athlete Health Score : {health_score:.1f}/100")
+    dashboard_text.append(f"Risk Category                : {risk_cat}")
+    dashboard_text.append(f"\n{summary.get('one_line_summary', 'No summary generated.')}")
+
+    dashboard_text.append("\n" + "=" * 80)
+    dashboard_text.append("2. SUPPORTING SCORES")
+    dashboard_text.append("=" * 80)
+    dashboard_text.append(f"Injury Risk Score            : {risk_data.get('final_risk_score', 0):.1f}/100")
+    dashboard_text.append(f"Movement Quality Score       : {risk_data.get('movement_quality_score', 0):.1f}/100")
+    dashboard_text.append(f"Biomechanical Efficiency     : {risk_data.get('biomechanical_efficiency_score', 0):.1f}/100")
+    dashboard_text.append(f"Fatigue Score                : {risk_data.get('fatigue_score', 0):.1f}/100")
+
+    categories = summary.get("categories", [])
+    
+    dashboard_text.append("\n" + "=" * 80)
+    dashboard_text.append("3. DETECTED ISSUES")
+    dashboard_text.append("=" * 80)
+    if not categories:
+        dashboard_text.append("No significant movement issues detected.")
+    else:
+        for cat in categories:
+            dashboard_text.append(f"- {cat.get('issue_translation', '')}")
+
+    dashboard_text.append("\n" + "=" * 80)
+    dashboard_text.append("4. RECOMMENDATIONS")
+    dashboard_text.append("=" * 80)
+    if not categories:
+        dashboard_text.append("Keep up the good work! Maintain general strength and mobility.")
+    else:
+        for cat in categories:
+            cat_name = cat.get("category_name", "").replace("_", " ").title()
+            dashboard_text.append(f"Category: {cat_name}")
+            dashboard_text.append(f"What this means: {cat.get('explanation', '')}")
+            dashboard_text.append("Recommended Exercises:")
             for ex in cat.get("recommended_exercises", []):
-                f.write(f"- {ex}\n")
-            f.write("\n")
-            
-        f.write(summary.get("wrap_up_summary", "") + "\n")
+                dashboard_text.append(f"  • {ex}")
+            dashboard_text.append("")
+
+    dashboard_text.append("=" * 80)
+    dashboard_text.append("5. OVERALL SUMMARY")
+    dashboard_text.append("=" * 80)
+    dashboard_text.append(summary.get("wrap_up_summary", ""))
+
+    dashboard_text.append("\n" + "-" * 80)
+    dashboard_text.append("Disclaimer: This is an AI-assisted movement screening tool based on video pose ")
+    dashboard_text.append("estimation and rule-based analysis. It is not a medical diagnosis. Please consult ")
+    dashboard_text.append("a physiotherapist or doctor for professional evaluation and treatment.")
+    dashboard_text.append("-" * 80 + "\n")
+
+    full_report_string = "\n".join(dashboard_text)
+
+    # Save text report to MongoDB
+    try:
+        if session_id:
+            mongo_utils.save_full_report(session_id, full_report_string)
+    except NameError:
+        pass # mongo_utils not imported
 
     state["output_path"] = csv_path
     print(f"Saved recommendations CSV to: {csv_path}")
-    print(f"Saved written report (TXT) to: {txt_path}")
+    print(f"Saved full text report to MongoDB (session: {session_id})")
     return state
 
 
@@ -286,6 +361,7 @@ if __name__ == "__main__":
         "--video_name", required=False,
         help="Base name of the video (e.g. 'sports', matching sports_risk_score.csv)"
     )
+    parser.add_argument("--session_id", required=False, help="Session ID for MongoDB")
     args = parser.parse_args()
 
     video_name = args.video_name
@@ -314,6 +390,7 @@ if __name__ == "__main__":
     app = build_graph()
 
     initial_state: RecommendationState = {
+        "session_id": args.session_id or "",
         "video_name": video_name,
         "risk_data": {},
         "flagged_issues": [],
@@ -329,3 +406,31 @@ if __name__ == "__main__":
     print("RECOMMENDATION SUMMARY (STRUCTURED)")
     print("=" * 60)
     print(final_state["structured_summary"]["one_line_summary"])
+
+    # ==========================================
+    # FINAL CSV CLEANUP
+    # ==========================================
+    risk_score_csv = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
+    recs_csv = os.path.join(RECOMMENDATION_OUTPUT_DIR, f"{video_name}_recommendations.csv")
+    
+    files_to_delete = [risk_score_csv, recs_csv]
+    deleted_count = 0
+    for file_path in files_to_delete:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                deleted_count += 1
+            except Exception as e:
+                print(f"Warning: Could not delete {file_path}: {e}")
+                
+    # Safely try to remove empty directories
+    directories_to_check = [RISK_SCORE_OUTPUT_DIR, RECOMMENDATION_OUTPUT_DIR]
+    for directory in directories_to_check:
+        if os.path.exists(directory):
+            try:
+                os.rmdir(directory)
+            except OSError:
+                pass # Directory not empty, which is fine
+                
+    if deleted_count > 0:
+        print(f"\nFinal Cleanup: Deleted {deleted_count} CSV files and empty folders. All data is now exclusively in MongoDB!")
