@@ -29,13 +29,7 @@ def get_risk_color(risk_category):
 
 def main():
     parser = argparse.ArgumentParser(description="Run the full Sports Injury Risk pipeline.")
-    parser.add_argument(
-        "--video_name", required=False,
-        help="Base name of the video (e.g. 'sports')"
-    )
-    parser.add_argument("--athlete_id", required=True, help="Athlete ID for the database")
-    args = parser.parse_args()
-
+def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = None) -> dict:
     import os
     import sys
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -45,8 +39,13 @@ def main():
     except ImportError:
         session_id = "temp_session"
 
-    video_name = args.video_name
-    if not video_name:
+    if source_path:
+        from pose_extractor import extract_landmarks_from_video, save_to_csv
+        print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor (API/File)...{Colors.ENDC}")
+        frames_data = extract_landmarks_from_video(source_path, is_webcam=False, save_annotated_video=True)
+        save_to_csv(frames_data, source_path, is_webcam=False)
+        video_name = video_name or os.path.splitext(os.path.basename(source_path))[0]
+    elif not video_name:
         from pose_extractor import choose_input_source_interactively, extract_landmarks_from_video, save_to_csv
         
         print(f"{Colors.BLUE}No video_name provided. Launching full pipeline from the beginning...{Colors.ENDC}")
@@ -55,15 +54,15 @@ def main():
         frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True)
         save_to_csv(frames_data, source, is_webcam=is_webcam)
         video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
-
+        
     print(f"\n{Colors.BLUE}Step 2: Running Biomechanics Analyzer...{Colors.ENDC}")
-    from biomechanics_analyzer import run_biomechanics_only
-    run_biomechanics_only(video_name, args.athlete_id, session_id)
+    from biomechanics.analyzer import run_biomechanics_only
+    run_biomechanics_only(video_name, athlete_id, session_id)
 
     print(f"\n{Colors.BLUE}Step 3: Running Risk Scoring Engine...{Colors.ENDC}")
     # Import and run risk scoring silently
-    from risk_scoring_engine import run_risk_scoring
-    risk_df = run_risk_scoring(video_name, args.athlete_id, session_id, quiet=True)
+    from risk_scoring.engine import run_risk_scoring
+    risk_df = run_risk_scoring(video_name, athlete_id, session_id, quiet=True)
     if risk_df.empty:
         print("Error: Risk scoring failed to produce data.")
         sys.exit(1)
@@ -107,15 +106,33 @@ def main():
     print("-" * 80 + "\n")
 
     # ==========================================
+    # CLOUDINARY UPLOAD
+    # ==========================================
+    from config import ANNOTATED_VIDEO_DIR
+    annotated_video_path = os.path.join(ANNOTATED_VIDEO_DIR, f"{video_name}_annotated.mp4")
+    if os.path.exists(annotated_video_path):
+        print(f"\n{Colors.BLUE}Uploading Annotated Video to Cloudinary...{Colors.ENDC}")
+        try:
+            from database.cloud_storage import upload_video
+            from database.mongo_utils import update_session_video_url
+            video_url = upload_video(annotated_video_path)
+            if video_url:
+                update_session_video_url(session_id, video_url)
+        except ImportError:
+            print("Could not import Cloudinary modules. Skipping upload.")
+
+    # ==========================================
     # CSV CLEANUP
     # ==========================================
-    from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR
+    from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, ANNOTATED_VIDEO_DIR, RISK_SCORE_OUTPUT_DIR
     
     landmarks_csv = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_landmarks.csv")
     biomechanics_csv = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_biomechanics.csv")
     summary_csv = os.path.join(SUMMARY_OUTPUT_DIR, f"{video_name}_summary.csv")
+    risk_score_csv = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
+    annotated_video = os.path.join(ANNOTATED_VIDEO_DIR, f"{video_name}_annotated.mp4")
     
-    files_to_delete = [landmarks_csv, biomechanics_csv, summary_csv]
+    files_to_delete = [landmarks_csv, biomechanics_csv, summary_csv, risk_score_csv, annotated_video]
     deleted_count = 0
     for file_path in files_to_delete:
         if os.path.exists(file_path):
@@ -136,6 +153,24 @@ def main():
 
     if deleted_count > 0:
         print(f"Cleaned up {deleted_count} temporary CSV files and empty folders. Permanent records saved to MongoDB.")
+
+    # Return summary data for the API
+    return {
+        "session_id": session_id,
+        "risk_data": risk_data,
+        "annotated_video_url": video_url if 'video_url' in locals() else None
+    }
+
+def main():
+    parser = argparse.ArgumentParser(description="Run the full Sports Injury Risk pipeline.")
+    parser.add_argument(
+        "--video_name", required=False,
+        help="Base name of the video (e.g. 'sports')"
+    )
+    parser.add_argument("--athlete_id", required=True, help="Athlete ID for the database")
+    args = parser.parse_args()
+    
+    run_pipeline(args.athlete_id, args.video_name)
 
 if __name__ == "__main__":
     main()
