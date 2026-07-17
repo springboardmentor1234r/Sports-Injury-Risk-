@@ -51,3 +51,4 @@ Runs at http://localhost:5173
 - POST /videos/upload, GET /videos/mine, POST /videos/{id}/process
 
 day 10
+ 
