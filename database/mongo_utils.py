@@ -75,6 +75,22 @@ def save_session(session_id: str, athlete_id: str, video_name: str, status: str)
     collection.insert_one(document)
 
 
+def update_session_video_url(session_id: str, video_url: str):
+    """
+    Updates the session document with the URL of the uploaded annotated video.
+    """
+    db = get_db_connection()
+    try:
+        sessions_collection = db["sessions"]
+        sessions_collection.update_one(
+            {"session_id": session_id},
+            {"$set": {"annotated_video_url": video_url, "updated_at": datetime.utcnow()}}
+        )
+        print(f"Session {session_id} updated with video URL.")
+    except Exception as e:
+        print(f"Error updating session video URL: {e}")
+
+
 def save_biomechanics_data(session_id: str, frames_data: list, summary_data: dict):
     db = get_db_connection()
     collection = db["biomechanics_data"]
