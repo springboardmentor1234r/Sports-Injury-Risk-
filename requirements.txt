@@ -7,3 +7,15 @@ langgraph
 langsmith
 python-dotenv
 pymongo
+pytest
+
+cloudinary
+
+fastapi
+uvicorn
+python-multipart
+pyjwt
+passlib[bcrypt]
+mysql-connector-python
+reportlab
+bcrypt==3.2.0

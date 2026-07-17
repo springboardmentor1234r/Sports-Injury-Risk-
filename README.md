@@ -20,7 +20,39 @@ The system operates in four seamless stages:
 This pipeline is designed for seamless web frontend integration:
 - **Stateless Operation**: Intermediate CSV files are automatically deleted after processing to keep the server clean.
 - **Database Persistence**: All biomechanics data, risk scores, and generated reports are stored permanently in **MongoDB**.
+- **Object Storage**: Heavy video files are automatically uploaded to **Cloudinary** and securely linked in the database so your backend never hosts media files directly.
 - **Decoupled Engines**: The heavy LLM processing (Recommendation Engine) runs completely independently of the fast video processing engine.
+
+## Project Structure
+
+Following enterprise software architecture standards, the core logic is cleanly separated into modular components:
+
+```text
+Sports-Injury-Risk-/
+├── data/
+│   ├── profiles/            # Manually defined athlete history CSVs
+│   └── raw_videos/          # Input videos for the pipeline
+├── database/                # MongoDB integration and operations
+├── outputs/                 # Temporary directories (cleaned up automatically)
+├── tests/                   # Pytest automated testing suite
+└── src/
+    ├── main.py              # Main entry point (Runs Step 1)
+    ├── pose_extractor.py    # MediaPipe pose extraction script
+    ├── config.py            # Global thresholds and directory paths
+    ├── biomechanics/        # Pure math calculators and frame analyzers
+    ├── risk_scoring/        # Health/Risk threshold rules and engine
+    └── recommendations/     # LLM prompts and LangGraph orchestration
+```
+
+## Database Architecture
+
+All persistent data operations are strictly handled by the `database/mongo_utils.py` module. The project uses a NoSQL document-based structure in MongoDB to store pipeline results across four core collections:
+
+1. **`athlete_profiles`**: Stores static user data (e.g., `athlete_id`, `has_previous_injury`, `weekly_training_sessions`). This must be populated manually before processing a video, as the risk engine queries this for historical injury context.
+2. **`sessions`**: Tracks each unique video analysis run with a unique UUID (`session_id`), linking the video name to the athlete.
+3. **`biomechanics`**: Stores the heavy, frame-by-frame joint angle calculations and the overall mathematical summaries (range of motion, valgus).
+4. **`risk_scores`**: Stores the final 0-100 risk score, category, and a list of flagged movement flaws.
+5. **`recommendation_reports`**: Stores the raw LLM generated JSON summary, as well as the final, formatted Markdown text report ready for dashboard display.
 
 ## Installation
 
@@ -57,13 +89,14 @@ The script will:
 1. Process the video and calculate biomechanical flaws.
 2. Pull the athlete's historical data from MongoDB.
 3. Print a fast "Risk Score Report" directly to the terminal.
-4. Save the risk data to MongoDB and **clean up/delete** all temporary CSV files on your hard drive.
+4. Securely upload the generated `_annotated.mp4` video to Cloudinary.
+5. Save the risk data and Cloudinary URL to MongoDB and **clean up/delete** all temporary CSV and `.mp4` files on your hard drive.
 
 ### Step 2: Generate Premium Recommendations (Optional)
 Once a session is processed, you can generate detailed, AI-driven corrective exercises by running the recommendation engine manually using the Session ID generated in Step 1:
 
 ```bash
-python src/recommendation_engine.py --video_name "sports" --session_id "YOUR_SESSION_ID"
+python src/recommendations/engine.py --video_name "sports" --session_id "YOUR_SESSION_ID"
 ```
 
 The script will:
@@ -73,14 +106,39 @@ The script will:
 
 ## Configuration
 
-- **API Keys & Database**: This project requires a MongoDB instance and a Groq API key. You must add these to a `.env` file in the root directory:
+- **API Keys & Database**: This project requires a MongoDB instance, a Groq API key, and a Cloudinary account. You must add these to a `.env` file in the root directory:
   ```env
   GROQ_API_KEY=your_api_key_here
   MONGO_URI=mongodb://localhost:27017
   MONGO_DB_NAME=sports_injury_db
+  CLOUDINARY_URL=cloudinary://your_api_key_here@your_cloud_name
   ```
 - **Directories and Thresholds**: General configurations, file paths, and joint angle thresholds can be modified in `src/config.py`.
 - **Athlete Profiles**: Athlete history is read from the `athlete_profiles` collection in MongoDB. (Insert a document with `athlete_id`, `has_previous_injury`, `weekly_training_sessions`, etc., before running the pipeline).
+
+## API Backend Integration
+
+The project now includes a high-performance **FastAPI** backend located in the `api/` directory. This acts as a bridge between the core Python logic and your web frontend (React/Next.js).
+
+### Features
+- **JWT Authentication**: Validates users against a MySQL database. Client identity (`athlete_id`) is strictly extracted from the secure token.
+- **REST Endpoints**: Exposes endpoints for uploading videos, generating recommendations, and retrieving profiles.
+- **On-the-fly PDFs**: Generates the final rehab plan as a PDF dynamically using ReportLab.
+
+To run the API server:
+```bash
+uvicorn api.server:app --reload --port 8000
+```
+Then navigate to `http://localhost:8000/docs` to view the interactive Swagger API documentation. For detailed endpoint information, see [API.md](./API.md).
+
+## Testing
+
+This project includes a robust, automated end-to-end test suite that simulates the pipeline without writing any test data to your MongoDB. 
+
+To run the full pipeline test (which safely reroutes all outputs to a `tests/test_outputs` directory):
+```bash
+pytest tests/test_pipeline.py
+```
 
 ## Features
 
