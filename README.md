@@ -50,4 +50,4 @@ Runs at http://localhost:5173
 - GET/POST/PUT /athletes/me, GET /athletes/{id}
 - POST /videos/upload, GET /videos/mine, POST /videos/{id}/process
 
-day - 9
+
