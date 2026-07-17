@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 export const analyzeVideoPose = async (req, res, next) => {
   try {
+    console.log(req.file); // maine lagaya h chat gpt ke kahne pr
     if (!req.file) {
       res.status(400);
       throw new Error('Please upload a video file');

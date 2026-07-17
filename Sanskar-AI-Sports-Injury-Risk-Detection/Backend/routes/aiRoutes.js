@@ -24,6 +24,6 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post('/pose', protect, upload.single('video'), analyzeVideoPose);
+router.post('/pose',  upload.single('video'), protect, analyzeVideoPose);
 
 export default router;

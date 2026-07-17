@@ -5,6 +5,8 @@ import jpeg from 'jpeg-js';
 import extractFrames from '../services/videoFrameExtractor.js';
 import detectPose from '../services/poseDetector.js';
 import serializePoseLandmarks from '../utils/poseLandmarkSerializer.js';
+import calculateJointAngles from '../utils/jointAngleCalculator.js';
+import analyzeMovement, { calculateAnalysisQuality, roundJointAngles } from '../utils/movementAnalysis.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,10 +39,16 @@ const processVideoPose = async (videoPath) => {
       const { width, height } = getFrameDimensions(imageBuffer);
       const landmarks = await detectPose(imageBuffer);
       const serialized = serializePoseLandmarks(landmarks, width, height);
+      const jointAngles = roundJointAngles(calculateJointAngles(landmarks));
+      const movementAnalysis = analyzeMovement(jointAngles);
+      const analysisQuality = calculateAnalysisQuality(landmarks);
 
       frameResults.push({
         framePath: path.basename(framePath),
         landmarks: serialized,
+        jointAngles,
+        movementAnalysis,
+        analysisQuality,
       });
     }
 
