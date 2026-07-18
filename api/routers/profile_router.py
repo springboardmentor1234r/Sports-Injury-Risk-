@@ -12,6 +12,11 @@ class AthleteProfileUpdate(BaseModel):
     previous_injury_type: str
     training_intensity: str
     weekly_training_sessions: int
+    age: int
+    gender: str
+    height: int
+    weight: int
+    sport: str
 
 def save_athlete_profile(athlete_id: str, profile_data: dict):
     """Helper to save/update athlete profile in MongoDB"""

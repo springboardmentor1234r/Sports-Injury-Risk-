@@ -237,3 +237,10 @@ test_mp.py
 frontend_architecture_plan.md
 # Test Outputs
 tests/test_outputs/
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env.local

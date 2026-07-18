@@ -42,18 +42,18 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
     if source_path:
         from pose_extractor import extract_landmarks_from_video, save_to_csv
         print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor (API/File)...{Colors.ENDC}")
-        frames_data = extract_landmarks_from_video(source_path, is_webcam=False, save_annotated_video=True)
-        save_to_csv(frames_data, source_path, is_webcam=False)
         video_name = video_name or os.path.splitext(os.path.basename(source_path))[0]
+        frames_data = extract_landmarks_from_video(source_path, is_webcam=False, save_annotated_video=True, video_name=video_name)
+        save_to_csv(frames_data, source_path, is_webcam=False, video_name=video_name)
     elif not video_name:
         from pose_extractor import choose_input_source_interactively, extract_landmarks_from_video, save_to_csv
         
         print(f"{Colors.BLUE}No video_name provided. Launching full pipeline from the beginning...{Colors.ENDC}")
         print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor...{Colors.ENDC}")
         source, is_webcam = choose_input_source_interactively()
-        frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True)
-        save_to_csv(frames_data, source, is_webcam=is_webcam)
         video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
+        frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True, video_name=video_name)
+        save_to_csv(frames_data, source, is_webcam=is_webcam, video_name=video_name)
         
     print(f"\n{Colors.BLUE}Step 2: Running Biomechanics Analyzer...{Colors.ENDC}")
     from biomechanics.analyzer import run_biomechanics_only
@@ -69,41 +69,7 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
     
     risk_data = risk_df.iloc[0].to_dict()
 
-    # ==========================================
-    # DISPLAY FINAL DASHBOARD (FAST SUMMARY)
-    # ==========================================
-    print("\n\n" + "=" * 80)
-    print(f"{Colors.BOLD}{Colors.HEADER}1. HEADLINE SUMMARY{Colors.ENDC}")
-    print("=" * 80)
-    health_score = risk_data.get("overall_health_score", 0)
-    risk_cat = risk_data.get("risk_category", "Unknown")
-    color = get_risk_color(risk_cat)
-    
-    print(f"{Colors.BOLD}Overall Athlete Health Score : {health_score:.1f}/100{Colors.ENDC}")
-    print(f"{Colors.BOLD}Risk Category                : {color}{risk_cat}{Colors.ENDC}")
-
-    print("\n" + "=" * 80)
-    print(f"{Colors.BOLD}{Colors.HEADER}2. SUPPORTING SCORES{Colors.ENDC}")
-    print("=" * 80)
-    print(f"Injury Risk Score            : {risk_data.get('final_risk_score', 0):.1f}/100")
-    print(f"Movement Quality Score       : {risk_data.get('movement_quality_score', 0):.1f}/100")
-    print(f"Biomechanical Efficiency     : {risk_data.get('biomechanical_efficiency_score', 0):.1f}/100")
-    print(f"Fatigue Score                : {risk_data.get('fatigue_score', 0):.1f}/100")
-
-    print("\n" + "=" * 80)
-    print(f"{Colors.BOLD}{Colors.HEADER}3. DETECTED ISSUES{Colors.ENDC}")
-    print("=" * 80)
-    flagged_str = risk_data.get('flagged_issues', "None")
-    if flagged_str == "None" or not flagged_str:
-        print("- No significant movement issues detected.")
-    else:
-        for issue in str(flagged_str).split(" | "):
-            print(f"- {issue.replace('_', ' ').capitalize()}")
-
-    print("\n" + "-" * 80)
-    print("Note: To generate corrective exercises and a detailed premium report,")
-    print(f"run the recommendation engine manually for session: {session_id}")
-    print("-" * 80 + "\n")
+    # The risk data is returned to the API via the return statement below.
 
     # ==========================================
     # CLOUDINARY UPLOAD

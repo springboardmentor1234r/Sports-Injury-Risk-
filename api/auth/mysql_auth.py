@@ -114,3 +114,57 @@ def get_user_roles(user_id: int) -> List[str]:
     finally:
         cursor.close()
         conn.close()
+
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Fetches a user by their ID."""
+    conn = get_connection()
+    if not conn:
+        return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM users WHERE id = %s"
+        cursor.execute(query, (user_id,))
+        user = cursor.fetchone()
+        return user
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+def update_user_account(user_id: int, full_name: str, email: str) -> bool:
+    """Updates user's name and email."""
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        cursor = conn.cursor()
+        query = "UPDATE users SET full_name = %s, email = %s, updated_at = NOW() WHERE id = %s"
+        cursor.execute(query, (full_name, email, user_id))
+        conn.commit()
+        return True
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
+def update_user_password(user_id: int, new_password_hash: str) -> bool:
+    """Updates user's password."""
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        cursor = conn.cursor()
+        query = "UPDATE users SET password_hash = %s, updated_at = NOW() WHERE id = %s"
+        cursor.execute(query, (new_password_hash, user_id))
+        conn.commit()
+        return True
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()

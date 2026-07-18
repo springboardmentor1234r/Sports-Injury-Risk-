@@ -56,7 +56,8 @@ def get_athlete_profile(athlete_id: str) -> dict:
             "injury_recency": "None",
             "previous_injury_type": "None",
             "training_intensity": "Medium",
-            "weekly_training_sessions": 3
+            "weekly_training_sessions": 3,
+            "is_default": True
         }
     return profile
 
@@ -158,4 +159,12 @@ def get_risk_score(session_id: str) -> dict:
     data = collection.find_one({"session_id": session_id})
     if not data:
         raise ValueError(f"No risk score found for session {session_id}")
+    return data
+
+
+def get_full_report(session_id: str) -> dict:
+    db = get_db_connection()
+    collection = db["full_recommendation_reports"]
+    
+    data = collection.find_one({"session_id": session_id})
     return data

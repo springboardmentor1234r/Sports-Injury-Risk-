@@ -1,11 +1,16 @@
 import os
 import shutil
+import io
 import uuid
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi.responses import StreamingResponse
 from typing import Dict, Any, List
 from api.dependencies import get_current_user
 from database.mongo_utils import get_db_connection
 from src.main import run_pipeline
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -37,7 +42,7 @@ def upload_and_analyze(
 
     # Run pipeline
     try:
-        result = run_pipeline(athlete_id=athlete_id, source_path=file_path)
+        result = run_pipeline(athlete_id=athlete_id, video_name=video.filename, source_path=file_path)
         return {
             "message": "Analysis complete",
             "session_id": result["session_id"],
@@ -59,9 +64,14 @@ def get_history(current_user: Dict[str, Any] = Depends(get_current_user)):
     
     sessions = list(sessions_col.find({"athlete_id": athlete_id}).sort("created_at", -1))
     
-    # Clean up ObjectIds
+    # Clean up ObjectIds and attach risk data
     for s in sessions:
         s["_id"] = str(s["_id"])
+        risk_score = db["risk_scores"].find_one({"session_id": s["session_id"]})
+        if risk_score:
+            s["risk_data"] = risk_score.get("risk_data", {})
+        else:
+            s["risk_data"] = {}
         
     return sessions
 
@@ -80,4 +90,95 @@ def get_session(session_id: str, current_user: Dict[str, Any] = Depends(get_curr
         raise HTTPException(status_code=403, detail="Not authorized to view this session")
         
     session["_id"] = str(session["_id"])
+    
+    risk_score = db["risk_scores"].find_one({"session_id": session_id})
+    if risk_score:
+        session["risk_data"] = risk_score.get("risk_data", {})
+    else:
+        session["risk_data"] = {}
+        
     return session
+
+@router.get("/{session_id}/report/download")
+def download_analysis_report(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+    athlete_id = current_user["user_id"]
+    db = get_db_connection()
+    session = db["sessions"].find_one({"session_id": session_id})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    if session["athlete_id"] != athlete_id and "coach" not in current_user["roles"] and "admin" not in current_user["roles"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    risk_score = db["risk_scores"].find_one({"session_id": session_id})
+    if not risk_score:
+        raise HTTPException(status_code=404, detail="Analysis data not found")
+
+    risk_data = risk_score.get("risk_data", {})
+    
+    # Generate PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    story.append(Paragraph(f"MoveIQ Biomechanics Report: {session.get('video_name', 'Unknown')}", styles["Title"]))
+    story.append(Spacer(1, 12))
+    
+    story.append(Paragraph("1. Health Overview", styles["Heading2"]))
+    story.append(Paragraph(f"Overall Health Score: {risk_data.get('overall_health_score', 0)}/100", styles["Normal"]))
+    story.append(Paragraph(f"Risk Category: {risk_data.get('risk_category', 'Unknown')}", styles["Normal"]))
+    story.append(Spacer(1, 12))
+    
+    story.append(Paragraph("2. Sub-Scores", styles["Heading2"]))
+    story.append(Paragraph(f"Injury Risk Score: {risk_data.get('final_risk_score', 0)}/100", styles["Normal"]))
+    story.append(Paragraph(f"Movement Quality: {risk_data.get('movement_quality_score', 0)}/100", styles["Normal"]))
+    story.append(Paragraph(f"Efficiency: {risk_data.get('biomechanical_efficiency_score', 0)}/100", styles["Normal"]))
+    story.append(Paragraph(f"Fatigue: {risk_data.get('fatigue_score', 0)}/100", styles["Normal"]))
+    story.append(Spacer(1, 12))
+    
+    story.append(Paragraph("3. Flagged Issues", styles["Heading2"]))
+    flagged = risk_data.get("flagged_issues", "None")
+    if isinstance(flagged, str) and flagged != "None":
+        for issue in flagged.split(" | "):
+            story.append(Paragraph(f"• {issue}", styles["Normal"]))
+    else:
+        story.append(Paragraph("No major issues detected.", styles["Normal"]))
+        
+    try:
+        doc.build(story)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to build PDF: {str(e)}")
+        
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer, 
+        media_type="application/pdf", 
+        headers={"Content-Disposition": f"attachment; filename=Analysis_Report_{session_id}.pdf"}
+    )
+
+@router.get("/{session_id}/recommendation")
+def get_recommendation(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+    from database.mongo_utils import get_full_report
+    
+    # 1. Check if the report already exists in MongoDB
+    report_data = get_full_report(session_id)
+    
+    if report_data:
+        return {"session_id": session_id, "report": report_data.get("raw_text_report")}
+        
+    # 2. If it doesn't exist, we must generate it using the LLM engine
+    try:
+        from src.recommendations.engine import run_engine
+        run_engine(session_id)
+        
+        # Now fetch it again since it should be saved
+        report_data = get_full_report(session_id)
+        if report_data:
+            return {"session_id": session_id, "report": report_data.get("raw_text_report")}
+        else:
+            raise HTTPException(status_code=500, detail="Recommendation generated but failed to save")
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate recommendation: {str(e)}")

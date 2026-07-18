@@ -22,6 +22,7 @@ This pipeline is designed for seamless web frontend integration:
 - **Database Persistence**: All biomechanics data, risk scores, and generated reports are stored permanently in **MongoDB**.
 - **Object Storage**: Heavy video files are automatically uploaded to **Cloudinary** and securely linked in the database so your backend never hosts media files directly.
 - **Decoupled Engines**: The heavy LLM processing (Recommendation Engine) runs completely independently of the fast video processing engine.
+- **Demographics-Aware Scoring**: The core risk engine dynamically modifies injury risk using the athlete's exact Height, Weight (BMI), Age, Gender, and Primary Sport.
 
 ## Project Structure
 
@@ -42,13 +43,15 @@ Sports-Injury-Risk-/
     ├── biomechanics/        # Pure math calculators and frame analyzers
     ├── risk_scoring/        # Health/Risk threshold rules and engine
     └── recommendations/     # LLM prompts and LangGraph orchestration
+├── frontend/                # Next.js / Tailwind React Web Application
+├── api/                     # FastAPI backend bridging the core engine and frontend
 ```
 
 ## Database Architecture
 
 All persistent data operations are strictly handled by the `database/mongo_utils.py` module. The project uses a NoSQL document-based structure in MongoDB to store pipeline results across four core collections:
 
-1. **`athlete_profiles`**: Stores static user data (e.g., `athlete_id`, `has_previous_injury`, `weekly_training_sessions`). This must be populated manually before processing a video, as the risk engine queries this for historical injury context.
+1. **`athlete_profiles`**: Stores static user data (e.g., `athlete_id`, `has_previous_injury`, `weekly_training_sessions`, `height`, `weight`, `age`, `gender`, `sport`). This must be populated before processing a video, as the risk engine uses demographics to multiply or penalize risk baselines.
 2. **`sessions`**: Tracks each unique video analysis run with a unique UUID (`session_id`), linking the video name to the athlete.
 3. **`biomechanics`**: Stores the heavy, frame-by-frame joint angle calculations and the overall mathematical summaries (range of motion, valgus).
 4. **`risk_scores`**: Stores the final 0-100 risk score, category, and a list of flagged movement flaws.
@@ -130,6 +133,15 @@ To run the API server:
 uvicorn api.server:app --reload --port 8000
 ```
 Then navigate to `http://localhost:8000/docs` to view the interactive Swagger API documentation. For detailed endpoint information, see [API.md](./API.md).
+
+### Web Frontend (Next.js)
+A complete, Acet Labs-styled web application is located in the `frontend` directory. 
+To launch the frontend dashboard:
+```bash
+cd frontend
+npm install
+npm run dev -- -p 3000
+```
 
 ## Testing
 

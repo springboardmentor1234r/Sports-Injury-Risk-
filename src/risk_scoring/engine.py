@@ -25,6 +25,8 @@ from risk_scoring.rules import (
     calculate_fatigue_score,
     calculate_injury_history_score,
     calculate_training_load_score,
+    calculate_demographics_modifier,
+    calculate_sport_modifier,
     get_risk_category,
     calculate_movement_quality_score,
     calculate_biomechanical_efficiency_score,
@@ -57,13 +59,20 @@ def run_risk_scoring(video_name: str, athlete_id: str, session_id: str, quiet: b
     training_score, training_flags = calculate_training_load_score(profile_row)
 
     # --- Combine using the weighted formula from the project document ---
-    final_score = (
+    raw_final_score = (
         deviation_score * 0.35
         + asymmetry_score * 0.20
         + injury_score * 0.20
         + training_score * 0.15
         + fatigue_score * 0.10
     )
+    
+    demo_modifier, demo_flags = calculate_demographics_modifier(profile_row)
+    sport_modifier, sport_flags = calculate_sport_modifier(profile_row)
+    
+    final_score = raw_final_score * demo_modifier * sport_modifier
+    final_score = max(0, min(100, final_score))
+    
     risk_category = get_risk_category(final_score)
 
     # --- Additional dashboard-facing scores (Section 8 of the project doc) ---
@@ -71,7 +80,7 @@ def run_risk_scoring(video_name: str, athlete_id: str, session_id: str, quiet: b
     biomechanical_efficiency_score = calculate_biomechanical_efficiency_score(rom_score)
     overall_health_score = calculate_overall_health_score(final_score)
 
-    all_flags = deviation_flags + asymmetry_flags + fatigue_flags + injury_flags + training_flags
+    all_flags = deviation_flags + asymmetry_flags + fatigue_flags + injury_flags + training_flags + demo_flags + sport_flags
 
     # --- Build the result row ---
     result = {

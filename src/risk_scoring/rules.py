@@ -182,6 +182,76 @@ def calculate_training_load_score(profile_row: pd.Series):
     return score, flagged
 
 
+def calculate_demographics_modifier(profile_row: pd.Series):
+    """
+    Calculates a risk multiplier based on Age, Gender, and BMI (Height/Weight).
+    Returns (multiplier, flagged_issues).
+    Multiplier > 1.0 increases risk, < 1.0 decreases risk.
+    """
+    flagged = []
+    multiplier = 1.0
+    
+    # Age factor
+    age = profile_row.get("age", 20)
+    try:
+        age = int(age)
+    except:
+        age = 20
+        
+    if age > 35:
+        multiplier += 0.10
+        flagged.append(f"Age factor ({age} yrs) increases recovery time and tissue vulnerability")
+    elif age > 28:
+        multiplier += 0.05
+        
+    # Gender factor
+    gender = str(profile_row.get("gender", "Male")).strip().lower()
+    if gender == "female":
+        multiplier += 0.05
+        flagged.append("Statistically higher baseline joint vulnerability (e.g., Q-angle impact on ACL)")
+        
+    # BMI factor
+    height_cm = profile_row.get("height", 175)
+    weight_kg = profile_row.get("weight", 70)
+    
+    try:
+        height_m = float(height_cm) / 100
+        weight_kg = float(weight_kg)
+        if height_m > 0:
+            bmi = weight_kg / (height_m * height_m)
+            if bmi > 30:
+                multiplier += 0.15
+                flagged.append(f"High BMI ({bmi:.1f}) significantly increases kinetic joint load")
+            elif bmi > 25:
+                multiplier += 0.05
+                flagged.append(f"Elevated BMI ({bmi:.1f}) increases joint load")
+    except:
+        pass
+        
+    return multiplier, flagged
+
+def calculate_sport_modifier(profile_row: pd.Series):
+    """
+    Calculates a risk multiplier based on the primary sport.
+    Returns (multiplier, flagged_issues).
+    """
+    flagged = []
+    multiplier = 1.0
+    
+    sport = str(profile_row.get("sport", "Other")).strip().lower()
+    
+    high_impact = ["basketball", "soccer", "football", "gymnastics"]
+    low_impact = ["track", "swimming", "cycling"]
+    
+    if sport in high_impact:
+        multiplier += 0.10
+        flagged.append(f"High-impact pivoting sport ({sport.capitalize()}) increases baseline injury risk")
+    elif sport in low_impact:
+        multiplier -= 0.05
+        
+    return multiplier, flagged
+
+
 def get_risk_category(final_score: float) -> str:
     for low, high, label in RISK_CATEGORY_BINS:
         if low <= final_score < high:

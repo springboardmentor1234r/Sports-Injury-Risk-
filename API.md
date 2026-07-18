@@ -40,6 +40,14 @@ Handles user registration and login using MySQL and `bcrypt` password hashing.
 - **`GET /api/auth/me`** *(Requires JWT)*
   - **Description**: Returns the decoded JWT payload of the currently logged-in user.
 
+- **`PUT /api/auth/account`** *(Requires JWT)*
+  - **Description**: Updates the logged-in user's name and email in the MySQL database.
+  - **Payload**: `{"full_name": "...", "email": "..."}`
+
+- **`PUT /api/auth/password`** *(Requires JWT)*
+  - **Description**: Updates the logged-in user's password in the MySQL database after verifying the old password.
+  - **Payload**: `{"old_password": "...", "new_password": "..."}`
+
 ### 2. Athlete Profiles (`/api/profile`)
 Handles the reading and writing of athlete historical data in MongoDB.
 
@@ -48,8 +56,8 @@ Handles the reading and writing of athlete historical data in MongoDB.
   - **Returns**: JSON object containing injury history and training intensity.
 
 - **`POST /api/profile`** | **`PUT /api/profile`** *(Requires JWT)*
-  - **Description**: Upserts the user's profile data to MongoDB.
-  - **Payload**: `{"has_previous_injury": "Yes", "injury_recency": "6 months ago", "previous_injury_type": "ACL Tear", "training_intensity": "High", "weekly_training_sessions": 5}`
+  - **Description**: Upserts the user's profile data (including demographics for advanced risk scoring math) to MongoDB.
+  - **Payload**: `{"has_previous_injury": "Yes", "injury_recency": "6 months ago", "previous_injury_type": "ACL Tear", "training_intensity": "High", "weekly_training_sessions": 5, "age": 25, "gender": "Male", "height": 180, "weight": 75, "sport": "Basketball"}`
 
 ### 3. Video Sessions (`/api/sessions`)
 The core bridge to the `src.main` Python pipeline.

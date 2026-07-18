@@ -61,7 +61,7 @@ def choose_input_source_interactively():
     return video_path, False
 
 
-def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated_video: bool = True):
+def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated_video: bool = True, video_name: str = None):
     """
     Reads a video (from a file OR a webcam), runs MediaPipe Pose on every frame,
     and returns a list of dictionaries (one dict per frame) containing all landmark data.
@@ -97,8 +97,8 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
     video_writer = None
     if save_annotated_video:
         os.makedirs(ANNOTATED_VIDEO_DIR, exist_ok=True)
-        # Webcam has no filename, so we label it with "webcam" instead
-        video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
+        if not video_name:
+            video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
         out_path = os.path.join(ANNOTATED_VIDEO_DIR, f"{video_name}_annotated.mp4")
 
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -204,11 +204,13 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
     return all_frames_data
 
 
-def save_to_csv(frames_data, source, is_webcam: bool = False):
+def save_to_csv(frames_data, source, is_webcam: bool = False, video_name: str = None):
     """Converts the collected list of frame dicts into a CSV file."""
     os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
+    
+    if not video_name:
+        video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
 
-    video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
     csv_path = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_landmarks.csv")
 
     df = pd.DataFrame(frames_data)
