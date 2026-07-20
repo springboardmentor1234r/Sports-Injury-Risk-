@@ -128,3 +128,31 @@
     @apply font-sans;
   }
 }
+
+@media print {
+  html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  .print-pdf-report, .print-pdf-report * {
+    visibility: visible !important;
+  }
+  .print-pdf-report {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+  @page {
+    margin: 0;
+  }
+}

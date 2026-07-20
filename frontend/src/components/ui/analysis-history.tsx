@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Activity, Calendar, ExternalLink, TrendingUp } from 'lucide-react';
+import { Loader2, Activity, Calendar, ExternalLink, TrendingUp, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface AnalysisHistoryProps {
@@ -29,6 +29,25 @@ export const AnalysisHistory = ({ token, onOpenSession }: AnalysisHistoryProps) 
         };
         fetchHistory();
     }, [token]);
+
+    const handleDelete = async (sessionId: string) => {
+        if (!confirm("Are you sure you want to delete this session? This action cannot be undone.")) return;
+        
+        try {
+            const res = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || 'Failed to delete session');
+            }
+            // Remove from local state
+            setSessions(prev => prev.filter(s => s.session_id !== sessionId));
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -145,12 +164,19 @@ export const AnalysisHistory = ({ token, onOpenSession }: AnalysisHistoryProps) 
                             </div>
                         </div>
 
-                        <div className="mt-auto pt-4 border-t border-slate-800">
+                        <div className="mt-auto pt-4 border-t border-slate-800 flex gap-2">
                             <button
                                 onClick={() => onOpenSession(session.session_id)}
-                                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all"
+                                className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all"
                             >
                                 <ExternalLink className="w-4 h-4" /> Open in Dashboard
+                            </button>
+                            <button
+                                onClick={() => handleDelete(session.session_id)}
+                                className="px-4 flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-xl transition-all border border-rose-500/20 hover:border-rose-500/40"
+                                title="Delete Session"
+                            >
+                                <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Download, FileText, Calendar, ShieldCheck } from 'lucide-react';
+import { PdfReport } from './pdf-report';
 
 interface ReportsViewProps {
     token: string;
@@ -8,7 +9,12 @@ interface ReportsViewProps {
 export const ReportsView = ({ token }: ReportsViewProps) => {
     const [sessions, setSessions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDownloading, setIsDownloading] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // State for the hidden PDF report
+    const [pdfData, setPdfData] = useState<{session: any, recommendations: string, previousSession?: any, athleteProfile?: any} | null>(null);
+    const reportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -29,24 +35,99 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
     }, [token]);
 
     const handleDownload = async (sessionId: string, videoName: string) => {
+        setIsDownloading(sessionId);
         try {
-            const res = await fetch(`http://localhost:8000/api/sessions/${sessionId}/report/download`, {
+            // 1. Fetch full session data (which includes key_moments Base64 strings)
+            const sessionRes = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error('Failed to download report');
+            if (!sessionRes.ok) throw new Error('Failed to fetch session details');
+            const sessionData = await sessionRes.json();
+
+            // 2. Fetch recommendation text
+            const recRes = await fetch(`http://localhost:8000/api/recommendations/${sessionId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const recData = await recRes.json();
             
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Analysis_Report_${videoName}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            let recommendations: any = "No recommendations generated yet.";
+            if (recRes.ok && recData.recommendations) {
+                recommendations = recData.recommendations;
+            }
+
+            // Find previous session if it exists
+            const sessionIndex = sessions.findIndex(s => s.session_id === sessionId);
+            let previousSession = undefined;
+            
+            // If we found the session and it's not the last one, get the older one (which is index + 1 because the array is newest-first)
+            if (sessionIndex !== -1 && sessionIndex < sessions.length - 1) {
+                const prevSessionSummary = sessions[sessionIndex + 1];
+                
+                // Fetch full details of previous session
+                const prevRes = await fetch(`http://localhost:8000/api/sessions/${prevSessionSummary.session_id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (prevRes.ok) {
+                    previousSession = await prevRes.json();
+                }
+            }
+
+            // Also fetch athlete profile
+            const profileRes = await fetch('http://localhost:8000/api/profile/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const athleteProfile = profileRes.ok ? await profileRes.json() : null;
+
+            // Fetch real full name from MySQL via /api/auth/me
+            const meRes = await fetch('http://localhost:8000/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const meData = meRes.ok ? await meRes.json() : null;
+            const fullName = meData?.user?.full_name || null;
+            const mergedProfile = athleteProfile ? { ...athleteProfile, full_name: fullName } : { full_name: fullName };
+
+            // 3. Set data to render the hidden component
+            setPdfData({ session: sessionData, recommendations, previousSession, athleteProfile: mergedProfile });
+
+            // 4. Wait for React to render the component
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 5. Trigger multi-page PDF generation using html-to-image
+            const htmlToImage = await import('html-to-image');
+            const jsPDF = (await import('jspdf')).default;
+            
+            if (!reportRef.current) throw new Error('Report component not mounted');
+            
+            // Get all page elements
+            const pages = reportRef.current.querySelectorAll('.pdf-page');
+            if (!pages || pages.length === 0) throw new Error('No pages found');
+            
+            // Create PDF
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            
+            // Process each page
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                const dataUrl = await htmlToImage.toPng(pageEl, { quality: 1, backgroundColor: '#ffffff', pixelRatio: 2 });
+                
+                if (i > 0) pdf.addPage();
+                
+                const pdfHeight = (pageEl.offsetHeight * pdfWidth) / pageEl.offsetWidth;
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
+            const cleanName = videoName.replace(/\.[^/.]+$/, "");
+            pdf.save(`MoveIQ_Report_${cleanName}.pdf`);
+
         } catch (err) {
             console.error(err);
-            alert("Failed to download PDF.");
+            alert("Failed to download Premium PDF.");
+        } finally {
+            setTimeout(() => {
+                setIsDownloading(null);
+                setPdfData(null);
+            }, 1000);
         }
     };
 
@@ -103,13 +184,38 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
                         </div>
                         <button
                             onClick={() => handleDownload(session.session_id, session.video_name || "Unknown")}
-                            className="w-12 h-12 rounded-full bg-slate-800 hover:bg-cyan-600 flex items-center justify-center text-slate-400 hover:text-white transition-all group"
-                            title="Download PDF"
+                            disabled={isDownloading !== null}
+                            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all group ${
+                                isDownloading === session.session_id 
+                                    ? 'bg-cyan-600 text-white cursor-wait'
+                                    : 'bg-slate-800 hover:bg-cyan-600 text-slate-400 hover:text-white'
+                            }`}
+                            title="Download Premium PDF"
                         >
-                            <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                            {isDownloading === session.session_id ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                            )}
                         </button>
                     </div>
                 ))}
+            </div>
+
+            {/* Hidden PDF Report Container */}
+            {/* Hidden container for PDF rendering */}
+            <div className="absolute left-[-9999px] top-0 pointer-events-none">
+                {pdfData && (
+                    <div id="pdf-report-container">
+                        <PdfReport 
+                            ref={reportRef} 
+                            session={pdfData.session} 
+                            recommendations={pdfData.recommendations} 
+                            previousSession={pdfData.previousSession}
+                            athleteProfile={pdfData.athleteProfile}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

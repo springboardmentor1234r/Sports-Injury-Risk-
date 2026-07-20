@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import React, { useRef, useEffect, useState } from 'react';
 import { HeartPulse, AlertTriangle, Bone, FileText, Download, X, Loader2, Play } from 'lucide-react';
 import jsPDF from 'jspdf';
-
+import { PdfAnalyticsOnly } from './pdf-analytics-only';
+import { PdfRecommendationOnly } from './pdf-recommendation-only';
 export interface MoveIQDashboardProps {
     token?: string;
     sessionId?: string;
+    videoName?: string;
     healthScore?: number;
     riskCategory?: string;
     efficiency?: number;
@@ -15,9 +17,10 @@ export interface MoveIQDashboardProps {
     videoUrl?: string;
 }
 
-export const MinimalProfessionalCard = ({
+export const MinimalProfessionalCard: React.FC<MoveIQDashboardProps> = ({
     token,
     sessionId,
+    videoName,
     healthScore,
     riskCategory,
     efficiency,
@@ -25,13 +28,18 @@ export const MinimalProfessionalCard = ({
     flaggedIssues,
     isProcessing = false,
     videoUrl
-}: MoveIQDashboardProps) => {
+}) => {
     const hasData = healthScore !== undefined && !isProcessing;
     const cardRef = useRef<HTMLDivElement>(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [progress] = useState(healthScore || 0);
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [history, setHistory] = useState<any[]>([]);
+    
+    // New states for the analytics modal
+    const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+    const [fullSessionData, setFullSessionData] = useState<any>(null);
+    const analyticsReportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -54,7 +62,8 @@ export const MinimalProfessionalCard = ({
     // Recommendation State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [reportText, setReportText] = useState<string | null>(null);
+    const [reportData, setReportData] = useState<any>(null);
+    const [isFetchingAnalytics, setIsFetchingAnalytics] = useState(false);
 
     // Video State
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -67,69 +76,147 @@ export const MinimalProfessionalCard = ({
         setIsVideoModalOpen(true);
     };
 
+    const handleViewAnalytics = async () => {
+        if (!sessionId) return;
+        setIsFetchingAnalytics(true);
+        try {
+            const sessionRes = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!sessionRes.ok) throw new Error('Failed to fetch session details');
+            const sessionData = await sessionRes.json();
+            setFullSessionData(sessionData);
+            setIsAnalyticsModalOpen(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsFetchingAnalytics(false);
+        }
+    };
+
+    const handleDownloadAnalyticsPDF = async () => {
+        try {
+            const htmlToImage = await import('html-to-image');
+            const jsPDF = (await import('jspdf')).default;
+            
+            const element = document.getElementById('analytics-pdf-container');
+            if (!element) return;
+            
+            const pages = element.querySelectorAll('.pdf-page');
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                const dataUrl = await htmlToImage.toPng(pageEl, { quality: 1, backgroundColor: '#ffffff', pixelRatio: 2 });
+                if (i > 0) pdf.addPage();
+                
+                const pdfHeight = (pageEl.offsetHeight * pdfWidth) / pageEl.offsetWidth;
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
+            const fileName = videoName ? `MoveIQ_Analytics_${videoName.replace(/\.[^/.]+$/, "")}.pdf` : `MoveIQ_Analytics_${sessionId}.pdf`;
+            pdf.save(fileName);
+        } catch (e) {
+            console.error("PDF generation failed:", e);
+        }
+    };
+
     const handleGetRecommendation = async () => {
         if (!token || !sessionId) return;
         setIsGenerating(true);
         setIsModalOpen(true);
-        setReportText(null);
+        setReportData(null);
 
         try {
-            const res = await fetch(`http://localhost:8000/api/sessions/${sessionId}/recommendation`, {
+            // 1. Generate recommendations if they don't exist yet
+            await fetch(`http://localhost:8000/api/recommendations/${sessionId}/generate`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // 2. Fetch the generated recommendations
+            const res = await fetch(`http://localhost:8000/api/recommendations/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || "Failed to fetch recommendation");
-            setReportText(data.report);
-        } catch (error) {
-            console.error(error);
-            setReportText("Failed to load the recommendation report. Please try again.");
+            setReportData(data.recommendations);
+        } catch (err: any) {
+            console.error(err);
+            setReportData({ error: "Failed to load recommendations. Please try again." });
         } finally {
             setIsGenerating(false);
         }
     };
 
     const handleDownloadTXT = () => {
-        if (!reportText) return;
-        const blob = new Blob([reportText], { type: 'text/plain' });
+        if (!reportData || reportData.error) return;
+        
+        let textContent = `MoveIQ AI Biomechanics Recommendation\n`;
+        const identifier = videoName ? videoName.replace(/\.[^/.]+$/, "") : `MIQ-${sessionId?.substring(0, 8).toUpperCase() || "TEMP"}`;
+        textContent += `Report for: ${identifier}\n\n`;
+        textContent += `SUMMARY:\n${reportData.one_line_summary}\n\n`;
+        
+        if (reportData.categories && reportData.categories.length > 0) {
+            textContent += `SPECIFIC ISSUES & EXERCISES:\n`;
+            reportData.categories.forEach((cat: any) => {
+                textContent += `- ${cat.category_name.replace(/_/g, ' ').toUpperCase()}:\n`;
+                textContent += `  ${cat.issue_translation}\n`;
+                textContent += `  Recommended Exercises:\n`;
+                cat.recommended_exercises?.forEach((ex: string) => {
+                    textContent += `    * ${ex}\n`;
+                });
+                textContent += `\n`;
+            });
+        }
+        
+        textContent += `WRAP UP:\n${reportData.wrap_up_summary}\n`;
+
+        const blob = new Blob([textContent], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'MoveIQ_Recommendation_Report.txt';
+        const fileName = videoName ? `MoveIQ_Recommendation_${videoName.replace(/\.[^/.]+$/, "")}.txt` : `MoveIQ_Recommendation_${sessionId}.txt`;
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
-    const handleDownloadPDF = () => {
-        if (!reportText) return;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(16);
-        doc.text("MoveIQ AI Biomechanics Report", 20, 20);
-        
-        doc.setFontSize(11);
-        const splitText = doc.splitTextToSize(reportText, 170);
-        
-        let y = 30;
-        for (let i = 0; i < splitText.length; i++) {
-            if (y > 280) {
-                doc.addPage();
-                y = 20;
+    const handleDownloadPDF = async () => {
+        if (!reportData || reportData.error) return;
+        try {
+            const htmlToImage = await import('html-to-image');
+            const jsPDF = (await import('jspdf')).default;
+            
+            const element = document.getElementById('recommendation-pdf-container');
+            if (!element) return;
+            
+            const pages = element.querySelectorAll('.pdf-page');
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                const dataUrl = await htmlToImage.toPng(pageEl, { quality: 1, backgroundColor: '#ffffff', pixelRatio: 2 });
+                if (i > 0) pdf.addPage();
+                
+                const pdfHeight = (pageEl.offsetHeight * pdfWidth) / pageEl.offsetWidth;
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
             }
-            doc.text(splitText[i], 20, y);
-            y += 6;
+            
+            const fileName = videoName ? `MoveIQ_Recommendation_${videoName.replace(/\.[^/.]+$/, "")}.pdf` : `MoveIQ_Recommendation_${sessionId}.pdf`;
+            pdf.save(fileName);
+        } catch (e) {
+            console.error("PDF generation failed:", e);
         }
-        
-        doc.save("MoveIQ_Recommendation_Report.pdf");
     };
-
-    // Removed 3D hover effect
 
     const circumference = 2 * Math.PI * 20;
     const strokeDashoffset = circumference - (circumference * progress) / 100;
 
-    // Dynamic coloring based on health score
     const safeHealthScore = healthScore || 0;
     const healthColor = !hasData ? 'from-slate-600 to-slate-500' :
                         safeHealthScore >= 80 ? 'from-green-400 to-emerald-600' : 
@@ -141,7 +228,7 @@ export const MinimalProfessionalCard = ({
             <div className={`flex-1 p-8 flex items-center justify-center transition-opacity duration-300 ${isProcessing ? 'opacity-50 pointer-events-none select-none' : ''}`}>
                 <div 
                     ref={cardRef}
-                    className={`w-full max-w-2xl rounded-2xl border overflow-hidden shadow-2xl flex flex-col transition-all duration-300 ${
+                    className={`print:hidden w-full max-w-2xl rounded-2xl border overflow-hidden shadow-2xl flex flex-col transition-all duration-300 ${
                         isDarkMode 
                             ? 'bg-slate-900 border-slate-800 shadow-slate-900/50' 
                             : 'bg-white border-slate-200 shadow-slate-200/50'
@@ -364,14 +451,14 @@ export const MinimalProfessionalCard = ({
 
                 <div className={`flex gap-3 px-6 pb-6 ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
                     <button 
-                        onClick={handleGetRecommendation}
-                        disabled={!hasData || isProcessing}
-                        className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleViewAnalytics}
+                        disabled={!hasData || isProcessing || isFetchingAnalytics}
+                        className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                        Get Recommendation
+                        {isFetchingAnalytics ? <Loader2 className="w-5 h-5 animate-spin" /> : 'View Full Report'}
                     </button>
                     <button 
-                        onClick={handlePlayVideo}
+                        onClick={handleGetRecommendation}
                         disabled={!hasData || isProcessing}
                         className={`flex-1 font-bold py-3 px-4 rounded-xl transition-all border flex items-center justify-center gap-2 ${
                             isDarkMode 
@@ -379,7 +466,7 @@ export const MinimalProfessionalCard = ({
                                 : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                        <Play className="w-4 h-4" /> View Full Video
+                        <FileText className="w-4 h-4" /> Get Recommendation
                     </button>
                 </div>
             </div>
@@ -416,17 +503,46 @@ export const MinimalProfessionalCard = ({
                                         <p className="text-sm text-slate-400 mt-1">This may take 10-20 seconds as our LLM analyzes your biomechanics.</p>
                                     </div>
                                 </div>
-                            ) : reportText ? (
-                                <div className="prose prose-invert prose-cyan max-w-none">
-                                    <pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed bg-transparent border-0 p-0 m-0 overflow-visible">
-                                        {reportText}
-                                    </pre>
+                            ) : reportData ? (
+                                <div className="space-y-6">
+                                    {reportData.error ? (
+                                        <p className="text-rose-400">{reportData.error}</p>
+                                    ) : (
+                                        <>
+                                            <div className="bg-cyan-900/20 border border-cyan-800 p-4 rounded-xl">
+                                                <h4 className="text-cyan-400 font-bold mb-2">Summary</h4>
+                                                <p className="text-slate-300 text-sm leading-relaxed">{reportData.one_line_summary}</p>
+                                            </div>
+                                            
+                                            <div className="space-y-4">
+                                                <h4 className="text-white font-bold">Specific Issues & Exercises</h4>
+                                                {reportData.categories?.map((cat: any, idx: number) => (
+                                                    <div key={idx} className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                                                        <h5 className="text-amber-400 font-bold capitalize mb-1">{cat.category_name.replace(/_/g, ' ')}</h5>
+                                                        <p className="text-slate-300 text-sm mb-3">{cat.issue_translation}</p>
+                                                        <div className="bg-black/30 p-3 rounded-lg">
+                                                            <p className="text-xs text-slate-400 uppercase font-bold mb-2 tracking-wider">Recommended Exercises</p>
+                                                            <ul className="list-disc pl-5 space-y-1">
+                                                                {cat.recommended_exercises?.map((ex: string, i: number) => (
+                                                                    <li key={i} className="text-emerald-400 text-sm">{ex}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            
+                                            <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl">
+                                                <p className="text-slate-400 text-sm italic">{reportData.wrap_up_summary}</p>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             ) : null}
                         </div>
 
                         {/* Modal Footer with Downloads */}
-                        {!isGenerating && reportText && (
+                        {!isGenerating && reportData && !reportData.error && (
                             <div className="p-5 border-t border-slate-800 bg-slate-900/80 flex items-center justify-end gap-3">
                                 <button 
                                     onClick={handleDownloadTXT}
@@ -442,6 +558,51 @@ export const MinimalProfessionalCard = ({
                                 </button>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Analytics Full Report Modal Overlay */}
+            {isAnalyticsModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                        
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/50">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                                    <FileText className="w-5 h-5" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white tracking-tight">AI Biomechanics Analytics</h3>
+                            </div>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={handleDownloadAnalyticsPDF}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm font-semibold shadow-lg shadow-blue-500/20"
+                                >
+                                    <Download className="w-4 h-4" /> Download PDF
+                                </button>
+                                <button 
+                                    onClick={() => setIsAnalyticsModalOpen(false)}
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body with scaled preview */}
+                        <div className="flex-1 overflow-y-auto p-6 relative bg-slate-900/30">
+                            {fullSessionData ? (
+                                <div className="relative w-[800px] mx-auto bg-white transform origin-top shrink-0 mb-10 shadow-2xl rounded overflow-hidden print:hidden">
+                                    <PdfAnalyticsOnly session={fullSessionData} ref={analyticsReportRef} />
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -485,6 +646,24 @@ export const MinimalProfessionalCard = ({
                     </div>
                 </div>
             )}
+
+            {/* Hidden Print Container injected at root level to prevent clipping */}
+            <div className="absolute left-[-9999px] top-0 pointer-events-none">
+                {fullSessionData && isAnalyticsModalOpen && (
+                    <div id="analytics-pdf-container">
+                        <PdfAnalyticsOnly session={fullSessionData} />
+                    </div>
+                )}
+                {reportData && !reportData.error && isModalOpen && (
+                    <div id="recommendation-pdf-container">
+                        <PdfRecommendationOnly session={{
+                            session_id: sessionId,
+                            created_at: new Date().toISOString(),
+                            risk_data: { risk_category: riskCategory }
+                        }} recommendations={reportData} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

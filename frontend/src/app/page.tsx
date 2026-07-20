@@ -60,6 +60,12 @@ export default function Home() {
   }
 
   const handleLogin = (jwt: string, userData: any) => {
+    // ── Reset ALL previous session state before setting new account ──
+    setHasData(false);
+    setDashboardData(null);
+    setActiveView('dashboard');
+    setIsLockedToProfile(false);
+
     setToken(jwt);
     setUser(userData);
     setIsAuthenticated(true);
@@ -171,6 +177,7 @@ export default function Home() {
                       }
                       isProcessing={isProcessing}
                       videoUrl={dashboardData.video_url}
+                      videoName={dashboardData.video_name}
                   />
               ) : (
                   <MinimalProfessionalCard isProcessing={isProcessing} token={token || undefined} />

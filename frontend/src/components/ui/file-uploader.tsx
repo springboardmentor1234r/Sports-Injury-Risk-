@@ -31,6 +31,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => (
 
 export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSuccess, onUploadStart }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [customName, setCustomName] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -44,6 +45,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
       return;
     }
     setSelectedFile(file);
+    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+    setCustomName(nameWithoutExt);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +81,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
+    setCustomName('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -113,6 +117,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
     try {
       const formData = new FormData();
       formData.append('video', selectedFile);
+      if (customName.trim()) {
+        formData.append('custom_name', customName.trim());
+      }
 
       const response = await fetch('http://localhost:8000/api/sessions/upload-and-analyze', {
         method: 'POST',
@@ -188,7 +195,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
             </span>
           </div>
         </div>
-
         {selectedFile && (
           <div className="mb-6 animate-in slide-in-from-bottom-2 fade-in duration-300">
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Selected Video</div>
@@ -209,6 +215,20 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+            
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Video Name
+              </label>
+              <input 
+                type="text" 
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="e.g. Morning Sprint Session"
+                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                disabled={uploading}
+              />
             </div>
           </div>
         )}

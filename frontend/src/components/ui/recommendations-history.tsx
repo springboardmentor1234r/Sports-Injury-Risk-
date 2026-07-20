@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, FileText, ChevronRight, AlertCircle, X, Download, Activity, CheckCircle2 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { PdfRecommendationOnly } from './pdf-recommendation-only';
 
 interface RecommendationsHistoryProps {
     token: string;
@@ -15,6 +15,7 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFetchingReport, setIsFetchingReport] = useState(false);
     const [activeRecommendation, setActiveRecommendation] = useState<any>(null);
+    const [activeSession, setActiveSession] = useState<any>(null);
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -34,13 +35,14 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
         fetchHistory();
     }, [token]);
 
-    const handleOpenReport = async (sessionId: string) => {
+    const handleOpenReport = async (sessionItem: any) => {
         setIsModalOpen(true);
         setIsFetchingReport(true);
         setActiveRecommendation(null);
+        setActiveSession(sessionItem);
         
         try {
-            const res = await fetch(`http://localhost:8000/api/recommendations/${sessionId}`, {
+            const res = await fetch(`http://localhost:8000/api/recommendations/${sessionItem.session_id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -79,40 +81,48 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'MoveIQ_AI_Recommendation.txt';
+        a.download = activeSession?.video_name 
+            ? `MoveIQ_Recommendation_${activeSession.video_name.replace(/\.[^/.]+$/, "")}.txt` 
+            : 'MoveIQ_AI_Recommendation.txt';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     };
 
-    const handleDownloadPDF = () => {
-        if (!activeRecommendation) return;
-        const text = generateTextReport(activeRecommendation);
-        const pdf = new jsPDF();
+    const handleDownloadPDF = async () => {
+        if (!activeRecommendation || !activeSession) return;
         
-        pdf.setFontSize(16);
-        pdf.setTextColor(0, 0, 0);
-        
-        const lines = pdf.splitTextToSize(text, 180);
-        let cursorY = 20;
-        
-        lines.forEach((line: string) => {
-            if (cursorY > 280) {
-                pdf.addPage();
-                cursorY = 20;
+        try {
+            const htmlToImage = await import('html-to-image');
+            const jsPDF = (await import('jspdf')).default;
+            
+            const element = document.getElementById('history-recommendation-pdf-container');
+            if (!element) return;
+            
+            const pages = element.querySelectorAll('.pdf-page');
+            if (!pages || pages.length === 0) return;
+            
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                const dataUrl = await htmlToImage.toPng(pageEl, { quality: 1, backgroundColor: '#ffffff', pixelRatio: 2 });
+                if (i > 0) pdf.addPage();
+                
+                const pdfHeight = (pageEl.offsetHeight * pdfWidth) / pageEl.offsetWidth;
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
             }
-            if (line.startsWith('Category:')) {
-                pdf.setFont("helvetica", "bold");
-                pdf.text(line, 10, cursorY);
-                pdf.setFont("helvetica", "normal");
-            } else {
-                pdf.text(line, 10, cursorY);
-            }
-            cursorY += 7;
-        });
-        
-        pdf.save("MoveIQ_AI_Recommendation.pdf");
+            
+            const fileName = activeSession.video_name 
+                ? `MoveIQ_Recommendation_${activeSession.video_name.replace(/\.[^/.]+$/, "")}.pdf` 
+                : `MoveIQ_Recommendation_${activeSession.session_id}.pdf`;
+                
+            pdf.save(fileName);
+        } catch (e) {
+            console.error("PDF generation failed:", e);
+        }
     };
 
     if (isLoading) {
@@ -156,7 +166,7 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
                     <div 
                         key={item.session_id} 
                         className="bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer rounded-2xl p-6 backdrop-blur-xl group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                        onClick={() => handleOpenReport(item.session_id)}
+                        onClick={() => handleOpenReport(item)}
                     >
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
@@ -271,6 +281,22 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
                     </div>
                 </div>
             )}
+            {/* Hidden container for PDF rendering */}
+            <div className="absolute left-[-9999px] top-0 pointer-events-none">
+                {activeRecommendation && activeSession && (
+                    <div id="history-recommendation-pdf-container">
+                        <PdfRecommendationOnly 
+                            session={{
+                                session_id: activeSession.session_id,
+                                created_at: activeSession.created_at || new Date().toISOString(),
+                                risk_data: activeSession.risk_data || { risk_category: "Unknown" },
+                                video_name: activeSession.video_name
+                            }} 
+                            recommendations={activeRecommendation} 
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
