@@ -4,6 +4,11 @@ import sys
 from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+import dns.resolver
+
+# Force Google DNS to bypass local ISP timeout issues with SRV records
+dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+dns.resolver.default_resolver.nameservers = ['8.8.8.8']
 
 # Ensure we can import from src.config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
