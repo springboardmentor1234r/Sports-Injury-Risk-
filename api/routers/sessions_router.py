@@ -2,9 +2,9 @@ import os
 import shutil
 import io
 import uuid
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from api.dependencies import get_current_user
 from database.mongo_utils import get_db_connection
 from src.main import run_pipeline
@@ -21,6 +21,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/upload-and-analyze")
 def upload_and_analyze(
     video: UploadFile = File(...),
+    custom_name: Optional[str] = Form(None),
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     athlete_id = current_user["user_id"]
@@ -28,8 +29,10 @@ def upload_and_analyze(
     if not video.filename.endswith(('.mp4', '.mov', '.avi')):
         raise HTTPException(status_code=400, detail="Invalid video format")
         
-    # Generate a unique filename so simultaneous uploads never collide/overwrite each other
     file_extension = os.path.splitext(video.filename)[1]
+    
+    # Use custom name if provided, otherwise fallback to original filename
+    final_video_name = custom_name.strip() + file_extension if custom_name and custom_name.strip() else video.filename
     safe_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(UPLOAD_DIR, safe_filename)
 
@@ -42,10 +45,11 @@ def upload_and_analyze(
 
     # Run pipeline
     try:
-        result = run_pipeline(athlete_id=athlete_id, video_name=video.filename, source_path=file_path)
+        result = run_pipeline(athlete_id=athlete_id, video_name=final_video_name, source_path=file_path)
         return {
             "message": "Analysis complete",
             "session_id": result["session_id"],
+            "video_name": final_video_name,
             "risk_data": result["risk_data"],
             "video_url": result["annotated_video_url"]
         }
@@ -62,7 +66,11 @@ def get_history(current_user: Dict[str, Any] = Depends(get_current_user)):
     db = get_db_connection()
     sessions_col = db["sessions"]
     
-    sessions = list(sessions_col.find({"athlete_id": athlete_id}).sort("created_at", -1))
+    # Exclude key_moments to save bandwidth for the history list
+    sessions = list(sessions_col.find(
+        {"athlete_id": athlete_id}, 
+        {"key_moments": 0}
+    ).sort("created_at", -1))
     
     # Clean up ObjectIds and attach risk data
     for s in sessions:
@@ -97,7 +105,33 @@ def get_session(session_id: str, current_user: Dict[str, Any] = Depends(get_curr
     else:
         session["risk_data"] = {}
         
+    bio_data = db["biomechanics_data"].find_one({"session_id": session_id})
+    if bio_data:
+        session["biomechanics"] = bio_data.get("summary", {})
+    else:
+        session["biomechanics"] = {}
+        
     return session
+
+@router.delete("/{session_id}")
+def delete_session(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+    athlete_id = current_user["user_id"]
+    db = get_db_connection()
+    
+    session = db["sessions"].find_one({"session_id": session_id})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    if session["athlete_id"] != athlete_id and "coach" not in current_user["roles"] and "admin" not in current_user["roles"]:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this session")
+        
+    # Delete from all related collections
+    db["sessions"].delete_one({"session_id": session_id})
+    db["risk_scores"].delete_one({"session_id": session_id})
+    db["biomechanics_data"].delete_one({"session_id": session_id})
+    db["recommendations"].delete_one({"session_id": session_id})
+    
+    return {"message": "Session and all related data deleted successfully"}
 
 @router.get("/{session_id}/report/download")
 def download_analysis_report(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
