@@ -9,6 +9,7 @@ import calculateJointAngles from '../utils/jointAngleCalculator.js';
 import analyzeMovement, { calculateAnalysisQuality, roundJointAngles } from '../utils/movementAnalysis.js';
 import predictInjuryRisk from '../utils/injuryRiskPrediction.js';
 import generateExerciseRecommendations from '../recommendations/exerciseRecommendation.js';
+import generateAnalysisReport from '../reports/analysisReportGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,12 +57,19 @@ const processVideoPose = async (videoPath) => {
 
     const riskPrediction = predictInjuryRisk({ frames: frameResults });
     const exerciseRecommendations = generateExerciseRecommendations(riskPrediction);
+    const analysisReport = generateAnalysisReport({
+      frameCount: frameResults.length,
+      riskPrediction,
+      exerciseRecommendations,
+      generatedAt: new Date().toISOString(),
+    });
 
     return {
       frameCount: frameResults.length,
       frames: frameResults,
       riskPrediction,
       exerciseRecommendations,
+      analysisReport,
     };
   } finally {
     cleanupExtractedFrames(outputDir);
