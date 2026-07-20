@@ -81,8 +81,8 @@ def assign_role(user_id: int, role_name: str) -> bool:
             
         role_id = role['id']
         
-        # Then, insert into user_roles
-        cursor.execute("INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)", (user_id, role_id))
+        # INSERT IGNORE silently skips if the role is already assigned
+        cursor.execute("INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (%s, %s)", (user_id, role_id))
         conn.commit()
         return True
     except mysql.connector.Error as err:
