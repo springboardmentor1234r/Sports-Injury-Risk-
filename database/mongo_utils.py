@@ -77,19 +77,30 @@ def save_session(session_id: str, athlete_id: str, video_name: str, status: str)
 
 
 def update_session_video_url(session_id: str, video_url: str):
-    """
-    Updates the session document with the URL of the uploaded annotated video.
-    """
+    """Update an existing session with the uploaded Cloudinary video URL."""
     db = get_db_connection()
     try:
         sessions_collection = db["sessions"]
         sessions_collection.update_one(
             {"session_id": session_id},
-            {"$set": {"annotated_video_url": video_url, "updated_at": datetime.utcnow()}}
+            {"$set": {"video_url": video_url}}
         )
-        print(f"Session {session_id} updated with video URL.")
+        print(f"Added video URL to session {session_id}")
     except Exception as e:
-        print(f"Error updating session video URL: {e}")
+        print(f"MongoDB error updating video URL: {e}")
+
+
+def update_session_key_moments(session_id: str, key_moments: list):
+    """Update an existing session with the Base64 key moment images."""
+    db = get_db_connection()
+    try:
+        sessions_collection = db["sessions"]
+        sessions_collection.update_one(
+            {"session_id": session_id},
+            {"$set": {"key_moments": key_moments}}
+        )
+    except Exception as e:
+        print(f"MongoDB error updating key moments: {e}")
 
 
 def save_biomechanics_data(session_id: str, frames_data: list, summary_data: dict):
@@ -168,3 +179,11 @@ def get_full_report(session_id: str) -> dict:
     
     data = collection.find_one({"session_id": session_id})
     return data
+
+def update_session_key_moments(session_id: str, key_moments_b64: list):
+    """Saves base64 encoded images to the session document in MongoDB."""
+    db = get_db_connection()
+    db["sessions"].update_one(
+        {"session_id": session_id},
+        {"$set": {"key_moments": key_moments_b64}}
+    )
