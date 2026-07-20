@@ -78,12 +78,11 @@ The core bridge to the `src.main` Python pipeline.
 Integrates with LangGraph and Groq LLMs.
 
 - **`POST /api/recommendations/{session_id}/generate`** *(Requires JWT)*
-  - **Description**: Triggers the `src.recommendations.engine` to analyze the specific session's Risk Score and formulate an AI corrective exercise plan. Saves the massive text string to MongoDB.
+  - **Description**: Triggers the `src.recommendations.engine` to analyze the specific session's Risk Score and formulate an AI corrective exercise plan. Saves the structured JSON object to MongoDB.
   - **Returns**: `{"message": "Recommendations generated successfully"}`
-
-- **`GET /api/recommendations/{session_id}/report`** *(Requires JWT)*
-  - **Description**: Retrieves the raw JSON data of the full recommendation report for frontend display formatting.
   
-- **`GET /api/recommendations/{session_id}/download`** *(Requires JWT)*
-  - **Description**: Retrieves the Markdown string from MongoDB, dynamically parses it using `reportlab`, and streams an **on-the-fly generated PDF** back to the client.
-  - **Returns**: Application/PDF file stream (`Rehab_Plan_{session_id}.pdf`).
+- **`GET /api/recommendations/{session_id}`** *(Requires JWT)*
+  - **Description**: Retrieves the structured JSON data of the AI recommendations for frontend display formatting (contains `one_line_summary`, `categories`, etc.).
+  - **Returns**: JSON recommendation object.
+
+*(Note: The server no longer generates PDFs directly via endpoints. PDF compilation is now handled entirely client-side using React rendering and html-to-image).*

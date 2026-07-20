@@ -222,6 +222,7 @@ __marimo__/
 uploads/
 
 # Project Specific
+generation_flow.md
 steps.md
 models/
 data/raw_videos/*.mp4

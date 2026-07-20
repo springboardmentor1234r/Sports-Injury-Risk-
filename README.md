@@ -55,7 +55,7 @@ All persistent data operations are strictly handled by the `database/mongo_utils
 2. **`sessions`**: Tracks each unique video analysis run with a unique UUID (`session_id`), linking the video name to the athlete.
 3. **`biomechanics`**: Stores the heavy, frame-by-frame joint angle calculations and the overall mathematical summaries (range of motion, valgus).
 4. **`risk_scores`**: Stores the final 0-100 risk score, category, and a list of flagged movement flaws.
-5. **`recommendation_reports`**: Stores the raw LLM generated JSON summary, as well as the final, formatted Markdown text report ready for dashboard display.
+5. **`recommendations`**: Stores the raw AI generated JSON summary, including the core one-line summary and structured corrective exercise categories.
 
 ## Installation
 
@@ -126,7 +126,7 @@ The project now includes a high-performance **FastAPI** backend located in the `
 ### Features
 - **JWT Authentication**: Validates users against a MySQL database. Client identity (`athlete_id`) is strictly extracted from the secure token.
 - **REST Endpoints**: Exposes endpoints for uploading videos, generating recommendations, and retrieving profiles.
-- **On-the-fly PDFs**: Generates the final rehab plan as a PDF dynamically using ReportLab.
+- **Client-Side PDFs**: Serves structured JSON to the frontend, which handles dynamically rendering and downloading A4-sized PDF reports natively in the browser via React, `html-to-image`, and `jsPDF`.
 
 To run the API server:
 ```bash

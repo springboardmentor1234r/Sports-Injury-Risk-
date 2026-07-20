@@ -151,7 +151,15 @@ def reset_password_route(req: ResetPasswordRequest):
 
 @router.get("/me")
 def get_me(current_user: Dict[str, Any] = Depends(get_current_user)):
-    return {"user": current_user}
+    from api.auth.mysql_auth import get_user_by_id
+    db_user = get_user_by_id(int(current_user["user_id"]))
+    full_name = db_user["full_name"] if db_user else None
+    return {
+        "user": {
+            **current_user,
+            "full_name": full_name,
+        }
+    }
 
 class AccountUpdate(BaseModel):
     full_name: str

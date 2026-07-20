@@ -43,6 +43,9 @@ RISK_SCORE_OUTPUT_DIR = "outputs/risk_scores"
 # Where the final recommendations get saved
 RECOMMENDATION_OUTPUT_DIR = "outputs/recommendations"
 
+# Where key moment annotated images are temporarily saved
+ANNOTATED_IMAGES_DIR = "outputs/annotated_images"
+
 import os
 from dotenv import load_dotenv
 

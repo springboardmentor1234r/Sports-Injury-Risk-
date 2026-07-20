@@ -46,18 +46,26 @@ def load_risk_data(state: RecommendationState) -> RecommendationState:
     video_name = state["video_name"]
     
     try:
-        # Try to load from MongoDB first
+        # Load from MongoDB first
         risk_doc = mongo_utils.get_risk_score(session_id)
+        if not risk_doc:
+            raise ValueError("No risk document found in MongoDB")
+            
         row_dict = risk_doc.get("risk_data", {})
         flagged_raw = row_dict.get("flagged_issues", "None")
-    except (NameError, ValueError):
+    except Exception as e:
         # Fallback to CSV if DB fails or isn't available
-        print("mongo_utils not imported or session not found, falling back to CSV")
+        print(f"Failed to load from MongoDB ({e}), falling back to CSV")
         risk_score_path = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
-        df = pd.read_csv(risk_score_path)
-        row = df.iloc[0]
-        row_dict = row.to_dict()
-        flagged_raw = row_dict.get("flagged_issues", "None")
+        try:
+            df = pd.read_csv(risk_score_path)
+            row = df.iloc[0]
+            row_dict = row.to_dict()
+            flagged_raw = row_dict.get("flagged_issues", "None")
+        except FileNotFoundError:
+            print("CSV not found either, returning empty data")
+            row_dict = {}
+            flagged_raw = "None"
 
     if flagged_raw == "None" or pd.isna(flagged_raw):
         flagged_issues = []
@@ -141,65 +149,43 @@ def generate_recommendation(state: RecommendationState) -> RecommendationState:
 # =========================================================================
 
 def save_output(state: RecommendationState) -> RecommendationState:
-    os.makedirs(RECOMMENDATION_OUTPUT_DIR, exist_ok=True)
-    os.makedirs(RISK_SCORE_OUTPUT_DIR, exist_ok=True)
     video_name = state["video_name"]
+    session_id = state.get("session_id")
 
-    # Structured CSV (for future database/dashboard use)
-    rows = []
-    for category, issues in state["categorized_issues"].items():
-        exercises = state["recommended_exercises"].get(category, [])
-        rows.append({
-            "category": category,
-            "flagged_issues": " | ".join(issues),
-            "recommended_exercises": " | ".join(exercises),
-        })
-    csv_path = os.path.join(RECOMMENDATION_OUTPUT_DIR, f"{video_name}_recommendations.csv")
-    pd.DataFrame(rows).to_csv(csv_path, index=False)
+    # If run in legacy standalone mode without MongoDB, write CSV
+    if not session_id:
+        os.makedirs(RECOMMENDATION_OUTPUT_DIR, exist_ok=True)
+        rows = []
+        for category, issues in state["categorized_issues"].items():
+            exercises = state["recommended_exercises"].get(category, [])
+            rows.append({
+                "category": category,
+                "flagged_issues": " | ".join(issues),
+                "recommended_exercises": " | ".join(exercises),
+            })
+        csv_path = os.path.join(RECOMMENDATION_OUTPUT_DIR, f"{video_name}_recommendations.csv")
+        pd.DataFrame(rows).to_csv(csv_path, index=False)
+        state["output_path"] = csv_path
+        print(f"Saved recommendations CSV to: {csv_path}")
 
     # Save structured to MongoDB
     summary = state["structured_summary"]
-    session_id = state.get("session_id")
     try:
         if session_id:
             mongo_utils.save_recommendations(session_id, summary)
-    except NameError:
-        pass # mongo_utils not imported
+    except Exception as e:
+        print(f"Failed to save recommendations to MongoDB: {e}")
 
     # Build the full text report string
     risk_data = state["risk_data"]
     health_score = risk_data.get("overall_health_score", 0)
     risk_cat = risk_data.get("risk_category", "Unknown")
-    
-    dashboard_text = []
-    dashboard_text.append("=" * 80)
-    dashboard_text.append("1. HEADLINE SUMMARY")
-    dashboard_text.append("=" * 80)
-    dashboard_text.append(f"Overall Athlete Health Score : {health_score:.1f}/100")
-    dashboard_text.append(f"Risk Category                : {risk_cat}")
-    dashboard_text.append(f"\n{summary.get('one_line_summary', 'No summary generated.')}")
-
-    dashboard_text.append("\n" + "=" * 80)
-    dashboard_text.append("2. SUPPORTING SCORES")
-    dashboard_text.append("=" * 80)
-    dashboard_text.append(f"Injury Risk Score            : {risk_data.get('final_risk_score', 0):.1f}/100")
-    dashboard_text.append(f"Movement Quality Score       : {risk_data.get('movement_quality_score', 0):.1f}/100")
-    dashboard_text.append(f"Biomechanical Efficiency     : {risk_data.get('biomechanical_efficiency_score', 0):.1f}/100")
-    dashboard_text.append(f"Fatigue Score                : {risk_data.get('fatigue_score', 0):.1f}/100")
-
     categories = summary.get("categories", [])
     
-    dashboard_text.append("\n" + "=" * 80)
-    dashboard_text.append("3. DETECTED ISSUES")
+    dashboard_text = []
+    
     dashboard_text.append("=" * 80)
-    if not categories:
-        dashboard_text.append("No significant movement issues detected.")
-    else:
-        for cat in categories:
-            dashboard_text.append(f"- {cat.get('issue_translation', '')}")
-
-    dashboard_text.append("\n" + "=" * 80)
-    dashboard_text.append("4. RECOMMENDATIONS")
+    dashboard_text.append("RECOMMENDATIONS")
     dashboard_text.append("=" * 80)
     if not categories:
         dashboard_text.append("Keep up the good work! Maintain general strength and mobility.")
@@ -214,7 +200,7 @@ def save_output(state: RecommendationState) -> RecommendationState:
             dashboard_text.append("")
 
     dashboard_text.append("=" * 80)
-    dashboard_text.append("5. OVERALL SUMMARY")
+    dashboard_text.append("OVERALL SUMMARY")
     dashboard_text.append("=" * 80)
     dashboard_text.append(summary.get("wrap_up_summary", ""))
 
@@ -230,12 +216,10 @@ def save_output(state: RecommendationState) -> RecommendationState:
     try:
         if session_id:
             mongo_utils.save_full_report(session_id, full_report_string)
-    except NameError:
-        pass # mongo_utils not imported
+            print(f"Saved full text report to MongoDB (session: {session_id})")
+    except Exception as e:
+        print(f"Failed to save full text report to MongoDB: {e}")
 
-    state["output_path"] = csv_path
-    print(f"Saved recommendations CSV to: {csv_path}")
-    print(f"Saved full text report to MongoDB (session: {session_id})")
     return state
 
 

@@ -7,7 +7,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from config import LANDMARK_NAMES, CSV_OUTPUT_DIR, ANNOTATED_VIDEO_DIR
+from config import LANDMARK_NAMES, CSV_OUTPUT_DIR, ANNOTATED_VIDEO_DIR, ANNOTATED_IMAGES_DIR
 
 
 def choose_input_source_interactively():
@@ -106,6 +106,18 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
         fourcc = cv2.VideoWriter_fourcc(*"avc1")
         video_writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
 
+    # --- Setup Key Moment Capture ---
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    key_frame_indices = []
+    if total_frames > 0:
+        key_frame_indices = [0, total_frames // 4, total_frames // 2, total_frames * 3 // 4]
+    elif not is_webcam:
+        # Fallback if frame count is missing but it's a file
+        key_frame_indices = [0, 30, 60, 90]
+        
+    os.makedirs(ANNOTATED_IMAGES_DIR, exist_ok=True)
+    key_image_paths = []
+
     all_frames_data = []  # this list holds one dict per frame -> becomes the CSV rows
     frame_number = 0
 
@@ -185,6 +197,12 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
         if save_annotated_video:
             video_writer.write(frame)
 
+        # Save key moment images
+        if frame_number in key_frame_indices and len(key_image_paths) < 4:
+            img_path = os.path.join(ANNOTATED_IMAGES_DIR, f"{video_name}_frame_{frame_number}.jpg")
+            cv2.imwrite(img_path, frame)
+            key_image_paths.append(img_path)
+
         # Show a live preview window (useful for webcam, harmless for files too)
         cv2.imshow("Pose Extraction - press 'q' to stop", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -201,10 +219,11 @@ def extract_landmarks_from_video(source, is_webcam: bool = False, save_annotated
     pose.close()
 
     print(f"Finished processing. Total frames: {frame_number}")
-    return all_frames_data
+    
+    return all_frames_data, key_image_paths
 
 
-def save_to_csv(frames_data, source, is_webcam: bool = False, video_name: str = None):
+def save_to_csv(frames_data: list, source: str, is_webcam: bool = False, video_name: str = None) -> str:
     """Converts the collected list of frame dicts into a CSV file."""
     os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
     
