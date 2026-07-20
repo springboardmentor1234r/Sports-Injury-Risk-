@@ -26,16 +26,30 @@ except ImportError:
 
 
 def get_db_connection():
-    """Establishes and returns a connection to the MongoDB database."""
+    """Establishes and returns a connection to the MongoDB database.
+    Tries localhost first, then falls back to Atlas if local fails."""
+    local_uri = "mongodb://localhost:27017/"
+    local_db_name = "sports_injury_db"
+    
     try:
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        # Force a call to the server to verify connection
+        # Try local first with a short timeout
+        client = MongoClient(local_uri, serverSelectionTimeoutMS=2000)
         client.admin.command('ping')
-        return client[MONGO_DB_NAME]
-    except ConnectionFailure:
-        print(f"\nERROR: Could not connect to MongoDB at {MONGO_URI}.")
-        print("Please make sure MongoDB is running (e.g., via MongoDB Compass or Docker).")
-        sys.exit(1)
+        print(f"Successfully connected to Local MongoDB -> {local_db_name}")
+        return client[local_db_name]
+    except Exception:
+        print(f"Local MongoDB not found at {local_uri}. Falling back to MongoDB Atlas...")
+        
+        try:
+            # Fallback to Atlas
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            client.admin.command('ping')
+            print(f"Successfully connected to MongoDB Atlas -> {MONGO_DB_NAME}")
+            return client[MONGO_DB_NAME]
+        except Exception as e:
+            print(f"\nERROR: Could not connect to MongoDB Atlas at {MONGO_URI}.")
+            print(f"Reason: {e}")
+            sys.exit(1)
 
 
 def generate_session_id() -> str:
