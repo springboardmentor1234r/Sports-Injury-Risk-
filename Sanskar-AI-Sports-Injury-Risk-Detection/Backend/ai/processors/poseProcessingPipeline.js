@@ -7,6 +7,8 @@ import detectPose from '../services/poseDetector.js';
 import serializePoseLandmarks from '../utils/poseLandmarkSerializer.js';
 import calculateJointAngles from '../utils/jointAngleCalculator.js';
 import analyzeMovement, { calculateAnalysisQuality, roundJointAngles } from '../utils/movementAnalysis.js';
+import predictInjuryRisk from '../utils/injuryRiskPrediction.js';
+import generateExerciseRecommendations from '../recommendations/exerciseRecommendation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,9 +54,14 @@ const processVideoPose = async (videoPath) => {
       });
     }
 
+    const riskPrediction = predictInjuryRisk({ frames: frameResults });
+    const exerciseRecommendations = generateExerciseRecommendations(riskPrediction);
+
     return {
       frameCount: frameResults.length,
       frames: frameResults,
+      riskPrediction,
+      exerciseRecommendations,
     };
   } finally {
     cleanupExtractedFrames(outputDir);
