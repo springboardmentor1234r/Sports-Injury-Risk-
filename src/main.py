@@ -43,7 +43,7 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
         from pose_extractor import extract_landmarks_from_video, save_to_csv
         print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor (API/File)...{Colors.ENDC}")
         video_name = video_name or os.path.splitext(os.path.basename(source_path))[0]
-        frames_data = extract_landmarks_from_video(source_path, is_webcam=False, save_annotated_video=True, video_name=video_name)
+        frames_data, key_image_paths = extract_landmarks_from_video(source_path, is_webcam=False, save_annotated_video=True, video_name=video_name)
         save_to_csv(frames_data, source_path, is_webcam=False, video_name=video_name)
     elif not video_name:
         from pose_extractor import choose_input_source_interactively, extract_landmarks_from_video, save_to_csv
@@ -52,7 +52,7 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
         print(f"\n{Colors.BLUE}Step 1: Running Pose Extractor...{Colors.ENDC}")
         source, is_webcam = choose_input_source_interactively()
         video_name = "webcam_session" if is_webcam else os.path.splitext(os.path.basename(source))[0]
-        frames_data = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True, video_name=video_name)
+        frames_data, key_image_paths = extract_landmarks_from_video(source, is_webcam=is_webcam, save_annotated_video=True, video_name=video_name)
         save_to_csv(frames_data, source, is_webcam=is_webcam, video_name=video_name)
         
     print(f"\n{Colors.BLUE}Step 2: Running Biomechanics Analyzer...{Colors.ENDC}")
@@ -88,9 +88,33 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
             print("Could not import Cloudinary modules. Skipping upload.")
 
     # ==========================================
+    # KEY MOMENTS IMAGES (BASE64)
+    # ==========================================
+    if 'key_image_paths' in locals() and key_image_paths:
+        import base64
+        key_moments_b64 = []
+        print(f"\n{Colors.BLUE}Encoding Key Moment Images to Base64...{Colors.ENDC}")
+        for img_path in key_image_paths:
+            if os.path.exists(img_path):
+                try:
+                    with open(img_path, "rb") as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                        key_moments_b64.append(encoded_string)
+                except Exception as e:
+                    print(f"Error encoding {img_path}: {e}")
+        
+        if key_moments_b64:
+            try:
+                from database.mongo_utils import update_session_key_moments
+                update_session_key_moments(session_id, key_moments_b64)
+                print(f"{Colors.GREEN}Successfully stored {len(key_moments_b64)} key moments in MongoDB.{Colors.ENDC}")
+            except Exception as e:
+                print(f"Error storing key moments in DB: {e}")
+
+    # ==========================================
     # CSV CLEANUP
     # ==========================================
-    from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, ANNOTATED_VIDEO_DIR, RISK_SCORE_OUTPUT_DIR
+    from config import CSV_OUTPUT_DIR, SUMMARY_OUTPUT_DIR, ANNOTATED_VIDEO_DIR, RISK_SCORE_OUTPUT_DIR, ANNOTATED_IMAGES_DIR
     
     landmarks_csv = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_landmarks.csv")
     biomechanics_csv = os.path.join(CSV_OUTPUT_DIR, f"{video_name}_biomechanics.csv")
@@ -98,16 +122,27 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
     risk_score_csv = os.path.join(RISK_SCORE_OUTPUT_DIR, f"{video_name}_risk_score.csv")
     annotated_video = os.path.join(ANNOTATED_VIDEO_DIR, f"{video_name}_annotated.mp4")
     
-    files_to_delete = [landmarks_csv, biomechanics_csv, summary_csv, risk_score_csv, annotated_video]
-    deleted_count = 0
-    for file_path in files_to_delete:
-        if os.path.exists(file_path):
-            try:
+    print(f"\n{Colors.BLUE}Cleaning up local files...{Colors.ENDC}")
+    for file_path in [landmarks_csv, biomechanics_csv, summary_csv, risk_score_csv, annotated_video]:
+        try:
+            if os.path.exists(file_path):
                 os.remove(file_path)
-                deleted_count += 1
-            except Exception as e:
-                print(f"Warning: Could not delete {file_path}: {e}")
-                
+                print(f"Deleted {os.path.basename(file_path)}")
+        except Exception as e:
+            print(f"Failed to delete {file_path}: {e}")
+
+    # Delete key moment images — use glob as a safety net in case key_image_paths wasn't populated
+    import glob
+    img_pattern = os.path.join(ANNOTATED_IMAGES_DIR, f"{video_name}_frame_*.jpg")
+    for img_path in glob.glob(img_pattern):
+        try:
+            os.remove(img_path)
+            print(f"Deleted {os.path.basename(img_path)}")
+        except Exception as e:
+            print(f"Failed to delete {img_path}: {e}")
+
+    print(f"\n{Colors.BOLD}{Colors.GREEN}Pipeline complete!{Colors.ENDC}")
+    
     # Safely try to remove empty directories
     directories_to_check = [SUMMARY_OUTPUT_DIR, CSV_OUTPUT_DIR]
     for directory in directories_to_check:
@@ -116,9 +151,6 @@ def run_pipeline(athlete_id: str, video_name: str = None, source_path: str = Non
                 os.rmdir(directory)
             except OSError:
                 pass # Directory not empty, which is fine
-
-    if deleted_count > 0:
-        print(f"Cleaned up {deleted_count} temporary CSV files and empty folders. Permanent records saved to MongoDB.")
 
     # Return summary data for the API
     return {
