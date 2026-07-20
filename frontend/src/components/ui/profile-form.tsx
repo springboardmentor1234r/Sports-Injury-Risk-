@@ -29,7 +29,7 @@ export const ProfileForm = ({ token, onProfileSaved }: ProfileFormProps) => {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
-                const res = await fetch('http://localhost:8000/api/profile', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -49,7 +49,7 @@ export const ProfileForm = ({ token, onProfileSaved }: ProfileFormProps) => {
                 }
 
                 // Fetch latest session for risk score
-                const historyRes = await fetch('http://localhost:8000/api/sessions/history', {
+                const historyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (historyRes.ok) {
@@ -77,7 +77,7 @@ export const ProfileForm = ({ token, onProfileSaved }: ProfileFormProps) => {
         setSuccess(false);
 
         try {
-            const res = await fetch('http://localhost:8000/api/profile', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

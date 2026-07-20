@@ -45,7 +45,7 @@ export const MinimalProfessionalCard: React.FC<MoveIQDashboardProps> = ({
         if (!token) return;
         const fetchHistory = async () => {
             try {
-                const res = await fetch('http://localhost:8000/api/sessions/history', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -80,7 +80,7 @@ export const MinimalProfessionalCard: React.FC<MoveIQDashboardProps> = ({
         if (!sessionId) return;
         setIsFetchingAnalytics(true);
         try {
-            const sessionRes = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+            const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!sessionRes.ok) throw new Error('Failed to fetch session details');
@@ -130,13 +130,13 @@ export const MinimalProfessionalCard: React.FC<MoveIQDashboardProps> = ({
 
         try {
             // 1. Generate recommendations if they don't exist yet
-            await fetch(`http://localhost:8000/api/recommendations/${sessionId}/generate`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/recommendations/${sessionId}/generate`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             // 2. Fetch the generated recommendations
-            const res = await fetch(`http://localhost:8000/api/recommendations/${sessionId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/recommendations/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();

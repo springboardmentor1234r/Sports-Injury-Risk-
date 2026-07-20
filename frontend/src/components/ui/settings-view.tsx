@@ -68,7 +68,7 @@ export const SettingsView = ({ token, user, onUserUpdate }: SettingsViewProps) =
     setAccountLoading(true);
     setAccountStatus(null);
     try {
-      const res = await fetch('http://localhost:8000/api/auth/account', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/account`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export const SettingsView = ({ token, user, onUserUpdate }: SettingsViewProps) =
     try {
       if (isForgotMode && otpSent) {
         // Handle Reset with OTP
-        const res = await fetch('http://localhost:8000/api/auth/reset-password', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/reset-password`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export const SettingsView = ({ token, user, onUserUpdate }: SettingsViewProps) =
         setOtpSent(false);
       } else {
         // Handle Normal Change Password
-        const res = await fetch('http://localhost:8000/api/auth/password', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/password`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export const SettingsView = ({ token, user, onUserUpdate }: SettingsViewProps) =
     setSecurityLoading(true);
     setSecurityStatus(null);
     try {
-      const res = await fetch('http://localhost:8000/api/auth/forgot-password', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })

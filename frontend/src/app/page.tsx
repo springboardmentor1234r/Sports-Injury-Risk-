@@ -42,7 +42,7 @@ export default function Home() {
   async function checkProfileStatus(authToken: string) {
     setIsCheckingProfile(true);
     try {
-      const res = await fetch("http://localhost:8000/api/profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       if (res.ok) {
@@ -93,7 +93,7 @@ export default function Home() {
 
   const handleOpenSession = async (sessionId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/${sessionId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

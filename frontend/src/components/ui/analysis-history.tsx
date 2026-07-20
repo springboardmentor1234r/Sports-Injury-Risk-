@@ -15,7 +15,7 @@ export const AnalysisHistory = ({ token, onOpenSession }: AnalysisHistoryProps) 
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await fetch('http://localhost:8000/api/sessions/history', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch history');
@@ -34,7 +34,7 @@ export const AnalysisHistory = ({ token, onOpenSession }: AnalysisHistoryProps) 
         if (!confirm("Are you sure you want to delete this session? This action cannot be undone.")) return;
         
         try {
-            const res = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/${sessionId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

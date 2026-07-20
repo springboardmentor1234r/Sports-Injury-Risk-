@@ -19,7 +19,7 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
     useEffect(() => {
         const fetchSessions = async () => {
             try {
-                const res = await fetch('http://localhost:8000/api/sessions/history', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch sessions');
@@ -38,14 +38,14 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
         setIsDownloading(sessionId);
         try {
             // 1. Fetch full session data (which includes key_moments Base64 strings)
-            const sessionRes = await fetch(`http://localhost:8000/api/sessions/${sessionId}`, {
+            const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!sessionRes.ok) throw new Error('Failed to fetch session details');
             const sessionData = await sessionRes.json();
 
             // 2. Fetch recommendation text
-            const recRes = await fetch(`http://localhost:8000/api/recommendations/${sessionId}`, {
+            const recRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/recommendations/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const recData = await recRes.json();
@@ -64,7 +64,7 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
                 const prevSessionSummary = sessions[sessionIndex + 1];
                 
                 // Fetch full details of previous session
-                const prevRes = await fetch(`http://localhost:8000/api/sessions/${prevSessionSummary.session_id}`, {
+                const prevRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/${prevSessionSummary.session_id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (prevRes.ok) {
@@ -73,13 +73,13 @@ export const ReportsView = ({ token }: ReportsViewProps) => {
             }
 
             // Also fetch athlete profile
-            const profileRes = await fetch('http://localhost:8000/api/profile/', {
+            const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const athleteProfile = profileRes.ok ? await profileRes.json() : null;
 
             // Fetch real full name from MySQL via /api/auth/me
-            const meRes = await fetch('http://localhost:8000/api/auth/me', {
+            const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const meData = meRes.ok ? await meRes.json() : null;

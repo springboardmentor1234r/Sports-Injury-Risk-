@@ -121,7 +121,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ token, onUploadSucce
         formData.append('custom_name', customName.trim());
       }
 
-      const response = await fetch('http://localhost:8000/api/sessions/upload-and-analyze', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sessions/upload-and-analyze`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

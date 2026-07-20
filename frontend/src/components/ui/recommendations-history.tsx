@@ -20,7 +20,7 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await fetch('http://localhost:8000/api/recommendations/history', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/recommendations/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch recommendations history');
@@ -42,7 +42,7 @@ export const RecommendationsHistory = ({ token }: RecommendationsHistoryProps) =
         setActiveSession(sessionItem);
         
         try {
-            const res = await fetch(`http://localhost:8000/api/recommendations/${sessionItem.session_id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/recommendations/${sessionItem.session_id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
