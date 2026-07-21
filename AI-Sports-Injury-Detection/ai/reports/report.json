@@ -1,4 +1,13 @@
 {
+    "Athlete": {
+        "name": "Lakshmi Gayathri",
+        "age": 20,
+        "gender": "Female",
+        "sport": "Football",
+        "position": "Forward",
+        "height_cm": 165,
+        "weight_kg": 58
+    },
     "Frames Analysed": 484,
     "Left Knee": {
         "Maximum": 176.17391672943384,

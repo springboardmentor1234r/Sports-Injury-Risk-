@@ -1,4 +1,6 @@
 const Video=require("../models/video");
+const { exec }=require("child_process");
+const path=require("path");
 const uploadVideo=async(req,res)=>{
     try{
         const {athlete,sport}=req.body;
@@ -17,6 +19,51 @@ const uploadVideo=async(req,res)=>{
             sport,
             status:"Uploaded",
         });
+
+        const aiPath=path.json(__dirname,"../../ai");
+        exec(
+            "Python utils/pose_detector.py",
+            { cwd :aiPath },
+            async(error,stdout,stderr)=>{
+                if(error){
+                    console.log(error);
+                    return res.status(500).json({
+                        success:false,
+                        message:"AI analysis failed"
+                    });
+                }
+                console.log(stdout);
+                video.status="Completed";
+
+                await video.save();
+                return res.status(201).json({
+                    success:true,
+                    message:"Video uploaded and analyzed successfully",
+                    video,
+                    results:{
+                        reportJson:
+                           "/reports/report.json",
+
+                        reportTxt:
+                            "/outputs/report.txt",
+
+                        graph:
+                            "/outputs/knee_angles_graph.png",
+
+                        analyzedVideo:
+                            "/outputs/output_video.mp4"
+   
+                    }
+
+
+                })
+            }
+        );
+
+
+
+
+
         return res.status(201).json({
             success:true,
             message:"Video uploaded succesfully",

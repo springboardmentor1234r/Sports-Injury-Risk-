@@ -1,16 +1,44 @@
 ===== AI Sports Injury Report =====
 
+Athlete Details
+-------------------------
+Name      : Lakshmi Gayathri
+Age       : 20
+Gender    : Female
+Sport     : Football
+Position  : Forward
+Height    : 165 cm
+Weight    : 58 kg
+
 Joint Angles
 -------------------------
 Left Elbow: 125°
 Right Elbow: 52°
 Left Knee: 118°
 Right Knee: 167°
+Left Hip: 150°
+Right Hip: 171°
 
 Risk Score: 0%
+
+Movement Score: 60/100
+Movement Quality: Fair
+
+Symmetry Analysis
+-------------------------
+Knee Difference : 49.3°
+Knee Status     : High Imbalance
+Elbow Difference: 73.9°
+Elbow Status    : High Imbalance
 
 Warnings
 -------------------------
 [MEDIUM] Moderate Knee Risk
 
 ===============================
+
+Recommendations
+-------------------------
+- Low injury risk. Continue current training.
+- Improve lower-limb balance.
+- Improve upper-body coordination.
