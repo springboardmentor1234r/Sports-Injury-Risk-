@@ -24,32 +24,35 @@ except ImportError:
     if not MONGO_URI or not MONGO_DB_NAME:
         raise ValueError("Missing MONGO_URI or MONGO_DB_NAME in your .env file!")
 
+USE_LOCAL_DB = os.getenv("USE_LOCAL_DB", "false").lower() == "true"
 
 def get_db_connection():
     """Establishes and returns a connection to the MongoDB database.
-    Tries localhost first, then falls back to Atlas if local fails."""
-    local_uri = "mongodb://localhost:27017/"
-    local_db_name = "sports_injury_db"
+    Tries localhost first if USE_LOCAL_DB=true, otherwise uses Atlas."""
     
-    try:
-        # Try local first with a short timeout
-        client = MongoClient(local_uri, serverSelectionTimeoutMS=2000)
-        client.admin.command('ping')
-        print(f"Successfully connected to Local MongoDB -> {local_db_name}")
-        return client[local_db_name]
-    except Exception:
-        print(f"Local MongoDB not found at {local_uri}. Falling back to MongoDB Atlas...")
+    if USE_LOCAL_DB:
+        local_uri = "mongodb://localhost:27017/"
+        local_db_name = "sports_injury_db"
         
         try:
-            # Fallback to Atlas
-            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            # Try local first with a short timeout
+            client = MongoClient(local_uri, serverSelectionTimeoutMS=2000)
             client.admin.command('ping')
-            print(f"Successfully connected to MongoDB Atlas -> {MONGO_DB_NAME}")
-            return client[MONGO_DB_NAME]
-        except Exception as e:
-            print(f"\nERROR: Could not connect to MongoDB Atlas at {MONGO_URI}.")
-            print(f"Reason: {e}")
-            sys.exit(1)
+            print(f"Successfully connected to Local MongoDB -> {local_db_name}")
+            return client[local_db_name]
+        except Exception:
+            print(f"Local MongoDB not found at {local_uri}. Falling back to MongoDB Atlas...")
+    
+    try:
+        # Connect to Atlas
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        client.admin.command('ping')
+        print(f"Successfully connected to MongoDB Atlas -> {MONGO_DB_NAME}")
+        return client[MONGO_DB_NAME]
+    except Exception as e:
+        print(f"\nERROR: Could not connect to MongoDB Atlas at {MONGO_URI}.")
+        print(f"Reason: {e}")
+        sys.exit(1)
 
 
 def generate_session_id() -> str:
