@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.mongo_utils import get_db_connection
-from api.auth.mysql_auth import get_connection
+from api.auth import get_connection, USE_LOCAL_DB
 
 # Import routers
 from api.routers.auth_router import router as auth_router
@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Enable CORS for the Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://move-iq-theta.vercel.app"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,16 +46,19 @@ def health_check():
     Health check endpoint.
     Verifies that both MySQL and MongoDB connections are alive.
     """
-    status = {"status": "ok", "mysql": "disconnected", "mongodb": "disconnected"}
+    status = {"status": "ok", "sql": "disconnected", "mongodb": "disconnected"}
+    status["sql_type"] = "MySQL (Local)" if USE_LOCAL_DB else "PostgreSQL (Supabase)"
     
-    # Check MySQL
+    # Check SQL
     try:
         conn = get_connection()
         if conn:
-            status["mysql"] = "connected"
-            conn.close()
+            status["sql"] = "connected"
+            # postgres uses close() and mysql uses close() but checking helps
+            if hasattr(conn, "close"):
+                conn.close()
     except Exception as e:
-        status["mysql_error"] = str(e)
+        status["sql_error"] = str(e)
         
     # Check MongoDB
     try:

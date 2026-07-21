@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from typing import Dict, Any
-from api.auth.mysql_auth import create_user, get_user_by_email, get_user_roles, assign_role
+from api.auth import create_user, get_user_by_email, get_user_roles, assign_role
 from api.auth.password_utils import hash_password, verify_password, validate_password
 from api.auth.jwt_handler import create_access_token
 from api.dependencies import get_current_user
@@ -139,7 +139,7 @@ def reset_password_route(req: ResetPasswordRequest):
         raise HTTPException(status_code=400, detail=msg)
         
     # Update password
-    from api.auth.mysql_auth import update_user_password
+    from api.auth import update_user_password
     hashed_pwd = hash_password(req.new_password)
     if not update_user_password(db_user["id"], hashed_pwd):
         raise HTTPException(status_code=500, detail="Failed to update password")
@@ -151,7 +151,7 @@ def reset_password_route(req: ResetPasswordRequest):
 
 @router.get("/me")
 def get_me(current_user: Dict[str, Any] = Depends(get_current_user)):
-    from api.auth.mysql_auth import get_user_by_id
+    from api.auth import get_user_by_id
     db_user = get_user_by_id(int(current_user["user_id"]))
     full_name = db_user["full_name"] if db_user else None
     return {
@@ -167,7 +167,7 @@ class AccountUpdate(BaseModel):
 
 @router.put("/account")
 def update_account(account: AccountUpdate, current_user: Dict[str, Any] = Depends(get_current_user)):
-    from api.auth.mysql_auth import update_user_account, get_user_by_email
+    from api.auth import update_user_account, get_user_by_email
     
     # Check if they are changing email and if the new email is already taken
     if account.email != current_user["email"]:
@@ -187,7 +187,7 @@ class PasswordUpdate(BaseModel):
 
 @router.put("/password")
 def update_password(passwords: PasswordUpdate, current_user: Dict[str, Any] = Depends(get_current_user)):
-    from api.auth.mysql_auth import get_user_by_id, update_user_password
+    from api.auth import get_user_by_id, update_user_password
     from api.auth.password_utils import hash_password, verify_password
     
     db_user = get_user_by_id(current_user["user_id"])

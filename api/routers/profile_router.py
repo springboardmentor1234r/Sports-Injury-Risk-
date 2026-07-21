@@ -31,7 +31,7 @@ def save_athlete_profile(athlete_id: str, profile_data: dict):
         upsert=True
     )
 
-@router.get("/")
+@router.get("")
 def get_profile(current_user: Dict[str, Any] = Depends(get_current_user)):
     athlete_id = current_user["user_id"]
     profile = get_athlete_profile(athlete_id)
@@ -40,8 +40,8 @@ def get_profile(current_user: Dict[str, Any] = Depends(get_current_user)):
         profile["_id"] = str(profile["_id"])
     return profile
 
-@router.post("/")
-@router.put("/")
+@router.post("")
+@router.put("")
 def update_profile(
     profile: AthleteProfileUpdate, 
     current_user: Dict[str, Any] = Depends(get_current_user)
