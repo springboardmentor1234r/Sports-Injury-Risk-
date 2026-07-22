@@ -229,6 +229,26 @@ The uploaded video passes through the following stages:
 
 ---
 
+## Screenshots
+
+### API Documentation
+
+![Swagger](docs/images/swagger_api.png)
+
+### Processed Video
+
+![Processed Video](docs/images/processed_video_output.png)
+
+### JSON Report
+
+![JSON Report](docs/images/json_report.png)
+
+### System Workflow
+
+![Architecture](docs/images/architecture.png)
+
+---
+
 ## Current Capabilities
 
 - Upload athlete videos
