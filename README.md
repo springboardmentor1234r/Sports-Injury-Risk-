@@ -1,30 +1,48 @@
 # Sports Injury Risk Detection from Video
 
-## Project Overview
-
-Sports Injury Risk Detection from Video is a computer vision application developed to analyze an athlete's movement using pose estimation techniques. The system processes uploaded videos, detects human body landmarks, calculates important joint angles, evaluates movement quality, estimates injury risk, and generates an analysis report.
-
-The project is built using FastAPI for the backend, OpenCV for video processing, and MediaPipe Pose for human pose estimation.
+A computer vision–based application developed as part of the **Infosys Springboard Virtual Internship**. The system analyzes an athlete's movement from an uploaded video using **MediaPipe Pose** and **OpenCV**, calculates biomechanical joint angles, evaluates movement quality, predicts potential injury risks, detects movement anomalies, generates personalized recommendations, and provides a dashboard-ready analysis through REST APIs built with **FastAPI**.
 
 ---
 
-## Objectives
+# Project Overview
 
-- Analyze athlete movements from uploaded videos.
-- Detect human body landmarks using pose estimation.
-- Calculate biomechanical joint angles.
-- Assess movement quality using rule-based analysis.
-- Estimate injury risk based on joint angle thresholds.
-- Generate processed videos and structured analysis reports.
+Sports injuries often result from poor movement mechanics, incorrect posture, or repetitive motion. This project aims to assist athletes and coaches by automatically analyzing movement videos and identifying possible injury risks.
+
+The application processes uploaded videos frame by frame, detects body landmarks, calculates joint angles, performs movement analysis, predicts injury risks using rule-based logic, and generates structured reports that can be integrated into future web dashboards.
 
 ---
 
-## Features
+# Objectives
 
+- Analyze athlete movements from uploaded videos
+- Detect human body landmarks using MediaPipe Pose
+- Calculate biomechanical joint angles
+- Evaluate movement quality
+- Predict potential injury risks
+- Detect movement anomalies
+- Generate personalized corrective recommendations
+- Calculate an overall movement risk score
+- Generate structured JSON reports
+- Provide REST APIs for frontend integration
+
+---
+
+# Project Features
+
+## Milestone 1
+
+- FastAPI backend setup
+- User registration
 - User authentication
-- Athlete management
+- Athlete management APIs
+- Swagger API documentation
+
+---
+
+## Milestone 2
+
 - Video upload API
-- Video processing using OpenCV
+- OpenCV video processing
 - Human pose detection using MediaPipe
 - Joint angle calculation
 - Average joint angle computation
@@ -35,54 +53,66 @@ The project is built using FastAPI for the backend, OpenCV for video processing,
 
 ---
 
-## Technology Stack
+## Milestone 3
 
-### Backend
-
-- Python 3.11
-- FastAPI
-- Uvicorn
-
-### Computer Vision
-
-- OpenCV
-- MediaPipe Pose
-
-### Utilities
-
-- NumPy
-- JSON
-- Git
-- GitHub
+- Injury Risk Prediction Engine
+- Movement Anomaly Detection
+- Risk Scoring Model
+- Corrective Recommendation Engine
+- Athlete Intelligence Dashboard API
 
 ---
 
-## Project Structure
+# Technology Stack
 
-```
+| Category | Technologies |
+|-----------|--------------|
+| Programming Language | Python 3.11 |
+| Backend Framework | FastAPI |
+| Server | Uvicorn |
+| Computer Vision | OpenCV |
+| Pose Estimation | MediaPipe Pose |
+| Numerical Computing | NumPy |
+| Data Format | JSON |
+| Version Control | Git |
+| Repository | GitHub |
+
+---
+
+# Project Structure
+
+```text
 Sports-Injury-Risk-/
 │
 ├── backend/
+│
 │   ├── main.py
 │   ├── requirements.txt
+│
+│   ├── models/
+│   │     └── athlete.py
 │   │
 │   ├── routes/
-│   │   ├── auth_routes.py
-│   │   ├── athlete_routes.py
-│   │   └── video_routes.py
+│   │     ├── auth_routes.py
+│   │     ├── athlete_routes.py
+│   │     ├── video_routes.py
+│   │     └── dashboard_routes.py
 │   │
 │   ├── services/
-│   │   ├── pose_service.py
-│   │   ├── angle_service.py
-│   │   ├── risk_service.py
-│   │   └── report_service.py
-│   │
-│   ├── models/
-│   │   └── athlete.py
+│   │     ├── pose_service.py
+│   │     ├── angle_service.py
+│   │     ├── risk_service.py
+│   │     ├── prediction_service.py
+│   │     ├── anomaly_service.py
+│   │     ├── scoring_service.py
+│   │     ├── recommendation_service.py
+│   │     └── report_service.py
 │   │
 │   ├── uploads/
-│   │
-│   └── utils/
+│   ├── utils/
+│
+├── docs/
+│   └── images/
 │
 ├── README.md
 └── LICENSE
@@ -90,10 +120,13 @@ Sports-Injury-Risk-/
 
 ---
 
-## System Workflow
+# System Workflow
 
-```
-Video Upload
+```text
+Athlete Video
+      │
+      ▼
+Video Upload API
       │
       ▼
 OpenCV Video Processing
@@ -105,131 +138,187 @@ MediaPipe Pose Detection
 Joint Angle Calculation
       │
       ▼
-Movement Analysis
+Movement Quality Analysis
       │
       ▼
-Injury Risk Assessment
+Injury Risk Prediction
+      │
+      ▼
+Movement Anomaly Detection
+      │
+      ▼
+Risk Scoring
+      │
+      ▼
+Corrective Recommendation Engine
       │
       ▼
 JSON Report Generation
+      │
+      ▼
+Athlete Intelligence Dashboard API
 ```
 
 ---
 
-## Installation
+# System Architecture
 
-### Clone the Repository
+![System Architecture](docs/images/architecture.png)
+
+---
+
+# Installation
+
+## Clone the Repository
 
 ```bash
 git clone https://github.com/springboardmentor1234r/Sports-Injury-Risk-.git
 ```
 
-### Navigate to the Project
+## Navigate to the Backend
 
 ```bash
 cd Sports-Injury-Risk-/backend
 ```
 
-### Create a Conda Environment
+## Create a Conda Environment
 
 ```bash
 conda create -n sports-injury python=3.11
 ```
 
-### Activate the Environment
+## Activate the Environment
 
 ```bash
 conda activate sports-injury
 ```
 
-### Install Dependencies
+## Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run the Application
+## Run the Application
 
 ```bash
 python -m uvicorn main:app --reload
 ```
 
-Open the API documentation:
+Open Swagger API documentation:
 
-```
+```text
 http://127.0.0.1:8000/docs
 ```
 
 ---
 
-## API Endpoints
+# API Endpoints
 
-### Authentication
+## General
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/` | Home API |
+| GET | `/about` | Project information |
+| GET | `/health` | Server health status |
+
+---
+
+## Authentication
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
 | POST | `/register` | Register a new user |
 | POST | `/login` | User authentication |
 
-### Athlete Management
+---
+
+## Athlete Management
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/athletes` | Retrieve athletes |
+| GET | `/athletes` | Retrieve athlete details |
 | POST | `/athletes` | Add a new athlete |
 
-### Video Analysis
+---
+
+## Video Analysis
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/upload-video` | Upload and analyze a video |
+| POST | `/upload-video` | Upload and analyze athlete video |
 
 ---
 
-## Processing Pipeline
+## Dashboard
 
-The uploaded video passes through the following stages:
-
-1. Upload video.
-2. Read video using OpenCV.
-3. Detect human pose landmarks using MediaPipe.
-4. Calculate elbow, knee, and hip joint angles.
-5. Compute average joint angles across the video.
-6. Analyze movement quality.
-7. Estimate injury risk.
-8. Generate a processed video with pose annotations.
-9. Generate a JSON analysis report.
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/dashboard` | Athlete intelligence dashboard |
 
 ---
 
-## Sample API Response
+# Processing Pipeline
+
+The uploaded athlete video passes through the following stages:
+
+1. Upload video
+2. Read video using OpenCV
+3. Detect body landmarks using MediaPipe Pose
+4. Calculate elbow, knee, and hip joint angles
+5. Compute average joint angles
+6. Analyze movement quality
+7. Predict injury risks
+8. Detect movement anomalies
+9. Calculate overall movement risk score
+10. Generate personalized recommendations
+11. Generate processed video
+12. Generate JSON report
+13. Display dashboard-ready analysis
+
+---
+
+# Sample API Response
 
 ```json
 {
     "message": "Video uploaded successfully",
-    "filename": "person_walking.mp4",
-    "processed_video": "uploads/processed_person_walking.mp4",
-    "video_info": {
-        "width": 768,
-        "height": 432,
-        "fps": 23.98,
-        "total_frames": 164,
-        "duration_seconds": 6.84
-    },
     "joint_angles": {
-        "left_elbow": 169.69,
-        "left_knee": 159.29,
-        "left_hip": 167.00
+        "left_elbow": 166.74,
+        "left_knee": 168.58,
+        "left_hip": 172.74
     },
-    "movement_analysis": "Stable posture detected with acceptable joint alignment.",
-    "injury_risk": "Low",
+    "movement_analysis": "Good",
+    "injury_prediction": {
+        "acl_risk": "Low",
+        "hamstring_risk": "Low",
+        "ankle_sprain_risk": "Low",
+        "shoulder_risk": "Low",
+        "lower_back_risk": "Low"
+    },
+    "movement_anomalies": [
+        {
+            "joint": "Overall",
+            "severity": "None",
+            "issue": "No significant movement anomalies detected",
+            "recommendation": "Maintain current movement pattern."
+        }
+    ],
+    "risk_score": {
+        "overall_score": 100,
+        "risk_level": "Low"
+    },
+    "recommendations": [
+        "Excellent movement pattern. Continue your current training routine and maintain proper warm-up and stretching."
+    ],
     "report": "uploads/person_walking_report.json"
 }
 ```
 
 ---
 
-## Screenshots
+# Project Screenshots
 
 ### API Documentation
 
@@ -249,47 +338,41 @@ The uploaded video passes through the following stages:
 
 ---
 
-## Current Capabilities
+# Current Capabilities
 
-- Upload athlete videos
-- Detect body landmarks
-- Calculate joint angles
-- Display pose skeleton on processed video
-- Overlay joint angles on processed video
-- Compute average joint angles
-- Perform movement quality analysis
-- Estimate injury risk
-- Generate JSON reports
-
----
-
-## Milestone 3 Features
-
-- Injury Risk Prediction Engine
-- Movement Anomaly Detection
-- Risk Scoring Model
-- Corrective Recommendation Engine
-- Athlete Intelligence Dashboard
-- JSON Report Generation
+- Athlete management
+- User authentication
+- Video upload and processing
+- Pose estimation
+- Joint angle calculation
+- Movement quality analysis
+- Injury risk prediction
+- Movement anomaly detection
+- Risk scoring
+- Personalized recommendations
+- Dashboard API
+- JSON report generation
 
 ---
 
-## Future Enhancements
+# Future Enhancements
 
 - Machine Learning–based injury prediction
-- Deep learning pose analysis
-- Multi-athlete tracking
+- Deep Learning pose estimation
 - Real-time webcam analysis
+- Athlete performance history
 - Exercise recognition
-- Historical performance tracking
-- Interactive dashboard
+- React frontend dashboard
+- JWT authentication
+- Database integration
+- Docker support
+- Cloud deployment
 - PDF report generation
 - Performance analytics
-- Coach and athlete management portal
 
 ---
 
-## Developer
+# Developer
 
 **Sejal Chintala**
 
@@ -297,10 +380,20 @@ Bachelor of Technology (Computer Science and Engineering – AIML)
 
 Gandhi Institute of Technology
 
-Infosys Springboard Virtual Internship Project
+Infosys Springboard Virtual Internship
 
 ---
 
-## License
+# Acknowledgements
 
-This project has been developed for educational purposes as part of the Infosys Springboard Virtual Internship.
+- Infosys Springboard
+- FastAPI
+- OpenCV
+- MediaPipe
+- Python Community
+
+---
+
+# License
+
+This project is developed for educational purposes as part of the Infosys Springboard Virtual Internship.
