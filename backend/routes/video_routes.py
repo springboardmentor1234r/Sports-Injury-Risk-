@@ -3,6 +3,8 @@ import shutil
 import os
 import cv2
 from services.pose_service import process_video
+from services.risk_service import assess_risk
+from services.report_service import save_report
 
 router = APIRouter()
 
@@ -24,7 +26,15 @@ async def upload_video(file: UploadFile = File(...)):
         "processed_" + file.filename
     )
 
-    process_video(file_path, output_path)
+    joint_angles = process_video(file_path, output_path)
+    risk_report = assess_risk(joint_angles)
+
+    report_path = save_report(
+        file.filename,
+        joint_angles,
+        risk_report["movement_quality"],
+        risk_report["injury_risk"]
+    )
 
     # Read video information
     cap = cv2.VideoCapture(file_path)
@@ -51,5 +61,8 @@ async def upload_video(file: UploadFile = File(...)):
             "fps": round(fps, 2),
             "total_frames": frame_count,
             "duration_seconds": round(duration, 2)
-        }
+        },
+        "joint_angles": joint_angles,
+        "movement_analysis": risk_report["movement_quality"],
+        "injury_risk": risk_report["injury_risk"]
     }
