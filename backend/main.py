@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from models.athlete import Athlete
 from routes.athlete_routes import router as athlete_router
 from routes.auth_routes import router as auth_router
+from routes.video_routes import router as video_router
 
 app = FastAPI(
     title="Sports Injury Risk Detection API",
@@ -10,6 +11,7 @@ app = FastAPI(
 )
 app.include_router(athlete_router)
 app.include_router(auth_router)
+app.include_router(video_router)
 
 @app.get("/")
 def home():
