@@ -263,6 +263,17 @@ The uploaded video passes through the following stages:
 
 ---
 
+## Milestone 3 Features
+
+- Injury Risk Prediction Engine
+- Movement Anomaly Detection
+- Risk Scoring Model
+- Corrective Recommendation Engine
+- Athlete Intelligence Dashboard
+- JSON Report Generation
+
+---
+
 ## Future Enhancements
 
 - Machine Learning–based injury prediction

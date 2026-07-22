@@ -6,6 +6,9 @@ from services.pose_service import process_video
 from services.risk_service import assess_risk
 from services.report_service import save_report
 from services.prediction_service import predict_injury_risk
+from services.anomaly_service import detect_anomalies
+from services.scoring_service import calculate_risk_score
+from services.recommendation_service import generate_recommendations
 
 router = APIRouter()
 
@@ -30,6 +33,9 @@ async def upload_video(file: UploadFile = File(...)):
     joint_angles = process_video(file_path, output_path)
     risk_report = assess_risk(joint_angles)
     prediction = predict_injury_risk(joint_angles)
+    anomalies = detect_anomalies(joint_angles)
+    risk_score = calculate_risk_score(prediction, anomalies)
+    recommendations = generate_recommendations(prediction, anomalies)
 
     report_path = save_report(
         file.filename,
@@ -67,5 +73,9 @@ async def upload_video(file: UploadFile = File(...)):
         "joint_angles": joint_angles,
         "movement_analysis": risk_report["movement_quality"],
         "injury_prediction": prediction,
-        "injury_risk": risk_report["injury_risk"]
+        "movement_anomalies": anomalies,
+        "risk_score": risk_score,
+        "recommendations": recommendations,
+        "injury_risk": risk_report["injury_risk"],
+        "report": report_path
     }
