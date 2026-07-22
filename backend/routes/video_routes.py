@@ -5,6 +5,7 @@ import cv2
 from services.pose_service import process_video
 from services.risk_service import assess_risk
 from services.report_service import save_report
+from services.prediction_service import predict_injury_risk
 
 router = APIRouter()
 
@@ -28,6 +29,7 @@ async def upload_video(file: UploadFile = File(...)):
 
     joint_angles = process_video(file_path, output_path)
     risk_report = assess_risk(joint_angles)
+    prediction = predict_injury_risk(joint_angles)
 
     report_path = save_report(
         file.filename,
@@ -64,5 +66,6 @@ async def upload_video(file: UploadFile = File(...)):
         },
         "joint_angles": joint_angles,
         "movement_analysis": risk_report["movement_quality"],
+        "injury_prediction": prediction,
         "injury_risk": risk_report["injury_risk"]
     }
