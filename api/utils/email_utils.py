@@ -58,9 +58,9 @@ Welcome to Sports Injury Risk Detection.
 
 To complete your account registration, please verify your email using the OTP below.
 
-━━━━━━━━━━━━━━━━━━
+
         {otp}
-━━━━━━━━━━━━━━━━━━
+
 
 This OTP is valid for 5 minutes.
 

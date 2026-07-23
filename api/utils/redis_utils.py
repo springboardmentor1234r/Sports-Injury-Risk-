@@ -1,19 +1,67 @@
 import os
+import requests
 import redis
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# We assume redis is running locally in docker on the default port
+USE_LOCAL_DB = os.getenv("USE_LOCAL_DB", "false").lower() == "true"
+
+# Local Redis Config
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 
-# Create a connection pool
-pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+# Cloud Upstash Config
+UPSTASH_URL = os.getenv("UPSTASH_REDIS_REST_URL")
+UPSTASH_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
-def get_redis_client():
-    return redis.Redis(connection_pool=pool)
+if USE_LOCAL_DB:
+    # Local Connection Pool
+    pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+    def get_redis_client():
+        return redis.Redis(connection_pool=pool)
+else:
+    # Cloud Upstash Client via REST
+    class UpstashRedisClient:
+        def __init__(self, url: str, token: str):
+            self.url = url
+            self.headers = {"Authorization": f"Bearer {token}"}
+
+        def setex(self, key: str, expiry: int, value: str):
+            res = requests.post(
+                self.url,
+                json=["SETEX", key, int(expiry), str(value)],
+                headers=self.headers
+            )
+            res.raise_for_status()
+            return res.json().get("result")
+
+        def get(self, key: str):
+            res = requests.post(
+                self.url,
+                json=["GET", key],
+                headers=self.headers
+            )
+            res.raise_for_status()
+            return res.json().get("result")
+
+        def delete(self, key: str):
+            res = requests.post(
+                self.url,
+                json=["DEL", key],
+                headers=self.headers
+            )
+            res.raise_for_status()
+            return res.json().get("result")
+
+    _upstash_client = None
+    def get_redis_client():
+        global _upstash_client
+        if _upstash_client is None:
+            _upstash_client = UpstashRedisClient(UPSTASH_URL, UPSTASH_TOKEN)
+        return _upstash_client
+
 
 def store_otp(email: str, otp: str, prefix: str = "signup_otp", expiry_seconds: int = 300) -> bool:
     """Stores the OTP in Redis with a TTL of 5 minutes."""
