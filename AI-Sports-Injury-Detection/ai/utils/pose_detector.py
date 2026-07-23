@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import os
+import sys
 
 from joint_angles import get_joint_angles
 from injury_detector import detect_injury_risk
@@ -27,7 +28,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 video_path = os.path.join(BASE_DIR, "..", "sample_videos", "sample.mp4")
 output_path = os.path.join(BASE_DIR, "..", "outputs", "output_video.mp4")
 
+
+if len(sys.argv) > 1:
+    video_path = sys.argv[1]
+else:
+    
+    video_path = os.path.join(BASE_DIR, "..", "sample_videos", "sample.mp4")
+
 video = cv2.VideoCapture(video_path)
+
+
 if not video.isOpened():
     raise FileNotFoundError(f"Could not open video file: {video_path}")
 
@@ -317,10 +327,17 @@ while video.isOpened():
 # Generate report after processing the whole video
 if len(left_knees) > 0:
     generate_report(
-        left_knees,
-        right_knees,
-        risk_scores,
-        recommendations
+        generate_report(
+            left_knees,
+            right_knees,
+            risk_scores,
+            movement_score,
+            movement_quality,
+            ml_prediction,
+            running_phase,
+            symmetry,
+            recommendations
+        )
     )
     generate_graph(
     left_knees,

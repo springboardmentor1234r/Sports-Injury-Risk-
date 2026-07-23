@@ -4,6 +4,7 @@ const connectDB = require("./config/db.js");
 const authRoutes = require("./routes/authRoutes.js");
 const athleteRoutes=require("./routes/athleteRoutes.js");
 const videoRoutes=require("./routes/videoRoutes");
+const analysisRoutes = require("./routes/analysisRoutes");
 
 dotenv.config();
 connectDB();
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/athletes",athleteRoutes);
 app.use("/api/videos",videoRoutes);
+app.use("/api/analysis", analysisRoutes);
 
 
 

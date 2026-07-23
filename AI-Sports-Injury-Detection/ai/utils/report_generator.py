@@ -15,10 +15,9 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
 
-def generate_report(left_knees, right_knees, risk_scores,recommendations):
+def generate_report(left_knees, right_knees, risk_scores,movement_score,movement_quality,ml_prediction,running_phase,symmetry,recommendations):
 
     athlete = get_athlete_profile()
-
     report = {
 
         "Athlete": athlete,
@@ -40,9 +39,24 @@ def generate_report(left_knees, right_knees, risk_scores,recommendations):
         "Risk Score": {
             "Maximum": max(risk_scores),
             "Average": round(sum(risk_scores) / len(risk_scores), 2)
-        }
+        },
 
+        "Movement Score": movement_score,
+
+        "Movement Quality": movement_quality,
+
+        "Prediction": ml_prediction,
+
+        "Running Phase": running_phase,
+
+        "Symmetry": {
+            "knee": symmetry["Knee Status"],
+            "elbow": symmetry["Elbow Status"]
+        },
+
+        "Recommendations": recommendations
     }
+    
     report_json = os.path.join(REPORTS_DIR, "report.json")
 
     with open(report_json, "w", encoding="utf-8") as file:
