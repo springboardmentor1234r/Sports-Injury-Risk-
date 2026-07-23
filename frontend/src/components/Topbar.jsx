@@ -18,11 +18,40 @@ export default function Topbar({ activePage, userName }) {
     { key: 'profile', label: 'My Profile', path: '/profile' },
   ];
 
-  const go = (path, disabled) => {
-    if (disabled) return;
-    setMenuOpen(false);
-    navigate(path);
-  };
+  const go = async (path, disabled) => {
+  if (disabled) return;
+
+  setMenuOpen(false);
+
+  // If Analysis button clicked
+  if (path === "/analysis") {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:8000/videos/mine", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const videos = await res.json();
+
+      // latest analyzed video
+      const analyzed = videos
+        .filter(v => v.status === "analyzed")
+        .sort((a, b) => b.id - a.id);
+
+      if (analyzed.length > 0) {
+        navigate(`/analysis?video=${analyzed[0].id}`);
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  navigate(path);
+};
 
   return (
     <header className="topbar">

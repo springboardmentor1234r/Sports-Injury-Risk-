@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
+import api from '../api';
 import './Analysis.css';
 
 /*
@@ -35,15 +36,41 @@ const RISK_LABELS = { low: 'Low Risk', moderate: 'Moderate Risk', high: 'High Ri
 
 export default function Analysis() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const videoId = params.get('video');
   const [data, setData] = useState(null);
 
   useEffect(() => {
-  if (!videoId) return;
-  api.get(`/videos/${videoId}/report`)
-    .then((res) => setData(res.data))
-    .catch(() => setData(mockAnalysis)); // fallback if this video hasn't been analyzed yet
-}, [videoId]);
+    const loadAnalysis = async () => {
+      try {
+        // If no ?video= parameter, find the latest analyzed video
+        if (!videoId) {
+          const res = await api.get("/videos/mine");
+
+          const analyzed = res.data
+            .filter(v => v.status === "analyzed")
+            .sort((a, b) => b.id - a.id);
+
+          if (analyzed.length === 0) {
+            return;
+          }
+
+          navigate(`/analysis?video=${analyzed[0].id}`, { replace: true });
+          return;
+        }
+
+        // Load report
+        const report = await api.get(`/videos/${videoId}/report`);
+        setData(report.data);
+
+      } catch (err) {
+        console.error(err);
+        setData(mockAnalysis);
+      }
+    };
+
+    loadAnalysis();
+  }, [videoId, navigate]);
 
   const circumference = 2 * Math.PI * 60;
   const scoreOffset = data ? circumference - (data.quality_score / 100) * circumference : circumference;

@@ -51,7 +51,7 @@ class Video(Base):
     athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)
     file_path = Column(String(255), nullable=False)
     activity_type = Column(String(50))
-    status = Column(String(20), default="uploaded")
+    status = Column(String(50), default="uploaded")
     uploaded_at = Column(DateTime, server_default=func.now())
 
 
@@ -61,6 +61,7 @@ class PoseResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
     frame_count = Column(Integer)
+    total_frames = Column(Integer)
     keypoints_json = Column(JSONB)
     created_at = Column(DateTime, server_default=func.now())
 

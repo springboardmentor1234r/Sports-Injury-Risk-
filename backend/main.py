@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from database import Base, engine
+import models
+
 from routers import auth, athletes, videos
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Sports Injury Risk Detection API")
 
 app.add_middleware(
