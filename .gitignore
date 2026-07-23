@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Uploaded video files (large binary files, not for version control)
+backend/uploads/
+
+# Node modules
+node_modules/
+frontend/node_modules/

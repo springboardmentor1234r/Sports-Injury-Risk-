@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Activity, Users, LogOut, Search, Plus, Filter, Edit, 
   Trash2, ShieldCheck, UserPlus, X, Shield, FileText, Info, 
-  User, CheckCircle2, AlertOctagon, RefreshCw, Sun, Moon
+  User, CheckCircle2, AlertOctagon, RefreshCw, Sun, Moon, Film
 } from 'lucide-react';
 import api from '../utils/api';
 import Button from '../components/Button';
@@ -422,15 +422,75 @@ const Dashboard = () => {
               <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase block mb-3">Workspace</span>
               <nav className="space-y-1">
                 {user?.role === 'Athlete' ? (
-                  <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-hud-blue/15 border border-hud-blue/30 text-hud-blue">
-                    <User className="w-4 h-4" />
-                    <span>My Profile</span>
-                  </div>
+                  <>
+                    <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-hud-blue/15 border border-hud-blue/30 text-hud-blue">
+                      <User className="w-4 h-4" />
+                      <span>My Profile</span>
+                    </div>
+                    <button
+                      onClick={() => navigate('/milestone2/upload')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Film className="w-4 h-4 text-gray-500" />
+                      <span>Video Upload</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/pose')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Pose Ingestion</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/skeleton')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Skeleton Tracking</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/biomechanics')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Joint Biomechanics</span>
+                    </button>
+                  </>
                 ) : (
-                  <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-hud-blue/15 border border-hud-blue/30 text-hud-blue">
-                    <Users className="w-4 h-4" />
-                    <span>Athlete Registry</span>
-                  </div>
+                  <>
+                    <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-hud-blue/15 border border-hud-blue/30 text-hud-blue">
+                      <Users className="w-4 h-4" />
+                      <span>Athlete Registry</span>
+                    </div>
+                    <button
+                      onClick={() => navigate('/milestone2/upload')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Film className="w-4 h-4 text-gray-500" />
+                      <span>Video Upload</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/pose')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Pose Ingestion</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/skeleton')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Skeleton Tracking</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/milestone2/biomechanics')}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white hover:bg-hud-dark/50 transition-all cursor-pointer text-left"
+                    >
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span>Joint Biomechanics</span>
+                    </button>
+                  </>
                 )}
               </nav>
             </div>

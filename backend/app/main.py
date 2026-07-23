@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import lifespan
 from app.routers import auth, athletes
+from app.milestone2.routers import video as milestone2_video
+from app.milestone2.routers import pose as milestone2_pose
+from app.milestone2.routers import analysis as milestone2_analysis
+import os
 
 # Initialize FastAPI application with Title and lifespan hooks
 app = FastAPI(
@@ -27,12 +31,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Ensure folders exist
+os.makedirs("uploads", exist_ok=True)
+os.makedirs("static/photos", exist_ok=True)
+
 # Include Routers
 app.include_router(auth.router)
 app.include_router(athletes.router)
+app.include_router(milestone2_video.router)
+app.include_router(milestone2_pose.router)
+app.include_router(milestone2_analysis.router)
 
 # Mount Static Files (for photo uploads)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 async def root():
