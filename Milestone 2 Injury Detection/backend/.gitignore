@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+sports_injury.db
+venv/
+uploads/
