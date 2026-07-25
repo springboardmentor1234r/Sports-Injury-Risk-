@@ -1,0 +1,37 @@
+# --- Web framework & server ---
+fastapi
+uvicorn[standard]
+
+# --- Database ---
+sqlalchemy
+psycopg2-binary
+alembic
+
+# --- Auth ---
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+
+# --- Config & validation ---
+python-dotenv
+pydantic[email]
+python-multipart
+
+# --- Computer vision / pose estimation ---
+# Pinned exactly: 0.10.13 is the last MediaPipe release with the classic
+# mp.solutions.pose API. Newer versions require a separate model download
+# and a different API -- see app/services/pose_estimation.py for details.
+# opencv-contrib-python is pulled in automatically as MediaPipe's dependency.
+mediapipe==0.10.13
+numpy
+
+# imageio-ffmpeg bundles its own static ffmpeg binary via pip -- used to
+# transcode the skeleton-overlay video to browser-playable H.264, since
+# OpenCV's own VideoWriter can't encode H.264 (patent-licensed encoder,
+# not included in pip-distributed OpenCV builds). See the codec note at
+# the top of app/services/pose_estimation.py for the full explanation.
+imageio-ffmpeg
+
+# --- Testing ---
+pytest
+httpx

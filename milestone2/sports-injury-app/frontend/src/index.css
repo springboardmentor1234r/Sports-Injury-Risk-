@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply text-paper font-body antialiased;
+  background-color: #070A14;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 20% -10%, rgba(124,111,255,0.22), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 10%, rgba(34,211,199,0.14), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(124,111,255,0.10), transparent 60%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  @apply font-display;
+}
+
+/* Reusable glass-panel surface -- translucent fill, blurred, soft inner
+   highlight -- the core visual language borrowed from the reference designs */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:focus-visible {
+  outline: 2px solid #22D3C7;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #22D3C7;
+  color: #070A14;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
