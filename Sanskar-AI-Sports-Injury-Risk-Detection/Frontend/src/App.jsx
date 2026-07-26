@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import RiskAnalysis from './pages/RiskAnalysis';
 import Athletes from './pages/Athletes';
 import Diagnostics from './pages/Diagnostics';
+import AnalysisHistory from './pages/AnalysisHistory';
+import AnalysisDetails from './pages/AnalysisDetails';
 
 // Simple Route Guard to protect athletic risk dashboard routes
 const ProtectedRoute = ({ children }) => {
@@ -84,6 +86,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/analysis-history" element={<ProtectedRoute><DashboardLayout><AnalysisHistory /></DashboardLayout></ProtectedRoute>} />
+          <Route path="/analysis-history/:id" element={<ProtectedRoute><DashboardLayout><AnalysisDetails /></DashboardLayout></ProtectedRoute>} />
 
           {/* Catch-all Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -3,6 +3,7 @@ import authRoutes from './authRoutes.js';
 import athleteRoutes from './athleteRoutes.js';
 import videoRoutes from './videoRoutes.js';
 import aiRoutes from './aiRoutes.js';
+import analysisHistoryRoutes from './analysisHistoryRoutes.js';
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.use('/auth', authRoutes);
 router.use('/athletes', athleteRoutes);
 router.use('/videos', videoRoutes);
 router.use('/ai', aiRoutes);
+router.use('/analyses', analysisHistoryRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {

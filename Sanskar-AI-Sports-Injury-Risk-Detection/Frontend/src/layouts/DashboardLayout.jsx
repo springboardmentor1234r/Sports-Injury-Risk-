@@ -21,6 +21,7 @@ const DashboardLayout = ({ children }) => {
     { name: 'Dashboard', path: '/' },
     { name: 'Injury Risk Analysis', path: '/risk-analysis' },
     { name: 'Athletes & Profiles', path: '/athletes' },
+    { name: 'Analysis History', path: '/analysis-history' },
     { name: 'System Diagnostics', path: '/diagnostics' },
   ];
 
