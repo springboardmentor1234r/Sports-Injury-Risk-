@@ -13,9 +13,13 @@ export default function Login() {
   const handleSubmit = async () => {
     try {
       const res = await axios.post("http://localhost:8000/auth/login", form);
+      const role = res.data.role;
       localStorage.setItem("token", res.data.access_token);
-      localStorage.setItem("role", res.data.role);
-      window.location.href = "/dashboard";
+      localStorage.setItem("role", role);
+
+      if (role === "athlete") window.location.href = "/dashboard";
+      else if (role === "admin") window.location.href = "/admin-dashboard";
+      else window.location.href = "/staff-dashboard"; // coach, physiotherapist, sports_scientist
     } catch (err) {
       setError(err.response?.data?.detail || "Login failed");
     }

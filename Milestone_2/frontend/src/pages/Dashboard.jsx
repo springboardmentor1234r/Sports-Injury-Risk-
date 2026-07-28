@@ -1,8 +1,18 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
+
+  // Safety net: this dashboard is athlete-only. Coach/physio/sports
+  // scientist/admin land on their own dashboards after login, but if
+  // someone navigates here directly (bookmark, back button), send them
+  // to the right place instead of showing an athlete's view.
+  useEffect(() => {
+    if (role === "admin") navigate("/admin-dashboard", { replace: true });
+    else if (role && role !== "athlete") navigate("/staff-dashboard", { replace: true });
+  }, [role, navigate]);
 
   const logout = () => {
     localStorage.clear();
@@ -95,14 +105,17 @@ export default function Dashboard() {
           <div
             className="card-hover"
             style={{...styles.card, background:"linear-gradient(135deg, #f3f0ff, #ede9fe)"}}
+            onClick={() => navigate("/video-analysis")}
           >
             <div style={styles.cardTop}>
               <div style={{...styles.cardIcon, background:"#7c3aed"}}>📹</div>
-              <div style={styles.lockIcon}>🔒</div>
+              <div style={styles.editIcon}>▶️</div>
             </div>
             <h3 style={styles.cardTitle}>Video Upload</h3>
-            <p style={styles.cardDesc}>Coming in Milestone 2</p>
-            <button style={styles.comingSoonBtn}>Coming Soon 🔒</button>
+            <p style={styles.cardDesc}>Upload a movement video for pose & biomechanics analysis</p>
+            <button className="btn-hover" style={{...styles.cardBtn, borderColor:"#7c3aed", color:"#7c3aed"}}>
+              Analyze Video →
+            </button>
             <div style={styles.cardImgCircle}>🎥</div>
           </div>
 
