@@ -1,52 +1,70 @@
 import React from "react";
 
 function JointAnglesCard({ jointAngles }) {
+
   if (!jointAngles) return null;
 
   const joints = [
     {
       name: "Left Elbow",
-      value: jointAngles.left_elbow,
-      icon: "💪",
+      value: jointAngles.left_elbow
     },
     {
       name: "Left Knee",
-      value: jointAngles.left_knee,
-      icon: "🦵",
+      value: jointAngles.left_knee
     },
     {
       name: "Left Hip",
-      value: jointAngles.left_hip,
-      icon: "🦴",
+      value: jointAngles.left_hip
     },
   ];
 
   return (
+
     <div className="card joint-card">
+
       <div className="card-header">
-        <span className="card-icon">📐</span>
-        <h3>Joint Angle Analysis</h3>
+
+      
+
+        <h3>
+          Joint Angle Analysis
+        </h3>
+
       </div>
 
       <div className="joint-list">
+
         {joints.map((joint) => (
+
           <div className="joint-row" key={joint.name}>
-            <div className="joint-left">
+
+            <div className="joint-info">
+
               <span className="joint-icon">
                 {joint.icon}
               </span>
 
-              <span>{joint.name}</span>
+              <span className="joint-name">
+                {joint.name}
+              </span>
+
             </div>
 
-            <div className="joint-value">
+            <span className="joint-value">
               {joint.value}°
-            </div>
+            </span>
+
           </div>
+
         ))}
+
       </div>
+
     </div>
+
   );
+
 }
 
 export default JointAnglesCard;

@@ -2,49 +2,55 @@ import React from "react";
 import {
   FaBell,
   FaSearch,
-  FaUserCircle,
+  FaUserCircle
 } from "react-icons/fa";
 
 import "../styles/Topbar.css";
 
 function Topbar() {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const name = user?.name || "Guest";
+  const role = user?.role || "Athlete";
+
   return (
     <header className="topbar">
 
-      <div className="topbar-left">
+      <div className="search-box">
 
-        <h2>👋 Welcome Back</h2>
+        <FaSearch />
 
-        <p>
-          Sports Injury Risk Detection Dashboard
-        </p>
+        <input
+          type="text"
+          placeholder="Search..."
+        />
 
       </div>
 
       <div className="topbar-right">
 
-        <div className="search-box">
-
-          <FaSearch />
-
-          <input
-            type="text"
-            placeholder="Search..."
-          />
-
-        </div>
-
         <button className="icon-btn">
           <FaBell />
         </button>
 
-        <button className="profile-btn">
+        <div className="profile-btn">
 
-          <FaUserCircle />
+          <FaUserCircle className="profile-icon" />
 
-          <span>Sejal</span>
+          <div className="profile-info">
 
-        </button>
+            <span className="profile-name">
+              {name}
+            </span>
+
+            <small className="profile-role">
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </small>
+
+          </div>
+
+        </div>
 
       </div>
 

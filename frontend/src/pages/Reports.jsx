@@ -11,7 +11,7 @@ function Reports() {
     return (
       <div className="reports-page">
 
-        <h1>📄 Reports</h1>
+        <h1>Reports</h1>
 
         <div className="empty-report">
 
@@ -33,7 +33,7 @@ function Reports() {
 
     <div className="reports-page">
 
-      <h1>📄 Reports</h1>
+      <h1>Reports</h1>
 
       <p>
         AI generated injury assessment reports.
@@ -46,11 +46,11 @@ function Reports() {
         <div className="report-info">
 
           <span>
-            🟢 {analysis.risk_score.risk_level} Risk
+            {analysis.risk_score.risk_level} Risk
           </span>
 
           <span>
-            📊 Score: {analysis.risk_score.overall_score}/100
+            Score: {analysis.risk_score.overall_score}/100
           </span>
 
         </div>
@@ -63,7 +63,7 @@ function Reports() {
             rel="noreferrer"
           >
             <button>
-              👁 View
+              View
             </button>
           </a>
 

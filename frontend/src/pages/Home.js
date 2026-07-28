@@ -12,7 +12,7 @@ function Home() {
         <div className="hero-content">
 
           <h1>
-            🏃 Sports Injury Risk Detection
+            Sports Injury Risk Detection
           </h1>
 
           <p>
@@ -27,13 +27,13 @@ function Home() {
 
             <Link to="/dashboard/upload">
               <button className="primary-btn">
-                📹 Upload Video
+                Upload Video
               </button>
             </Link>
 
             <Link to="/dashboard">
               <button className="secondary-btn">
-                📊 View Dashboard
+                View Dashboard
               </button>
             </Link>
 
@@ -49,9 +49,7 @@ function Home() {
 
         <div className="feature-card">
 
-          <div className="feature-icon">
-            🤖
-          </div>
+          
 
           <h2>Pose Detection</h2>
 
@@ -64,9 +62,7 @@ function Home() {
 
         <div className="feature-card">
 
-          <div className="feature-icon">
-            🦴
-          </div>
+    
 
           <h2>Injury Prediction</h2>
 
@@ -79,9 +75,7 @@ function Home() {
 
         <div className="feature-card">
 
-          <div className="feature-icon">
-            📄
-          </div>
+          
 
           <h2>Performance Reports</h2>
 

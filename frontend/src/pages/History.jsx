@@ -9,7 +9,7 @@ function History() {
   if (history.length === 0) {
     return (
       <div className="history-page">
-        <h1>🕒 Analysis History</h1>
+        <h1>Analysis History</h1>
 
         <div className="empty-history">
           <h2>No Analysis History</h2>
@@ -24,7 +24,7 @@ function History() {
   return (
     <div className="history-page">
 
-      <h1>🕒 Analysis History</h1>
+      <h1>Analysis History</h1>
 
       <p>
         View all AI injury analyses performed in this session.
@@ -44,11 +44,11 @@ function History() {
             <div className="history-meta">
 
               <span>
-                🟢 {item.risk_score.risk_level} Risk
+                {item.risk_score.risk_level} Risk
               </span>
 
               <span>
-                📊 {item.risk_score.overall_score}/100
+                {item.risk_score.overall_score}/100
               </span>
 
             </div>
@@ -63,7 +63,7 @@ function History() {
               rel="noreferrer"
             >
               <button className="view-btn">
-                📄 View Report
+                View Report
               </button>
             </a>
 
@@ -71,7 +71,7 @@ function History() {
               className="delete-btn"
               onClick={() => deleteHistory(item.id)}
             >
-              🗑 Delete
+              Delete
             </button>
 
           </div>

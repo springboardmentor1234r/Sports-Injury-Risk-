@@ -7,7 +7,7 @@ import { AnalysisContext } from "../context/AnalysisContext";
 
 import "../styles/Dashboard.css";
 
-function Dashboard() {
+function AthleteDashboard() {
 
   const navigate = useNavigate();
   const { history } = useContext(AnalysisContext);
@@ -104,6 +104,12 @@ function Dashboard() {
 
     <div className="dashboard-container">
 
+      <div className="dashboard-header">
+
+    <h1>Sports Injury Risk Detection Dashboard</h1>
+
+</div>
+
       {/* Statistics */}
 
       <div className="stats-grid">
@@ -182,4 +188,4 @@ function Dashboard() {
 
 }
 
-export default Dashboard;
+export default AthleteDashboard;

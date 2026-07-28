@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
 import "../styles/Forms.css";
 
@@ -11,6 +11,8 @@ function UploadVideo() {
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState("");
   const [analysisData, setAnalysisData] = useState(null);
+  const [athletes, setAthletes] = useState([]);
+  const [selectedAthlete, setSelectedAthlete] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
@@ -18,6 +20,30 @@ function UploadVideo() {
   const { saveAnalysis } = useContext(AnalysisContext);
 
   const navigate = useNavigate();
+
+    useEffect(() => {
+      fetchAthletes();
+  }, []);
+
+  const fetchAthletes = async () => {
+
+      try {
+
+          const response = await api.get("/users");
+
+          const athleteUsers = response.data.filter(
+              (user) => user.role === "athlete"
+          );
+
+          setAthletes(athleteUsers);
+
+      } catch (error) {
+
+          console.error(error);
+
+      }
+
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -35,6 +61,14 @@ function UploadVideo() {
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    if (!selectedAthlete) {
+
+      alert("Please select an athlete.");
+
+      return;
+
+   }
+
     if (!file) {
       alert("Please select a video first.");
       return;
@@ -42,6 +76,11 @@ function UploadVideo() {
 
     const formData = new FormData();
     formData.append("file", file);
+
+    formData.append(
+        "athlete_email",
+        selectedAthlete
+    );
 
     try {
       setLoading(true);
@@ -84,7 +123,7 @@ console.log(response.data);
       // Optional: keep local state if you want
       setAnalysisData(response.data);
 
-      setMessage("✅ Analysis Completed Successfully!");
+      setMessage("Analysis Completed Successfully!");
 
       setLoading(false);
 
@@ -100,7 +139,7 @@ console.log(response.data);
 
       setLoading(false);
 
-      setMessage("❌ Upload Failed.");
+      setMessage("Upload Failed.");
     }
   };
 
@@ -109,7 +148,7 @@ console.log(response.data);
 
       <div className="upload-card">
 
-        <h1>📹 Upload Athlete Video</h1>
+        <h1>Upload Athlete Video</h1>
 
         <p>
           Upload a sports performance video to let
@@ -122,6 +161,36 @@ console.log(response.data);
           className="upload-form"
           onSubmit={handleUpload}
         >
+
+          <div className="input-group">
+
+    <label>Select Athlete</label>
+
+    <select
+        value={selectedAthlete}
+        onChange={(e) =>
+            setSelectedAthlete(e.target.value)
+        }
+    >
+
+        <option value="">
+            Choose Athlete
+        </option>
+
+        {athletes.map((athlete) => (
+
+            <option
+                key={athlete.email}
+                value={athlete.email}
+            >
+                {athlete.name}
+            </option>
+
+        ))}
+
+    </select>
+
+</div>
 
           <label
             htmlFor="video-upload"

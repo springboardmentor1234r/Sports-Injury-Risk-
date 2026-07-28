@@ -3,6 +3,7 @@ import api from "../services/api";
 import "../styles/Forms.css";
 
 function Athlete() {
+
   const [athlete, setAthlete] = useState({
     name: "",
     age: "",
@@ -11,6 +12,7 @@ function Athlete() {
   });
 
   const [athletes, setAthletes] = useState([]);
+  const [search, setSearch] = useState("");
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -20,7 +22,7 @@ function Athlete() {
     });
   };
 
-  // Fetch all athletes from backend
+  // Fetch athletes
   const fetchAthletes = async () => {
     try {
       const response = await api.get("/athletes");
@@ -30,7 +32,6 @@ function Athlete() {
     }
   };
 
-  // Load athletes when page opens
   useEffect(() => {
     fetchAthletes();
   }, []);
@@ -40,16 +41,15 @@ function Athlete() {
     e.preventDefault();
 
     try {
-      const response = await api.post("/athlete", athlete);
 
-      alert("Athlete added successfully!");
+      const response = await api.post("/athlete", athlete);
 
       console.log(response.data);
 
-      // Refresh athlete list
+      alert("Athlete added successfully!");
+
       fetchAthletes();
 
-      // Clear form
       setAthlete({
         name: "",
         age: "",
@@ -58,111 +58,186 @@ function Athlete() {
       });
 
     } catch (error) {
+
       console.error(error);
 
       if (error.response) {
         alert(error.response.data.detail || "Failed to add athlete.");
       } else {
-        alert("Cannot connect to the backend.");
+        alert("Cannot connect to backend.");
       }
+
     }
   };
 
+  // Search
+  const filteredAthletes = athletes.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()) ||
+    item.sport.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="page-container">
 
-      <div className="form-card">
+    <div className="athlete-page">
 
-        <h2>Athlete Registration</h2>
+      {/* Header */}
 
-        <p>Add athlete details for analysis.</p>
+      <div className="athlete-header">
 
-        <form onSubmit={handleSubmit}>
+        <h1>Athlete Management</h1>
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Athlete Name"
-            value={athlete.name}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="number"
-            name="age"
-            placeholder="Age"
-            value={athlete.age}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="text"
-            name="sport"
-            placeholder="Sport"
-            value={athlete.sport}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="text"
-            name="experience"
-            placeholder="Experience (e.g. Beginner, Intermediate, 5 Years)"
-            value={athlete.experience}
-            onChange={handleChange}
-            required
-          />
-
-          <button type="submit">
-            Add Athlete
-          </button>
-
-        </form>
+        <p>Register athletes and manage their profiles.</p>
 
       </div>
 
-      <div className="athlete-table">
+      {/* Summary */}
 
-        <h2>Registered Athletes</h2>
+      <div className="summary-card">
 
-        <table>
+        <h3>Total Registered Athletes</h3>
 
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Age</th>
-              <th>Sport</th>
-              <th>Experience</th>
-            </tr>
-          </thead>
+        <div className="summary-number">
+          {athletes.length}
+        </div>
 
-          <tbody>
+      </div>
 
-            {athletes.length > 0 ? (
-              athletes.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.name}</td>
-                  <td>{item.age}</td>
-                  <td>{item.sport}</td>
-                  <td>{item.experience}</td>
-                </tr>
-              ))
-            ) : (
+      {/* Form + Table */}
+
+      <div className="athlete-content">
+
+        {/* Registration */}
+
+        <div className="form-card">
+
+          <h2>Athlete Registration</h2>
+
+          <p>Add athlete details for analysis.</p>
+
+          <form onSubmit={handleSubmit}>
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Athlete Name"
+              value={athlete.name}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="number"
+              name="age"
+              placeholder="Age"
+              value={athlete.age}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="text"
+              name="sport"
+              placeholder="Sport"
+              value={athlete.sport}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="text"
+              name="experience"
+              placeholder="Experience"
+              value={athlete.experience}
+              onChange={handleChange}
+              required
+            />
+
+            <button type="submit">
+
+              Add Athlete
+
+            </button>
+
+          </form>
+
+        </div>
+
+        {/* Athlete Table */}
+
+        <div className="athlete-table">
+
+          <div className="table-header">
+
+            <h2>Registered Athletes</h2>
+
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search athlete..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+          </div>
+
+          <table>
+
+            <thead>
+
               <tr>
-                <td colSpan="4">No athletes registered yet.</td>
+
+                <th>Name</th>
+                <th>Age</th>
+                <th>Sport</th>
+                <th>Experience</th>
+
               </tr>
-            )}
 
-          </tbody>
+            </thead>
 
-        </table>
+            <tbody>
+
+              {filteredAthletes.length > 0 ? (
+
+                filteredAthletes.map((item, index) => (
+
+                  <tr key={index}>
+
+                    <td>{item.name}</td>
+                    <td>{item.age}</td>
+                    <td>{item.sport}</td>
+                    <td>{item.experience}</td>
+
+                  </tr>
+
+                ))
+
+              ) : (
+
+                <tr>
+
+                  <td colSpan="4">
+
+                    No athletes registered yet.
+
+                  </td>
+
+                </tr>
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
 
     </div>
+
   );
+
 }
 
 export default Athlete;

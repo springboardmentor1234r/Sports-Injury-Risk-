@@ -1,0 +1,556 @@
+/* ======================================================
+   ANALYSIS COMPONENTS
+====================================================== */
+
+/* -----------------------
+   Common Card Style
+----------------------- */
+
+.analysis-page .card{
+    background:linear-gradient(180deg,#1b1b1b,#161616);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:20px;
+    backdrop-filter:blur(12px);
+    border-top:3px solid #7CFC00;
+}
+
+.analysis-page .card:hover{
+
+    border-color:#7CFC00;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 10px 20px rgba(124,252,0,.12);
+
+}
+
+/* -----------------------
+   Card Header
+----------------------- */
+
+.analysis-page .card-header{
+
+    display:flex;
+    align-items:center;
+
+    gap:12px;
+
+    margin-bottom:18px;
+
+}
+
+.analysis-page .card-icon{
+
+    font-size:24px;
+
+}
+
+.analysis-header h1{
+    font-size:48px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
+
+/* ======================================================
+   AI SUMMARY
+====================================================== */
+
+.ai-summary-card{
+
+    margin-bottom:22px;
+
+}
+
+.summary-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:15px;
+
+    margin:18px 0;
+
+}
+
+.summary-item{
+
+    background:#111;
+
+    border-radius:14px;
+
+    border:1px solid #2a2a2a;
+
+    padding:18px;
+
+    transition:.3s;
+
+}
+
+.summary-item:hover{
+
+    border-color:#7CFC00;
+
+}
+
+.summary-item span{
+
+    display:block;
+
+    color:#9ca3af;
+
+    font-size:13px;
+
+    margin-bottom:8px;
+
+}
+
+.summary-item strong{
+
+    color:#7CFC00;
+
+    font-size:24px;
+
+}
+
+.summary-recommendation{
+
+    margin-top:18px;
+
+    padding:18px;
+
+    border-left:4px solid #7CFC00;
+
+    background:#111;
+
+    border-radius:12px;
+
+}
+
+.summary-recommendation h4{
+
+    margin:0 0 8px;
+
+    color:#7CFC00;
+
+}
+
+.summary-recommendation p{
+
+    margin:0;
+
+    color:#d1d5db;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================
+   Movement Anomalies
+========================================== */
+
+.anomaly-card{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.anomaly-box{
+
+    background:#111;
+
+    border-radius:16px;
+
+    padding:20px;
+
+    border-left:5px solid #7CFC00;
+
+}
+
+.anomaly-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.anomaly-top h4{
+
+    color:white;
+
+    font-size:20px;
+
+    margin:0;
+
+}
+
+.anomaly-top small{
+
+    color:#8b8b8b;
+
+}
+
+.anomaly-badge{
+
+    background:#14532d;
+
+    color:#8eff00;
+
+    padding:8px 18px;
+
+    border-radius:25px;
+
+    font-weight:600;
+
+}
+
+.anomaly-section{
+
+    margin-top:15px;
+
+}
+
+.anomaly-section strong{
+
+    color:white;
+
+}
+
+.anomaly-section p{
+
+    margin-top:8px;
+
+    color:#bfbfbf;
+
+    line-height:1.6;
+
+}
+
+.no-anomaly{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding:25px;
+
+    background:#111;
+
+    border-radius:16px;
+
+}
+
+.no-anomaly-icon{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    background:#14532d;
+
+    color:#7CFC00;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:30px;
+
+    font-weight:bold;
+
+}
+
+.no-anomaly h4{
+
+    color:white;
+
+    margin-bottom:8px;
+
+}
+
+.no-anomaly p{
+
+    color:#999;
+
+}
+
+/* =====================================
+   Recommendation Card
+===================================== */
+
+.recommendation-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.recommendation-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+    margin-top:10px;
+
+}
+
+.recommendation-box{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:18px;
+
+    background:#111;
+
+    border-radius:14px;
+
+    padding:18px;
+
+}
+
+.recommendation-check{
+
+    width:38px;
+
+    height:38px;
+
+    border-radius:50%;
+
+    background:#14532d;
+
+    color:#7CFC00;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    flex-shrink:0;
+
+}
+
+.recommendation-text{
+
+    color:#d8d8d8;
+
+    line-height:1.8;
+
+    font-size:16px;
+
+}
+
+/* ===================================
+   Processed Video
+=================================== */
+
+.processed-video-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.video-description{
+    color:#bdbdbd;
+    font-size:16px;
+    line-height:1.6;
+    margin:14px 0 18px;
+}
+
+.processed-video{
+    width:100%;
+    height:240px;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.video-container{
+    width:100%;
+    border-radius:16px;
+    overflow:hidden;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.video-success{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-top:18px;
+
+    color:#7CFC00;
+
+    font-size:20px;
+
+    font-weight:600;
+
+}
+
+.success-dot{
+
+    width:14px;
+
+    height:14px;
+
+    background:#7CFC00;
+
+    border-radius:50%;
+
+    box-shadow:0 0 12px #7CFC00;
+
+}
+.report-card{
+    padding:20px;
+    max-width:520px;      /* was much wider */
+    margin:auto;
+}
+
+.report-content{
+    padding:0;
+}
+
+.report-icon{
+    width:80px;
+    height:80px;
+    font-size:42px;
+    margin:10px auto 20px;
+}
+
+.report-content h2{
+    font-size:24px;
+    margin:12px 0;
+    line-height:1.3;
+}
+
+.report-content p{
+    font-size:15px;
+    margin-bottom:18px;
+    color:#bdbdbd;
+}
+
+.report-list{
+    width:70%;
+    margin:20px auto;
+}
+
+.report-list li{
+    padding:8px 0;
+    font-size:16px;
+}
+
+.download-btn{
+    background:#7CFC00;
+    color:#000;
+    font-weight:700;
+    border:none;
+    border-radius:14px;
+    padding:16px 28px;
+    transition:.3s;
+    cursor:pointer;
+}
+
+.download-btn:hover{
+    transform:scale(1.04);
+    box-shadow:0 0 20px rgba(124,252,0,.35);
+}
+
+.processed-video{
+    width:100%;
+    height:auto;
+    max-height:420px;
+    display:block;
+    border-radius:16px;
+    object-fit:contain;
+    background:#000;
+}
+/* ================= Bottom ================= */
+
+.bottom-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    align-items:start;   /* IMPORTANT */
+}
+
+.processed-video-card{
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+}
+.video-status{
+    margin-top:18px;
+    font-size:18px;
+    font-weight:600;
+    color:#7CFC00;
+}
+
+.analysis-page .card{
+    transition: all 0.3s ease;
+}
+
+.analysis-page .card:hover{
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(124,252,0,0.15);
+}
+
+.card-header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.card-header h3{
+    font-size:30px;
+    font-weight:700;
+}
+
+.card-icon{
+    font-size:30px;
+}
+.analysis-page .card{
+    border-radius:20px;
+}
+
+.risk-circle{
+    box-shadow:
+        0 0 25px rgba(124,252,0,.45),
+        inset 0 0 12px rgba(255,255,255,.15);
+}
+
+.top-grid .card,
+.middle-grid .card,
+.bottom-grid .card{
+    min-height:unset;
+    height:auto;
+}

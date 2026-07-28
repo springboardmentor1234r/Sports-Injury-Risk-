@@ -1,0 +1,139 @@
+/* ===============================
+   LOGIN PAGE
+================================ */
+
+body{
+    background:#0f1117;
+}
+
+.form-container{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+    background:#0f1117;
+}
+
+.form-card{
+    width:100%;
+    max-width:460px;
+    background:#181818;
+    border:1px solid #2b2b2b;
+    border-radius:20px;
+    padding:40px;
+    box-shadow:0 10px 35px rgba(0,0,0,.45);
+}
+
+.auth-title{
+    color:#7CFC00;
+    text-align:center;
+    font-size:30px;
+    margin-bottom:10px;
+    font-weight:700;
+}
+
+.form-card h2{
+    color:white;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.form-card p{
+    color:#9ca3af;
+    text-align:center;
+    margin-bottom:28px;
+    line-height:1.6;
+}
+
+.form-card form{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.form-card input,
+.form-card select{
+    width:100%;
+    padding:14px 16px;
+    background:#111;
+    border:1px solid #2b2b2b;
+    border-radius:12px;
+    color:white;
+    outline:none;
+    font-size:15px;
+    transition:.3s;
+}
+
+.form-card input:focus,
+.form-card select:focus{
+    border-color:#7CFC00;
+    box-shadow:0 0 10px rgba(124,252,0,.15);
+}
+
+.form-options{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:4px;
+}
+
+.remember{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#d1d5db;
+    font-size:14px;
+}
+
+.remember input{
+    width:auto;
+}
+
+.forgot-password{
+    background:none;
+    border:none;
+    color:#7CFC00;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.forgot-password:hover{
+    text-decoration:underline;
+}
+
+.form-card button[type="submit"]{
+    width:100%;
+    margin-top:10px;
+    padding:14px;
+    background:#7CFC00;
+    color:#000;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.form-card button[type="submit"]:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(124,252,0,.25);
+}
+
+.auth-footer{
+    text-align:center;
+    margin-top:25px;
+    color:#b6b6b6;
+}
+
+.auth-link{
+    color:#7CFC00;
+    cursor:pointer;
+    font-weight:600;
+    margin-left:6px;
+}
+
+.auth-link:hover{
+    text-decoration:underline;
+}

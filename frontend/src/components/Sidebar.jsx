@@ -17,30 +17,128 @@ import {
 } from "react-icons/fa";
 
 import "../styles/Sidebar.css";
-
 import logo from "../assets/images/logo.png";
 
 function Sidebar() {
-  const menuItems = [
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role || "athlete";
+
+  let menuItems = [];
+
+  // =========================
+  // ATHLETE MENU
+  // =========================
+
+  if (role === "athlete") {
+    menuItems = [
+      {
+        title: "Dashboard",
+        path: "/dashboard",
+        icon: <MdDashboard />,
+      },
+      {
+        title: "Upload Video",
+        path: "/dashboard/upload",
+        icon: <MdUpload />,
+      },
+      {
+        title: "Analysis",
+        path: "/dashboard/analysis",
+        icon: <FaChartLine />,
+      },
+      {
+        title: "Reports",
+        path: "/dashboard/reports",
+        icon: <FaFilePdf />,
+      },
+      {
+        title: "History",
+        path: "/dashboard/history",
+        icon: <FaHistory />,
+      },
+      {
+        title: "Settings",
+        path: "/dashboard/settings",
+        icon: <MdSettings />,
+      },
+      {
+        title: "Help",
+        path: "/dashboard/help",
+        icon: <FaQuestionCircle />,
+      },
+    ];
+  }
+
+  // =========================
+  // COACH MENU
+  // =========================
+
+  else if (role === "coach") {
+    menuItems = [
+      {
+        title: "Dashboard",
+        path: "/dashboard",
+        icon: <MdDashboard />,
+      },
+      {
+        title: "Athletes",
+        path: "/dashboard/athletes",
+        icon: <FaUsers />,
+      },
+      {
+        title: "Upload Video",
+        path: "/dashboard/upload",
+        icon: <MdUpload />,
+      },
+      {
+        title: "Analysis",
+        path: "/dashboard/analysis",
+        icon: <FaChartLine />,
+      },
+      {
+        title: "Reports",
+        path: "/dashboard/reports",
+        icon: <FaFilePdf />,
+      },
+      {
+        title: "History",
+        path: "/dashboard/history",
+        icon: <FaHistory />,
+      },
+      {
+        title: "Settings",
+        path: "/dashboard/settings",
+        icon: <MdSettings />,
+      },
+      {
+        title: "Help",
+        path: "/dashboard/help",
+        icon: <FaQuestionCircle />,
+      },
+    ];
+  }
+
+  // =========================
+  // ADMIN MENU
+  // =========================
+
+  else if (role === "admin") {
+  menuItems = [
     {
       title: "Dashboard",
       path: "/dashboard",
       icon: <MdDashboard />,
     },
     {
-      title: "Athletes",
-      path: "/dashboard/athletes",
+      title: "User Management",
+      path: "/dashboard/admin",
       icon: <FaUsers />,
     },
     {
-      title: "Upload Video",
-      path: "/dashboard/upload",
-      icon: <MdUpload />,
-    },
-    {
-      title: "Analysis",
-      path: "/dashboard/analysis",
-      icon: <FaChartLine />,
+      title: "Athletes",
+      path: "/dashboard/athletes",
+      icon: <FaUsers />,
     },
     {
       title: "Reports",
@@ -63,6 +161,7 @@ function Sidebar() {
       icon: <FaQuestionCircle />,
     },
   ];
+  }
 
   return (
     <aside className="sidebar">
@@ -70,7 +169,10 @@ function Sidebar() {
       {/* Logo */}
 
       <div className="sidebar-logo">
-        <img src={logo} alt="Sports Injury Logo" />
+        <img
+          src={logo}
+          alt="Sports Injury Logo"
+        />
 
         <div>
           <h2>Sports Injury</h2>
@@ -81,7 +183,9 @@ function Sidebar() {
       {/* Navigation */}
 
       <nav className="sidebar-nav">
+
         {menuItems.map((item) => (
+
           <NavLink
             key={item.title}
             to={item.path}
@@ -91,13 +195,17 @@ function Sidebar() {
                 : "sidebar-link"
             }
           >
+
             <span className="sidebar-icon">
               {item.icon}
             </span>
 
             <span>{item.title}</span>
+
           </NavLink>
+
         ))}
+
       </nav>
 
       {/* Footer */}
@@ -105,10 +213,11 @@ function Sidebar() {
       <div className="sidebar-footer">
 
         <img
-  src={runnerImage}
-  alt="AI Runner"
-  className="runner-image"
-/>
+          src={runnerImage}
+          alt="AI Runner"
+          className="runner-image"
+        />
+
         <h3>AI Powered</h3>
 
         <p>

@@ -25,9 +25,6 @@ function AISummaryCard({
 
       <div className="card-header">
 
-        <span className="card-icon">
-          🧠
-        </span>
 
         <h3>
           AI Overall Assessment

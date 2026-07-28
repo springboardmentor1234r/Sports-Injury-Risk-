@@ -3,80 +3,65 @@ import React from "react";
 function AnomalyTable({ anomalies }) {
   if (!anomalies || anomalies.length === 0) {
     return (
-      <div className="card">
+      <div className="card anomaly-card">
         <div className="card-header">
-          <span className="card-icon">⚠️</span>
+          <span className="card-icon"></span>
           <h3>Movement Anomalies</h3>
         </div>
 
-        <p className="empty-text">
-          No movement anomalies detected.
-        </p>
+        <div className="no-anomaly">
+          <div className="no-anomaly-icon">✓</div>
+
+          <div>
+            <h4>No Movement Issues</h4>
+            <p>Your movement pattern looks healthy.</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const getSeverityClass = (severity) => {
-    switch (severity?.toLowerCase()) {
-      case "high":
-        return "risk-high";
-      case "medium":
-        return "risk-medium";
-      default:
-        return "risk-low";
-    }
-  };
-
   return (
     <div className="card anomaly-card">
-
       <div className="card-header">
-        <span className="card-icon">⚠️</span>
+        <span className="card-icon"></span>
         <h3>Movement Anomalies</h3>
       </div>
 
-      <div className="anomaly-list">
+      {anomalies.map((item, index) => (
+        <div className="anomaly-box" key={index}>
 
-        {anomalies.map((item, index) => (
+          <div className="anomaly-top">
 
-          <div
-            key={index}
-            className="anomaly-item"
-          >
-
-            <div className="anomaly-top">
-
-              <div className="anomaly-title">
-                🦴 {item.joint}
-              </div>
-
-              <span
-                className={`prediction-badge ${getSeverityClass(item.severity)}`}
-              >
-                {item.severity}
-              </span>
-
+            <div>
+              <h4>{item.joint}</h4>
+              <small>{item.severity}</small>
             </div>
 
-            <div className="anomaly-content">
-
-              <p>
-                <strong>Issue:</strong> {item.issue}
-              </p>
-
-              <p>
-                <strong>Recommendation:</strong>{" "}
-                {item.recommendation}
-              </p>
-
-            </div>
+            <span className="anomaly-badge">
+              {item.severity}
+            </span>
 
           </div>
 
-        ))}
+          <div className="anomaly-section">
 
-      </div>
+            <strong>Issue</strong>
 
+            <p>{item.issue}</p>
+
+          </div>
+
+          <div className="anomaly-section">
+
+            <strong>Recommendation</strong>
+
+            <p>{item.recommendation}</p>
+
+          </div>
+
+        </div>
+      ))}
     </div>
   );
 }

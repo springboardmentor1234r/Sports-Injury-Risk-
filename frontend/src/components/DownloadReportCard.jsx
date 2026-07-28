@@ -13,17 +13,23 @@ function DownloadReportCard({ reportPath }) {
     <div className="card report-card">
 
       <div className="card-header">
-        <span className="card-icon">📄</span>
+        <span className="card-icon"></span>
+
+
+
         <h3>AI Analysis Report</h3>
       </div>
 
       <div className="report-content">
+
 
         <div className="report-icon">
           📑
         </div>
 
         <h2>Report Generated Successfully</h2>
+
+
 
         <p>
           Your AI injury analysis report contains:

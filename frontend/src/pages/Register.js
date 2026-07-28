@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import "../styles/Forms.css";
+import "../styles/Register.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "athlete",
   });
 
   const handleChange = (e) => {
@@ -23,7 +24,6 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -34,37 +34,49 @@ function Register() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       });
 
       alert(response.data.message);
 
-      // Clear form
       setFormData({
         name: "",
         email: "",
         password: "",
         confirmPassword: "",
+        role: "athlete",
       });
 
-      // Redirect to Login page
       navigate("/login");
+
     } catch (error) {
+
       if (error.response) {
         alert(error.response.data.detail);
       } else {
         alert("Something went wrong. Please try again.");
       }
+
     }
   };
 
   return (
     <div className="form-container">
+
       <div className="form-card">
+
+        <h1 className="auth-title">
+          Sports Injury Risk Detection
+        </h1>
+
         <h2>Create Account</h2>
 
-        <p>Register to start analyzing athlete performance.</p>
+        <p>
+          Register to start analyzing athlete performance.
+        </p>
 
         <form onSubmit={handleSubmit}>
+
           <input
             type="text"
             name="name"
@@ -82,6 +94,16 @@ function Register() {
             onChange={handleChange}
             required
           />
+
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            required
+          >
+            <option value="athlete">Athlete</option>
+            <option value="coach">Coach</option>
+          </select>
 
           <input
             type="password"
@@ -102,10 +124,26 @@ function Register() {
           />
 
           <button type="submit">
-            Register
+            Create Account
           </button>
+
         </form>
+
+        <div className="auth-footer">
+
+          Already have an account?{" "}
+
+          <span
+            className="auth-link"
+            onClick={() => navigate("/login")}
+          >
+            Sign In
+          </span>
+
+        </div>
+
       </div>
+
     </div>
   );
 }

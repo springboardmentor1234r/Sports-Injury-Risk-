@@ -1,0 +1,132 @@
+.settings-page {
+    padding: 30px;
+    color: #ffffff;
+    animation: fadeIn 0.5s ease;
+}
+
+.settings-header {
+    margin-bottom: 30px;
+}
+
+.settings-header h1 {
+    font-size: 34px;
+    color: #7CFC00;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.settings-header p {
+    color: #b8b8b8;
+    font-size: 16px;
+}
+
+.settings-card {
+    background: #151515;
+    border: 1px solid #2b2b2b;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+    transform: translateY(-4px);
+    border-color: #7CFC00;
+}
+
+.settings-card h2 {
+    color: #7CFC00;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #2c2c2c;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item span {
+    color: #cfcfcf;
+    font-size: 15px;
+}
+
+.setting-item strong {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.setting-item select {
+    background: #202020;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px 12px;
+    outline: none;
+}
+
+.settings-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #7CFC00;
+    color: #111;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.settings-btn:hover {
+    background: #95ff33;
+    transform: translateY(-2px);
+}
+
+.logout-btn {
+    background: #ff4d4d;
+    color: white;
+}
+
+.logout-btn:hover {
+    background: #ff3333;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .settings-page {
+        padding: 20px;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .settings-header h1 {
+        font-size: 28px;
+    }
+
+}

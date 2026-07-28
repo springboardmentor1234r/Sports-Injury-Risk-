@@ -2,22 +2,30 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import Footer from "./components/Footer";
-
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AdminDashboard from "./pages/AdminDashboard";
 
-import Dashboard from "./pages/Dashboard";
+import RoleDashboard from "./pages/RoleDashboard";
+import AthleteDashboard from "./pages/AthleteDashboard";
+import CoachDashboard from "./pages/CoachDashboard";
+import Admin from "./pages/Admin";
 import Athlete from "./pages/Athlete";
 import UploadVideo from "./pages/UploadVideo";
 import NotFound from "./pages/NotFound";
 import Analysis from "./pages/Analysis";
 import Reports from "./pages/Reports";
 import History from "./pages/History";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
+
 
 function App() {
   return (
     <BrowserRouter>
+
       <Routes>
 
         {/* ================= PUBLIC ROUTES ================= */}
@@ -45,96 +53,162 @@ function App() {
         {/* ================= DASHBOARD ================= */}
 
         <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/dashboard/athletes"
-          element={
-            <Layout>
-              <Athlete />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/dashboard/upload"
-          element={
-            <Layout>
-              <UploadVideo />
-            </Layout>
-          }
-        />
-
-        {/* ================= FUTURE MODULES ================= */}
-
-        <Route
-            path="/dashboard/analysis"
-            element={
-              <Layout>
-                <Analysis />
-              </Layout>
-            }
-        />
-
-        <Route
-          path="/dashboard/reports"
-          element={
-            <Layout>
-              <Reports />
-            </Layout>
-          }
-        />
-
-        <Route
-  path="/dashboard/history"
+  path="/dashboard"
   element={
-    <Layout>
-      <History />
-    </Layout>
+    <ProtectedRoute
+      allowedRoles={[
+        "admin",
+        "coach",
+        "athlete",
+      ]}
+    >
+      <Layout>
+        <RoleDashboard />
+      </Layout>
+    </ProtectedRoute>
   }
 />
 
         <Route
-          path="/dashboard/settings"
-          element={
+    path="/dashboard/admin"
+    element={
+        <ProtectedRoute allowedRoles={["admin"]}>
             <Layout>
-              <div
-                style={{
-                  color: "white",
-                  padding: "40px",
-                }}
-              >
-                <h1>Settings</h1>
-                <p>
-                  Configure your application here.
-                </p>
-              </div>
+                <Admin />
             </Layout>
+        </ProtectedRoute>
+    }
+/>
+
+        {/* ================= ATHLETES ================= */}
+
+        <Route
+          path="/dashboard/athletes"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+              ]}
+            >
+              <Layout>
+                <Athlete />
+              </Layout>
+            </ProtectedRoute>
           }
         />
+
+        {/* ================= UPLOAD ================= */}
+
+        <Route
+          path="/dashboard/upload"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <UploadVideo />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= ANALYSIS ================= */}
+
+        <Route
+          path="/dashboard/analysis"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <Analysis />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= REPORTS ================= */}
+
+        <Route
+          path="/dashboard/reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <Reports />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= HISTORY ================= */}
+
+        <Route
+          path="/dashboard/history"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <History />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= SETTINGS ================= */}
+
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= HELP ================= */}
 
         <Route
           path="/dashboard/help"
           element={
-            <Layout>
-              <div
-                style={{
-                  color: "white",
-                  padding: "40px",
-                }}
-              >
-                <h1>Help</h1>
-                <p>
-                  User guide and documentation will appear here.
-                </p>
-              </div>
-            </Layout>
+            <ProtectedRoute
+              allowedRoles={[
+                "admin",
+                "coach",
+                "athlete",
+              ]}
+            >
+              <Layout>
+                <Help />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
@@ -146,6 +220,7 @@ function App() {
         />
 
       </Routes>
+
     </BrowserRouter>
   );
 }

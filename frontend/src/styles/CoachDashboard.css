@@ -1,0 +1,81 @@
+.coach-page{
+    width:100%;
+}
+
+.coach-header{
+    margin-bottom:25px;
+}
+
+.coach-header h1{
+    color:#ffffff;
+    font-size:34px;
+    margin-bottom:8px;
+}
+
+.coach-header p{
+    color:#9ca3af;
+}
+
+.coach-cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.coach-card{
+    background:#1b1b1b;
+    border:1px solid #2d2d2d;
+    border-radius:18px;
+    padding:22px;
+    transition:.3s;
+}
+
+.coach-card:hover{
+    transform:translateY(-4px);
+    border-color:#7CFC00;
+}
+
+.coach-card h3{
+    color:#9ca3af;
+    font-size:15px;
+}
+
+.coach-card h2{
+    color:#7CFC00;
+    font-size:34px;
+    margin-top:12px;
+}
+
+.coach-table{
+    background:#1b1b1b;
+    border-radius:18px;
+    border:1px solid #2d2d2d;
+    padding:20px;
+}
+
+.coach-table h2{
+    color:white;
+    margin-bottom:20px;
+}
+
+.coach-table table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.coach-table th{
+    text-align:left;
+    color:white;
+    padding:15px;
+    border-bottom:1px solid #333;
+}
+
+.coach-table td{
+    padding:15px;
+    color:#d1d5db;
+}
+
+.coach-table tr:hover{
+    background:#242424;
+}
