@@ -1,0 +1,43 @@
+# Python
+backend/venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment Variables
+.env
+
+# Node.js
+frontend/node_modules/
+node_modules/
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Uploads
+backend/uploads/
+backend/uploads/**
+
+
+backend/venv/
+backend/uploads/videos/
+backend/uploads/processed/
+backend/uploads/frames/
+
+__pycache__/
+*.pyc
+
+node_modules/
+
+.env
+
+*.jpg
+*.jpeg
+*.png
+
+.vscode/
