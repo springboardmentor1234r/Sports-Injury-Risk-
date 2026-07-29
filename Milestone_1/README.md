@@ -33,3 +33,5 @@ PostgreSQL
 SQLAlchemy
 
 JWT
+
+Status: ✅ Completed

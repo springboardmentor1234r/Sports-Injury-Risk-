@@ -1,50 +1,30 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import UploadVideo from "./pages/UploadVideo";
-import History from "./pages/History";
-import AthleteProfile from "./pages/AthleteProfile";
-import Reports from "./pages/Reports";
-import NotFound from "./pages/NotFound";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
-import Settings from "./pages/Settings";
-
+import React, { useState } from 'react';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import Analysis from './components/Analysis';
+import './App.css';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('login');
+
   return (
-    <BrowserRouter>
-      <Routes>
+    <div className="app-container">
+      <header className="header">
+        <h2>🏋️‍♂️ Sports Injury Risk Detection</h2>
+        {currentPage !== 'login' && (
+          <div className="user-info">
+            Welcome, <strong>coach_admin</strong> | 
+            <button className="link-btn" onClick={() => setCurrentPage('login')}>Logout</button>
+          </div>
+        )}
+      </header>
 
-        <Route path="/" element={<Landing />} />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/register" element={<Register />} />
-
-        <Route path="/profile" element={<Profile />} />
-
-        <Route path="/dashboard" element={<Dashboard />} />
-
-        <Route path="/edit-profile" element={<EditProfile />} />
-
-        <Route path="/upload" element={<UploadVideo />} />
-
-        <Route path="/history" element={<History />} />
-
-        <Route path="/settings" element={<Settings />} /> 
-
-        <Route path="/profile" element={<AthleteProfile />} />
-
-        <Route path="/reports" element={<Reports />} />
-
-        <Route path="*" element={<NotFound />} />
-
-      </Routes>
-    </BrowserRouter>
+      <main className="main-content">
+        {currentPage === 'login' && <Login onLogin={() => setCurrentPage('dashboard')} />}
+        {currentPage === 'dashboard' && <Dashboard onNavigate={() => setCurrentPage('analysis')} />}
+        {currentPage === 'analysis' && <Analysis onBack={() => setCurrentPage('dashboard')} />}
+      </main>
+    </div>
   );
 }
 
