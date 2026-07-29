@@ -1,43 +1,58 @@
+# ===========================
 # Python
+# ===========================
 backend/venv/
 venv/
+env/
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.pyd
 
+# ===========================
 # Environment Variables
+# ===========================
 .env
+*.env
 
+# ===========================
 # Node.js
+# ===========================
 frontend/node_modules/
 node_modules/
 
+# ===========================
 # VS Code
+# ===========================
 .vscode/
 
+# ===========================
 # OS Files
+# ===========================
 .DS_Store
 Thumbs.db
 
-# Uploads
-backend/uploads/
-backend/uploads/**
-
-
-backend/venv/
+# ===========================
+# Uploads (Generated Files)
+# ===========================
 backend/uploads/videos/
 backend/uploads/processed/
 backend/uploads/frames/
 
-__pycache__/
-*.pyc
-
-node_modules/
-
-.env
-
+# ===========================
+# Media Files (Optional)
+# ===========================
 *.jpg
 *.jpeg
 *.png
 
-.vscode/
+# ===========================
+# Logs
+# ===========================
+*.log
+
+# ===========================
+# Build
+# ===========================
+dist/
+build/

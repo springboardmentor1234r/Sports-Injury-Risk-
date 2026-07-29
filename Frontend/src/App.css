@@ -1,0 +1,25 @@
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
+.app-container { display: flex; flex-direction: column; min-height: 100vh; }
+.header { background-color: #002244; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+.header h2 { margin: 0; font-size: 22px; }
+.user-info { font-size: 14px; }
+.link-btn { background: none; border: none; color: #ffcccc; cursor: pointer; font-size: 14px; text-decoration: underline; margin-left: 10px; }
+.main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 30px; flex-direction: column; }
+
+.card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
+.login-card { max-width: 350px; }
+.dashboard-card { text-align: left; max-width: 700px; }
+.analysis-card { text-align: center; }
+
+input, select { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.btn { color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; width: 100%; transition: 0.3s; }
+.primary-btn { background-color: #0056b3; }
+.primary-btn:hover { background-color: #004494; }
+.success-btn { background-color: #28a745; width: auto; margin-top: 20px; }
+.success-btn:hover { background-color: #218838; }
+.secondary-btn { background-color: #6c757d; width: auto; margin-top: 20px; }
+
+.athlete-details { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 15px; }
+.badge { background: #ff9800; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+.loader { margin-top: 15px; font-weight: bold; color: #0056b3; }
+.result-image { max-width: 100%; height: auto; margin-top: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.2); }
