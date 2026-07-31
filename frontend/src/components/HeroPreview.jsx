@@ -13,10 +13,16 @@ export default function HeroPreview() {
                 <div className="rounded-2xl bg-slate-900 h-60 flex items-center justify-center overflow-hidden">
 
                     <img
-                        src={athlete}
-                        alt="Athlete"
-                        className="w-full h-full object-cover rounded-2xl"
-                    />
+    src={athlete}
+    alt="Athlete"
+    className="w-full h-full object-cover rounded-2xl"
+    style={{
+        width: "100%",
+        height: "300px",
+        objectFit: "cover",
+        border: "3px solid red",
+    }}
+/>
 
                 </div>
 

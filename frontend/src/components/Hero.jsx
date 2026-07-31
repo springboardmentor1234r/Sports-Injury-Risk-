@@ -166,19 +166,17 @@ export default function Hero() {
                 {/* RIGHT */}
 
                 <motion.div
-                    className="flex justify-center"
-                    initial={{ opacity: 0, x: 80, scale: 0.9 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{
-                        duration: 1,
-                        delay: 0.3,
-                        ease: "easeOut",
-                    }}
-                >
-
-                    <HeroPreview />
-
-                </motion.div>
+    className="flex justify-center"
+    initial={{ opacity: 0, x: 80, scale: 0.9 }}
+    animate={{ opacity: 1, x: 0, scale: 1 }}
+    transition={{
+        duration: 1,
+        delay: 0.3,
+        ease: "easeOut",
+    }}
+>
+    <HeroPreview />
+</motion.div>
 
             </div>
 
