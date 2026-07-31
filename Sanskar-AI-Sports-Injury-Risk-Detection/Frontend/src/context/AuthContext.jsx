@@ -54,13 +54,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (googleToken, role) => {
+    try {
+      const response = await axiosInstance.post('/auth/google-login', { token: googleToken, role });
+      const userData = response.data?.data || response.data;
+      const normalizedUser = {
+        id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+      };
+      localStorage.setItem('token', userData.token);
+      setUser(normalizedUser);
+      return normalizedUser;
+    } catch (err) {
+      console.error('[AuthContext] Google Login failed:', err);
+      throw new Error(err.response?.data?.message || err.message || 'Google Login failed');
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosInstance';
+import { useAuth } from '../context/AuthContext';
 
 const InputField = ({ id, label, type = 'text', value, onChange, placeholder, error, hint }) => (
   <div>
@@ -87,6 +88,38 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { loginWithGoogle } = useAuth();
+
+  useEffect(() => {
+    /* global google */
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+        callback: async (response) => {
+          setErrors({});
+          setSubmitting(true);
+          try {
+            await loginWithGoogle(response.credential, form.role || 'athlete');
+            navigate('/');
+          } catch (err) {
+            setErrors({ general: err.message || 'Google Sign-In failed' });
+          } finally {
+            setSubmitting(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-btn'),
+        {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 320,
+        }
+      );
+    }
+  }, [loginWithGoogle, form.role, navigate]);
 
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -186,6 +219,18 @@ const Register = () => {
             <p className="text-slate-500 mt-2 text-sm text-center leading-relaxed">
               Join KineGuard AI — your intelligent sports injury risk platform.
             </p>
+          </div>
+
+          {/* Continue with Google Button */}
+          <div className="mb-5 flex justify-center">
+            <div id="google-signin-btn"></div>
+          </div>
+
+          {/* Divider */}
+          <div className="relative flex py-2 items-center mb-5">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-4 text-slate-500 text-xs font-bold uppercase tracking-wider">OR</span>
+            <div className="flex-grow border-t border-slate-200"></div>
           </div>
 
           {/* Success Banner */}

@@ -8,7 +8,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login, user } = useAuth();
+  const { login, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +16,36 @@ const Login = () => {
       navigate('/', { replace: true });
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    /* global google */
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+        callback: async (response) => {
+          setError('');
+          setSubmitting(true);
+          try {
+            await loginWithGoogle(response.credential);
+          } catch (err) {
+            setError(err.message || 'Google Sign-In failed');
+          } finally {
+            setSubmitting(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-btn'),
+        {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 320,
+        }
+      );
+    }
+  }, [loginWithGoogle]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +74,18 @@ const Login = () => {
           <p className="text-slate-500 mt-2 text-sm text-center">
             Access KineGuard AI analytics and injury risk tracking suite.
           </p>
+        </div>
+
+        {/* Continue with Google Button */}
+        <div className="mb-5 flex justify-center">
+          <div id="google-signin-btn"></div>
+        </div>
+
+        {/* Divider */}
+        <div className="relative flex py-2 items-center mb-5">
+          <div className="flex-grow border-t border-slate-200"></div>
+          <span className="flex-shrink mx-4 text-slate-500 text-xs font-bold uppercase tracking-wider">OR</span>
+          <div className="flex-grow border-t border-slate-200"></div>
         </div>
 
         {error && (

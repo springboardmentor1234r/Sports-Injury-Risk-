@@ -7,6 +7,7 @@ import {
   verifyResetOtp,
   resetPassword,
 } from '../controllers/authController.js';
+import { googleLogin } from '../controllers/googleAuthController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -17,6 +18,7 @@ router.post('/login', loginUser);
 router.post('/forgot-password', requestPasswordReset);
 router.post('/verify-reset-otp', verifyResetOtp);
 router.post('/reset-password', resetPassword);
+router.post('/google-login', googleLogin);
 
 // Protected routes
 router.get('/me', protect, getMe);
