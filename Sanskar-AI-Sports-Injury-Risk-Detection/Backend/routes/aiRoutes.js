@@ -18,12 +18,26 @@ const upload = multer({
     },
   }),
   limits: {
-    fileSize: 100 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
+const uploadSingle = upload.single('video');
 const router = express.Router();
 
-router.post('/pose', protect, upload.single('video'), analyzeVideoPose);
+router.post('/pose', protect, (req, res, next) => {
+  uploadSingle(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'Video size must not exceed 10 MB.',
+        });
+      }
+      return next(err);
+    }
+    next();
+  });
+}, analyzeVideoPose);
 
 export default router;
