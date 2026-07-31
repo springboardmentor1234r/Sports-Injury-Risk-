@@ -42,11 +42,11 @@ const AnalysisUploadForm = ({ onAnalyze, loading, athletes, athletesLoading }) =
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-white">Run AI Video Analysis</h3>
-          <p className="mt-1 text-sm text-slate-400">Upload a training video to view its existing pose-analysis response.</p>
+          <p className="mt-1 text-sm text-slate-500">Upload a training video to view its existing pose-analysis response.</p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <input ref={inputRef} type="file" accept=".mp4,.mov,.avi,.webm" className="hidden" onChange={(event) => selectFile(event.target.files?.[0])} />
-          <button type="button" onClick={() => inputRef.current?.click()} className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-brand-500 hover:text-white">
+          <button type="button" onClick={() => inputRef.current?.click()} className="rounded-xl border border-brand-500 bg-white px-4 py-2.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 hover:text-brand-700">
             {file ? 'Change Video' : 'Choose Video'}
           </button>
           <button type="submit" disabled={loading} className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-60">
@@ -62,7 +62,7 @@ const AnalysisUploadForm = ({ onAnalyze, loading, athletes, athletesLoading }) =
         </select>
       </div>
       {(file || validationError) && (
-        <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${validationError ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-slate-800 bg-slate-950/60 text-slate-300'}`}>
+        <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${validationError ? 'border-red-200 bg-red-50 text-red-700' : 'border-brand-200 bg-brand-50 text-slate-600'}`}>
           {validationError || `Selected video: ${file.name}`}
         </div>
       )}

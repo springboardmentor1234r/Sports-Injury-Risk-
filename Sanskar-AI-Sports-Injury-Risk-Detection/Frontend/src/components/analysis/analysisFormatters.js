@@ -1,12 +1,12 @@
 const RISK_BADGES = {
-  'Very Low': 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
-  Low: 'border-yellow-500/40 bg-yellow-500/15 text-yellow-300',
-  Moderate: 'border-orange-500/40 bg-orange-500/15 text-orange-300',
-  High: 'border-red-500/40 bg-red-500/15 text-red-300',
-  Critical: 'border-red-950 bg-red-950/80 text-red-100',
+  'Very Low': 'border-green-200 bg-green-50 text-green-700',
+  Low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  Moderate: 'border-amber-200 bg-amber-50 text-amber-700',
+  High: 'border-brand-200 bg-brand-100 text-brand-700',
+  Critical: 'border-red-200 bg-red-50 text-red-700',
 };
 
-const getRiskBadgeClass = (riskLevel) => RISK_BADGES[riskLevel] || 'border-slate-600 bg-slate-800 text-slate-300';
+const getRiskBadgeClass = (riskLevel) => RISK_BADGES[riskLevel] || 'border-brand-200 bg-brand-50 text-slate-600';
 
 const formatRiskScore = (score) => (Number.isFinite(score) ? `${score.toFixed(2)} / 100` : 'Unavailable');
 
@@ -28,4 +28,3 @@ const formatConfidence = (confidence) => {
 };
 
 export { formatAngle, formatConfidence, formatRiskScore, formatTimestamp, getRiskBadgeClass };
-

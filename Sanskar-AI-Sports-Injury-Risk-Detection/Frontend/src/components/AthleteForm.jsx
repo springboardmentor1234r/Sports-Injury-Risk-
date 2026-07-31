@@ -1,6 +1,6 @@
 import React from 'react';
 
-const inputClassName = 'w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+const inputClassName = 'w-full rounded-xl border border-brand-200 bg-white px-3 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
 
 const calculateAgeFromDob = (dateOfBirth) => {
   if (!dateOfBirth) return '';
@@ -38,7 +38,7 @@ const AthleteForm = ({ formData, onChange, onSubmit, submitting, isEditing = fal
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-300">Calculated Age</label>
-          <input value={calculatedAge || '—'} readOnly className={`${inputClassName} cursor-default bg-slate-950/80`} />
+          <input value={calculatedAge || '—'} readOnly className={`${inputClassName} cursor-default bg-brand-50`} />
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-300">Gender</label>
@@ -88,7 +88,7 @@ const AthleteForm = ({ formData, onChange, onSubmit, submitting, isEditing = fal
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Saving...' : isEditing ? 'Update Athlete' : 'Add Athlete'}
         </button>

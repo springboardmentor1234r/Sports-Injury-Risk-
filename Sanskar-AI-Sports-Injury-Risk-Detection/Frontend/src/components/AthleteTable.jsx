@@ -18,7 +18,7 @@ const calculateAgeFromDob = (dateOfBirth) => {
 const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
   if (loading) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center text-sm text-slate-400">
+      <div className="rounded-2xl border border-brand-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
         Loading athletes...
       </div>
     );
@@ -26,16 +26,16 @@ const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
 
   if (!athletes.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 p-8 text-center text-sm text-slate-400">
+      <div className="rounded-2xl border border-dashed border-brand-300 bg-brand-50 p-8 text-center text-sm text-slate-500">
         No athletes yet. Add your first athlete profile to get started.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
-      <table className="min-w-full text-left text-sm text-slate-300">
-        <thead className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase tracking-wider text-slate-400">
+    <div className="overflow-x-auto rounded-2xl border border-brand-200 bg-white shadow-[0_10px_30px_rgba(234,88,12,0.08)]">
+      <table className="min-w-full text-left text-sm text-slate-600">
+        <thead className="bg-gradient-to-r from-brand-500 to-brand-600 text-xs uppercase tracking-wider text-white">
           <tr>
             <th className="px-4 py-3">Full Name</th>
             <th className="px-4 py-3">Sport</th>
@@ -48,13 +48,13 @@ const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
         </thead>
         <tbody>
           {athletes.map((athlete) => (
-            <tr key={athlete._id} className="border-b border-slate-800/70 last:border-b-0 hover:bg-slate-800/40">
-              <td className="px-4 py-3 font-medium text-white">{athlete.fullName}</td>
+            <tr key={athlete._id} className="border-b border-brand-100 last:border-b-0 hover:bg-brand-50/70">
+              <td className="px-4 py-3 font-semibold text-slate-800">{athlete.fullName}</td>
               <td className="px-4 py-3">{athlete.sport}</td>
               <td className="px-4 py-3">{athlete.playingPosition}</td>
               <td className="px-4 py-3">{calculateAgeFromDob(athlete.dateOfBirth)}</td>
               <td className="px-4 py-3">
-                <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-xs text-slate-300">
+                <span className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700">
                   {athlete.trainingLoad}
                 </span>
               </td>
@@ -65,7 +65,7 @@ const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
                     type="button"
                     onClick={() => onEdit?.(athlete)}
                     disabled={deletingId === athlete._id}
-                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-brand-500 hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-lg border border-brand-400 bg-white px-3 py-1.5 text-xs font-semibold text-brand-600 transition hover:-translate-y-0.5 hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Edit
                   </button>
@@ -73,7 +73,7 @@ const AthleteTable = ({ athletes, loading, onEdit, onDelete, deletingId }) => {
                     type="button"
                     onClick={() => onDelete?.(athlete)}
                     disabled={deletingId === athlete._id}
-                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-red-500 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-lg border border-red-400 bg-white px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:-translate-y-0.5 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingId === athlete._id ? 'Deleting...' : 'Delete'}
                   </button>

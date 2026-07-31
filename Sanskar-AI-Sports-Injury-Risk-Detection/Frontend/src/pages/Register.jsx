@@ -169,30 +169,28 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10 relative overflow-hidden font-sans">
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute top-3/4 left-1/2 w-64 h-64 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-md w-full relative z-10">
+    <div className="auth-shell font-sans">
+      <section className="auth-visual">
+        <div className="auth-visual__content"><span className="auth-visual__eyebrow">KineGuard Intelligence</span><h1>Move smarter.<br />Train safer.</h1><p>Transform every training clip into clear movement intelligence, personalized injury-risk predictions, and actionable recommendations.</p><svg className="auth-art" viewBox="0 0 560 310" role="img" aria-label="Digital athlete pose analysis illustration"><defs><linearGradient id="register-runner" x1="0" x2="1"><stop stopColor="#F97316" /><stop offset="1" stopColor="#EA580C" /></linearGradient><filter id="register-glow"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><g fill="none" stroke="#F97316" opacity=".35"><path d="M35 260 120 110 210 218 305 72 412 190 530 42" /><path d="M36 70 120 142 230 55 345 132 490 82" /></g><g fill="#F97316" filter="url(#register-glow)">{[[35,260],[120,110],[210,218],[305,72],[412,190],[530,42],[36,70],[120,142],[230,55],[345,132],[490,82]].map(([cx,cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="5" />)}</g><g stroke="url(#register-runner)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" filter="url(#register-glow)"><circle cx="287" cy="62" r="22" /><path d="M282 86 248 153 306 190 364 142M251 151l-72 39M307 189l-42 69M307 189l75 40" /></g><g fill="#F97316"><circle cx="287" cy="62" r="5" /><circle cx="248" cy="153" r="5" /><circle cx="306" cy="190" r="5" /><circle cx="179" cy="190" r="5" /><circle cx="364" cy="142" r="5" /><circle cx="265" cy="258" r="5" /><circle cx="382" cy="229" r="5" /></g><rect x="385" y="24" width="129" height="76" rx="13" fill="rgba(255,255,255,.74)" stroke="#FDBA74" /><text x="403" y="52" fill="#EA580C" fontSize="12" fontWeight="700">AI READOUT</text><path d="M402 77h18l10-21 12 33 10-18h40" fill="none" stroke="#F97316" strokeWidth="4" strokeLinecap="round" /></svg></div>
+      </section>
+      <section className="auth-form-area"><div className="auth-form-card relative z-10">
         {/* Card */}
-        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl shadow-black/40">
+        <div className="bg-white border border-brand-200 p-8 rounded-2xl shadow-2xl shadow-brand-900/10">
 
           {/* Header */}
           <div className="flex flex-col items-center mb-8">
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-brand-500/30 mb-4 select-none">
               K
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">Create Account</h1>
-            <p className="text-slate-400 mt-2 text-sm text-center leading-relaxed">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-700">Create Account</h1>
+            <p className="text-slate-500 mt-2 text-sm text-center leading-relaxed">
               Join KineGuard AI — your intelligent sports injury risk platform.
             </p>
           </div>
 
           {/* Success Banner */}
           {success && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-950/50 border border-emerald-800/60 text-emerald-300 text-sm flex items-center gap-3 animate-pulse-once">
+            <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-3 animate-pulse-once">
               <svg className="w-5 h-5 shrink-0 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5z" clipRule="evenodd" />
               </svg>
@@ -202,7 +200,7 @@ const Register = () => {
 
           {/* General Error Banner */}
           {errors.general && (
-            <div className="mb-6 p-4 rounded-xl bg-red-950/40 border border-red-900/50 text-red-300 text-sm flex items-center gap-3">
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-3">
               <svg className="w-5 h-5 shrink-0 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-7 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-9a1 1 0 0 0-1 1v4a1 1 0 1 0 2 0V6a1 1 0 0 0-1-1z" clipRule="evenodd" />
               </svg>
@@ -360,7 +358,7 @@ const Register = () => {
         <p className="mt-4 text-center text-xs text-slate-600">
           KineGuard AI &copy; {new Date().getFullYear()} — Sports Injury Risk Detection Platform
         </p>
-      </div>
+      </div></section>
     </div>
   );
 };

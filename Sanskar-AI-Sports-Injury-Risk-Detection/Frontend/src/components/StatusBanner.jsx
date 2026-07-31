@@ -4,8 +4,8 @@ const StatusBanner = ({ type, text }) => {
   if (!text) return null;
 
   const styles = {
-    success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    error: 'border-red-500/30 bg-red-500/10 text-red-300',
+    success: 'border-green-200 bg-green-50 text-green-700',
+    error: 'border-red-200 bg-red-50 text-red-700',
   };
 
   return (

@@ -31,31 +31,30 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 relative overflow-hidden font-sans">
-      {/* Decorative gradient glowing circles */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none"></div>
-
-      <div className="max-w-md w-full glass-panel p-8 rounded-2xl shadow-2xl relative z-10">
+    <div className="auth-shell font-sans">
+      <section className="auth-visual">
+        <div className="auth-visual__content"><span className="auth-visual__eyebrow">KineGuard Intelligence</span><h1>AI Sports Injury<br />Risk Detection System</h1><p>Real-time Pose Detection, Movement Analysis, Risk Prediction, Exercise Recommendation using Artificial Intelligence.</p><svg className="auth-art" viewBox="0 0 560 310" role="img" aria-label="AI athlete motion analysis illustration"><defs><linearGradient id="runner" x1="0" x2="1"><stop stopColor="#F97316" /><stop offset="1" stopColor="#EA580C" /></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><g fill="none" stroke="#F97316" opacity=".35"><path d="M30 230 128 140 210 210 310 92 430 180 530 52" /><path d="M50 75 145 120 250 45 355 115 480 68" /></g><g fill="#F97316" filter="url(#glow)">{[[30,230],[128,140],[210,210],[310,92],[430,180],[530,52],[50,75],[145,120],[250,45],[355,115],[480,68]].map(([cx,cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="5" />)}</g><g stroke="url(#runner)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" filter="url(#glow)"><circle cx="285" cy="62" r="22" /><path d="M280 86 251 151 309 188 360 140M255 150l-75 34M309 188l-38 72M307 188l73 45" /></g><g fill="#F97316"><circle cx="285" cy="62" r="5" /><circle cx="251" cy="151" r="5" /><circle cx="309" cy="188" r="5" /><circle cx="180" cy="184" r="5" /><circle cx="360" cy="140" r="5" /><circle cx="271" cy="260" r="5" /><circle cx="380" cy="233" r="5" /></g><rect x="374" y="30" width="135" height="72" rx="13" fill="rgba(255,255,255,.74)" stroke="#FDBA74" /><path d="M394 76h17l10-22 13 34 10-19h38" fill="none" stroke="#F97316" strokeWidth="4" strokeLinecap="round" /><text x="393" y="53" fill="#EA580C" fontSize="12" fontWeight="700">MOTION ANALYSIS</text></svg></div>
+      </section>
+      <section className="auth-form-area"><div className="auth-form-card glass-panel p-8 rounded-[20px] shadow-2xl relative z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-brand-500/20 mb-4">
             K
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-white">Welcome back</h2>
-          <p className="text-slate-400 mt-2 text-sm text-center">
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-700">Welcome back</h2>
+          <p className="text-slate-500 mt-2 text-sm text-center">
             Access KineGuard AI analytics and injury risk tracking suite.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-950/40 border border-red-900/50 text-red-300 text-sm">
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" htmlFor="email">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2" htmlFor="email">
               Email Address
             </label>
             <input
@@ -70,7 +69,7 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" htmlFor="password">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2" htmlFor="password">
               Password
             </label>
             <div className="relative">
@@ -87,7 +86,7 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute inset-y-0 right-3 flex items-center text-slate-400 transition-all duration-200 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-lg"
+                className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition-all duration-200 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-lg"
               >
                 {showPassword ? (
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +114,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-slate-400">
+        <div className="mt-6 text-center text-sm text-slate-500">
           Don't have an account?{' '}
           <Link
             to="/register"
@@ -128,7 +127,7 @@ const Login = () => {
         <div className="mt-4 text-center text-xs text-slate-500">
           <p>Demo: Any email & password will trigger mock authentication success.</p>
         </div>
-      </div>
+      </div></section>
     </div>
   );
 };

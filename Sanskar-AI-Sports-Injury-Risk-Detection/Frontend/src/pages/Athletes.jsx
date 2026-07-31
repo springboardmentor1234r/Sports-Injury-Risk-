@@ -143,7 +143,7 @@ const Athletes = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold text-white">Athlete Management</h2>
-        <p className="text-sm text-slate-400">Create and review athlete profiles with your existing injury-risk workflow.</p>
+        <p className="text-sm text-slate-500">Create and review athlete profiles with your existing injury-risk workflow.</p>
       </div>
 
       <StatusBanner type={status.type} text={status.text} />
@@ -169,17 +169,17 @@ const Athletes = () => {
       </div>
 
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-2xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-2xl border border-brand-200 bg-white p-6 shadow-2xl shadow-brand-900/10">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">Edit Athlete</h3>
-                <p className="text-sm text-slate-400">Update the selected athlete profile and save the latest details.</p>
+                <p className="text-sm text-slate-500">Update the selected athlete profile and save the latest details.</p>
               </div>
               <button
                 type="button"
                 onClick={closeEditModal}
-                className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                className="rounded-lg border border-brand-500 px-3 py-1.5 text-sm text-brand-600 transition hover:bg-brand-50 hover:text-brand-700"
               >
                 Cancel
               </button>

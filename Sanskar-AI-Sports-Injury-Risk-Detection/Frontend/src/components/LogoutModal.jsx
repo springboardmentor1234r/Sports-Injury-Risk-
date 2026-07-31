@@ -57,7 +57,7 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
         aria-labelledby="logout-modal-title"
         aria-describedby="logout-modal-desc"
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-black/60 p-7 transition-all duration-300 ${
+        className={`w-full max-w-sm bg-white border border-brand-200 rounded-2xl shadow-2xl shadow-brand-900/10 p-7 transition-all duration-300 ${
           isOpen
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 translate-y-4'
@@ -65,7 +65,7 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
       >
         {/* Icon */}
         <div className="flex justify-center mb-5">
-          <div className="h-14 w-14 rounded-2xl bg-red-950/50 border border-red-900/40 flex items-center justify-center shadow-lg shadow-red-900/20">
+          <div className="h-14 w-14 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center shadow-lg shadow-red-900/10">
             <svg
               className="w-7 h-7 text-red-400"
               viewBox="0 0 24 24"
@@ -86,7 +86,7 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
         {/* Title */}
         <h2
           id="logout-modal-title"
-          className="text-xl font-bold text-white text-center tracking-tight"
+          className="text-xl font-bold text-slate-700 text-center tracking-tight"
         >
           Confirm Logout
         </h2>
@@ -94,14 +94,14 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
         {/* Message */}
         <p
           id="logout-modal-desc"
-          className="mt-2 text-sm text-slate-400 text-center leading-relaxed"
+          className="mt-2 text-sm text-slate-500 text-center leading-relaxed"
         >
           Are you sure you want to sign out? Your current session will end and
           you'll need to log in again to continue.
         </p>
 
         {/* Divider */}
-        <div className="my-6 h-px bg-slate-800" />
+        <div className="my-6 h-px bg-brand-200" />
 
         {/* Actions */}
         <div className="flex gap-3">
@@ -109,7 +109,7 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
           <button
             ref={cancelBtnRef}
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-sm font-semibold hover:bg-slate-800 hover:text-white active:scale-[0.97] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="flex-1 py-2.5 rounded-xl border border-brand-500 bg-white text-brand-600 text-sm font-semibold hover:bg-brand-50 hover:text-brand-700 active:scale-[0.97] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             Cancel
           </button>

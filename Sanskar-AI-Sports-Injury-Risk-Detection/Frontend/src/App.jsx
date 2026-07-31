@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 font-sans">
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center text-slate-600 font-sans">
         <div className="flex flex-col items-center gap-3">
           <span className="h-6 w-6 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
           <span className="text-xs uppercase tracking-widest font-semibold text-slate-500">Loading Session...</span>
