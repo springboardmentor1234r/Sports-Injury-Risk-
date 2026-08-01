@@ -1,0 +1,7 @@
+DETECTOR_MODEL = "yolo11n.pt"  # Use v11 nano by default, fallback to v8n
+CONFIDENCE_THRESHOLD = 0.5
+IOU_THRESHOLD = 0.45
+CLASSES = [0]  # Only detect persons
+TRACKER_MAX_AGE = 30
+TRACKER_MIN_HITS = 3
+TRACKER_IOU_THRESHOLD = 0.3

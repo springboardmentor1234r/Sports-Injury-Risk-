@@ -1,0 +1,15 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to AWS
+      run: |
+        echo "Deploying to AWS ECS..."
+        # Add AWS deployment steps here
