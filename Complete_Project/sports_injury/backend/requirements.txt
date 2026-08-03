@@ -1,0 +1,33 @@
+# Sports Injury Risk Detection Platform — backend dependencies
+# Reconstructed from the imports actually used across backend/, since no
+# requirements.txt shipped with the earlier milestones. Pin exact versions
+# once you've confirmed these against your local install with `pip freeze`.
+
+# --- Web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20   # required by FastAPI for UploadFile/Form
+
+# --- Database ---
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10    # PostgreSQL driver (see DATABASE_URL in .env)
+
+# --- Auth ---
+python-jose[cryptography]==3.3.0
+bcrypt==4.2.1
+python-dotenv==1.0.1
+
+# --- Validation ---
+pydantic[email]==2.10.4
+
+# --- Computer vision / pose estimation (Milestone 2) ---
+opencv-python-headless==4.10.0.84
+mediapipe==0.10.18
+numpy==1.26.4
+
+# --- Reports & Export (Milestone 4) ---
+reportlab==4.2.5
+openpyxl==3.1.5
+
+# --- Testing (Milestone 4) ---
+pytest==8.3.4

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sports Injury Platform</title>
+    <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .nav-item {
+    transition: all 0.3s ease;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.2) !important;
+    color: white !important;
+    transform: translateX(5px);
+    padding-left: 20px !important;
+  }
+
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 25px 50px rgba(168,85,247,0.25) !important;
+  }
+
+  .btn-hover {
+    transition: all 0.2s ease;
+  }
+
+  .btn-hover:hover {
+    background: #ec4899 !important;
+    color: white !important;
+    transform: scale(1.05);
+  }
+
+  .nav-item-active {
+    transition: all 0.3s ease;
+  }
+
+  .nav-item-active:hover {
+    background: rgba(255,255,255,0.35) !important;
+  }
+
+  @media (max-width: 768px) {
+    .left-panel { display: none !important; }
+    .right-panel { flex: 1 !important; }
+    .form-container {
+      width: 100% !important;
+      justify-content: center !important;
+      margin: 0 auto !important;
+      padding: 20px !important;
+    }
+  }
+</style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

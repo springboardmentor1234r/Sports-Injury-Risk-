@@ -1,0 +1,68 @@
+version: "3.9"
+
+# Sports Injury Risk Detection Platform — full stack
+# Milestone 4: "Deploy platform using Docker and cloud services" (PDF section 4/13)
+#
+# Usage:
+#   cp backend/.env.example backend/.env      # then fill in real secrets
+#   docker compose up --build
+#
+# Frontend: http://localhost:5173
+# Backend:  http://localhost:8000
+# Postgres: localhost:5432
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sports_injury}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sports_injury}
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+      ALGORITHM: HS256
+      TOKEN_EXPIRE_HOURS: 24
+      APP_NAME: Sports Injury Platform
+      APP_VERSION: 1.0.0
+      DEBUG: "False"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Browser-facing URL — localhost:8000 works when running the
+        # whole stack on one machine; point this at your real backend
+        # domain for a cloud deployment (see DEPLOYMENT.md).
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:
