@@ -1,10 +1,13 @@
 function Navbar() {
     return (
         <header className="navbar">
-            <h2>AI Sports Injury Detection</h2>
-
-            <div>
-                <span>Coach Dashboard</span>
+            <div className="navbar-copy">
+                <p>SportGuard AI / Workspace</p>
+                <h2>Biomechanics overview</h2>
+            </div>
+            <div className="navbar-user">
+                <span>Coach account</span>
+                <div className="avatar">C</div>
             </div>
         </header>
     );

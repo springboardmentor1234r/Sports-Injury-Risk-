@@ -1,0 +1,11 @@
+@import '../App.css';
+@import './auth.css';
+
+:root {
+  color-scheme: light;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: .65;
+}

@@ -1,84 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../services/api";
 
 function UploadVideo() {
-    const [video, setVideo] = useState(null);
-    const [athlete, setAthlete] = useState("");
-    const [sport, setSport] = useState("");
-
-    const handleUpload = async () => {
-        if (!video){
-            alert("Please select a video first")
-            return 
-        }
-        try {
-            // get jwt token from local storage
-            const token = localStorage.getItem("token");
-            // create formData object
-            const formData = new FormData();
-
-            formData.append("video", video);
-            formData.append("athlete", athlete);
-            formData.append("sport", sport);
-
-            const response = await API.post(
-                "/videos/upload",
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-
-            alert(response.data.message);
-
-            setVideo(null);
-            setAthlete("");
-            setSport("");
-
-        } catch (error) {
-            alert(error.response?.data?.message || "Upload Failed");
-        }
-    };
-
-    return (
-        <div>
-            <h1>Upload Athlete Video</h1>
-
-            <input
-                type="text"
-                placeholder="Athlete ID"
-                value={athlete}
-                onChange={(e) => setAthlete(e.target.value)}
-            />
-
-            <br /><br />
-
-            <input
-                type="text"
-                placeholder="Sport"
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
-            />
-
-            <br /><br />
-
-            <input
-                type="file"
-                accept="video/*"
-                onChange={(e) => setVideo(e.target.files[0])}
-            />
-
-            <br /><br />
-
-            <button onClick={handleUpload}>
-                Upload Video
-            </button>
-
-        </div>
-    );
+    const [video, setVideo] = useState(null); const [athlete, setAthlete] = useState(""); const [sport, setSport] = useState(""); const [athletes, setAthletes] = useState([]); const [analysis, setAnalysis] = useState(null); const [uploading, setUploading] = useState(false); const [error, setError] = useState("");
+    useEffect(() => { const loadAthletes = async () => { try { const response = await API.get("/athletes"); setAthletes(response.data.athletes || []); } catch (requestError) { setError(requestError.response?.data?.message || "Could not load athletes"); } }; loadAthletes(); }, []);
+    const handleUpload = async () => { if (!video || !athlete || !sport) { setError("Choose an athlete, enter the sport, and select a video first."); return; } try { setError(""); setAnalysis(null); setUploading(true); const formData = new FormData(); formData.append("video", video); formData.append("athlete", athlete); formData.append("sport", sport); const response = await API.post("/videos/upload", formData); setAnalysis(response.data.analysis); setVideo(null); } catch (requestError) { setError(requestError.response?.data?.message || "Upload and analysis failed"); } finally { setUploading(false); } };
+    return <div><div className="page-heading"><div><p className="eyebrow">Analysis / New session</p><h1>Upload a movement video</h1><p>Give the model a clear view of the movement you want to understand.</p></div><Link className="btn btn-secondary" to="/videos">View analyses</Link></div>{error && <div className="auth-error" role="alert">{error}</div>}<div className="split-layout"><section className="card card-pad"><div className="card-title"><div><h2>Video file</h2><p>MP4, MOV, or AVI up to 250 MB.</p></div></div><div className="upload-zone"><strong>{video ? video.name : "Drop your video here"}</strong><p>{video ? "Ready to upload when the details are complete." : "Or choose a file from your device."}</p><input type="file" accept="video/*" onChange={(event) => setVideo(event.target.files[0])} /></div></section><section className="card card-pad"><div className="card-title"><div><h2>Session details</h2><p>Connect this recording to an athlete.</p></div></div><div className="form-field" style={{marginBottom: 16}}><label htmlFor="athlete">Athlete</label><select className="field-input" id="athlete" value={athlete} onChange={(event) => setAthlete(event.target.value)}><option value="">Select athlete</option>{athletes.map((item) => <option key={item._id} value={item._id}>{item.name} · {item.sport}</option>)}</select></div><div className="form-field"><label htmlFor="sport">Sport or movement</label><input className="field-input" id="sport" value={sport} onChange={(event) => setSport(event.target.value)} placeholder="e.g. Football sprint" /></div><button className="btn btn-primary" style={{width: "100%", marginTop: 22}} onClick={handleUpload} disabled={uploading}>{uploading ? "Analyzing video..." : "Start analysis"}</button></section></div>{analysis && <section className="card card-pad" style={{marginTop: 20}}><div className="card-title"><div><h2>Analysis complete</h2><p>Results saved to the backend analysis collection.</p></div><span className="badge badge-low">Completed</span></div><div className="stats-grid" style={{marginBottom: 0}}><div><div className="stat-label">Risk score</div><div className="stat-value">{analysis.riskScore}%</div></div><div><div className="stat-label">Movement score</div><div className="stat-value">{analysis.movementScore}</div></div><div><div className="stat-label">Quality</div><div className="stat-value" style={{fontSize: 22}}>{analysis.movementQuality}</div></div><div><div className="stat-label">Prediction</div><div className="stat-value" style={{fontSize: 22}}>{analysis.mlPrediction}</div></div></div></section>}</div>;
 }
-
 export default UploadVideo;

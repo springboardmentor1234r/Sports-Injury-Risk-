@@ -1,66 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
-
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    const navigate = useNavigate();
-
-    const handleLogin = async () => {
-        try {
-
-            const response = await API.post("/auth/login", {
-                email,
-                password,
-            });
-
-            alert(response.data.message);
-
-            localStorage.setItem("token", response.data.token);
-
-            navigate("/dashboard");
-
-        } catch (error) {
-
-            alert(error.response?.data?.message || "Login Failed");
-
-        }
-    };
-
-    return (
-        <div>
-
-            <h1>AI Sports Injury Detection</h1>
-
-            <h2>Login</h2>
-
-            <input
-                type="email"
-                placeholder="Enter Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <br /><br />
-
-            <input
-                type="password"
-                placeholder="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <br /><br />
-
-            <button onClick={handleLogin}>
-                Login
-            </button>
-
-        </div>
-    );
+    const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const navigate = useNavigate();
+    const handleLogin = async (event) => { event.preventDefault(); setError(""); setLoading(true); try { const response = await API.post("/auth/login", { email, password }); localStorage.setItem("token", response.data.token); navigate("/dashboard"); } catch (requestError) { const message = requestError.response?.data?.message || (requestError.code === "ERR_NETWORK" ? "The server is not running. Start the backend on port 5000 and try again." : "Login failed. Check your email and password."); setError(message); } finally { setLoading(false); } };
+    return <main className="auth-page"><aside className="auth-aside"><Link className="public-brand" to="/" style={{color: "#fff"}}><span className="brand-mark">SG</span>SportGuard AI</Link><h1>Make every training hour count.</h1><p>Bring clinical confidence to the sideline with one workspace for athletes, movement analysis, and risk signals.</p></aside><section className="auth-form-wrap"><form className="auth-form" onSubmit={handleLogin}><p className="eyebrow">Welcome back</p><h2>Sign in to your workspace</h2><p>Use your coach or athlete account to continue.</p>{error && <div className="auth-error" role="alert">{error}</div>}<div className="form-field"><label htmlFor="email">Email address</label><input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required /></div><div className="form-field"><label htmlFor="password">Password</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required /></div><button className="btn btn-primary" type="submit" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button><p className="auth-switch">New to SportGuard? <Link to="/register">Create an account</Link></p></form></section></main>;
 }
-
 export default Login;

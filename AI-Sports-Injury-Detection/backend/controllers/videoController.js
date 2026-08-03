@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+const execFile = util.promisify(require("child_process").execFile);
 
 const Video = require("../models/video");
 const Analysis = require("../models/Analysis");
@@ -30,9 +30,22 @@ const uploadVideo = async (req, res) => {
     });
 
     const aiPath = path.join(__dirname, "../../ai");
-    const script = "python utils/pose_detector.py";
+    const environmentNames = process.platform === "win32"
+      ? ["venv_py311", "venv_py313"].map((name) => path.join(aiPath, name, "Scripts", "python.exe"))
+      : ["venv_py311", "venv_py313"].map((name) => path.join(aiPath, name, "bin", "python"));
+    const projectPython = environmentNames.find((candidate) => fs.existsSync(candidate));
+    const pythonCommand = process.env.PYTHON_COMMAND || projectPython || "python";
+    const scriptPath = path.join(aiPath, "utils", "pose_detector.py");
 
-    const { stdout, stderr } = await exec(script, { cwd: aiPath });
+    video.status = "Processing";
+    await video.save();
+
+    const uploadedVideoPath = path.resolve(req.file.path);
+    const { stdout, stderr } = await execFile(pythonCommand, [scriptPath, uploadedVideoPath], {
+      cwd: aiPath,
+      env: { ...process.env, AI_HEADLESS: "1" },
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
     if (stdout) {
       console.log(stdout);
@@ -64,10 +77,10 @@ const uploadVideo = async (req, res) => {
         elbow: report["Symmetry"]?.elbow || "Unknown",
       },
       recommendations: report["Recommendations"] || [],
-      reportJson: "reports/report.json",
-      reportTxt: "outputs/report.txt",
-      graphImage: "outputs/knee_angles_graph.png",
-      processedVideo: "outputs/output_video.mp4",
+      reportJson: path.join("reports", "report.json"),
+      reportTxt: path.join("outputs", "report.txt"),
+      graphImage: path.join("reports", "knee_angle_graph.png"),
+      processedVideo: path.join("outputs", "output_video.mp4"),
       status: "Completed",
     });
 

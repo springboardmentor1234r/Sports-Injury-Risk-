@@ -1,0 +1,9 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
+function Prediction() {
+    const [file, setFile] = useState(null);
+    const [started, setStarted] = useState(false);
+    return <div><div className="page-heading"><div><p className="eyebrow">Analysis / Prediction</p><h1>Injury risk prediction</h1><p>Run a focused screening from a sports movement video.</p></div><Link className="btn btn-secondary" to="/upload-video">Upload session</Link></div><div className="split-layout"><section className="card card-pad"><div className="card-title"><div><h2>Prediction input</h2><p>Choose a clip to begin your screening.</p></div></div><div className="upload-zone"><strong>{file ? file.name : "Select a movement clip"}</strong><p>Use a clear side or front view for the strongest result.</p><input type="file" accept="video/*" onChange={(event) => { setFile(event.target.files[0]); setStarted(false); }} /></div><button className="btn btn-primary" style={{width: "100%", marginTop: 20}} disabled={!file} onClick={() => setStarted(true)}>{started ? "Prediction complete" : "Run prediction"}</button></section><section className="card card-pad"><div className="card-title"><div><h2>Risk signal</h2><p>AI output will appear here after processing.</p></div></div>{started ? <><div style={{display: "flex", alignItems: "center", gap: 18, margin: "28px 0"}}><div style={{font: "700 48px Montserrat", color: "var(--warning)"}}>42%</div><div><strong>Moderate risk</strong><p style={{margin: "6px 0 0", color: "var(--muted)", fontSize: 13}}>Review knee alignment and recovery load before the next high-intensity session.</p></div></div><span className="badge badge-medium">Screening complete</span></> : <div className="empty-state">No prediction available yet.</div>}</section></div></div>;
+}
+export default Prediction;

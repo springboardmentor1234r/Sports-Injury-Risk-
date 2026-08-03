@@ -22,5 +22,18 @@
     "Risk Score": {
         "Maximum": 50,
         "Average": 7.98
-    }
+    },
+    "Movement Score": 60,
+    "Movement Quality": "Fair",
+    "Prediction": "\ud83d\udd34 High Risk",
+    "Running Phase": "Push-Off Phase",
+    "Symmetry": {
+        "knee": "High Imbalance",
+        "elbow": "High Imbalance"
+    },
+    "Recommendations": [
+        "Low injury risk. Continue current training.",
+        "Improve lower-limb balance.",
+        "Improve upper-body coordination."
+    ]
 }

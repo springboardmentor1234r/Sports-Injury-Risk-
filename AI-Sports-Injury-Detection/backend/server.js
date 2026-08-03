@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const connectDB = require("./config/db.js");
 const authRoutes = require("./routes/authRoutes.js");
 const athleteRoutes=require("./routes/athleteRoutes.js");
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cors({ origin: ["http://localhost:5173", "http://127.0.0.1:5173"] }));
 
 // Routes
 app.use("/api/auth", authRoutes);

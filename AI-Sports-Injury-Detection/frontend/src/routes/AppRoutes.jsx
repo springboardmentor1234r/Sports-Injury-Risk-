@@ -5,11 +5,13 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import AddAthlete from "../pages/AddAthlete";
+import Prediction from "../pages/Prediction";
 
 import Dashboard from "../pages/Dashboard";
 import Athletes from "../pages/Athletes";
 import UploadVideo from "../pages/UploadVideo";
 import ViewVideos from "../pages/ViewVideos";
+import Reports from "../pages/Reports";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import Layout from "../components/layout/Layout";
@@ -35,8 +37,10 @@ export default function AppRoutes() {
                 <Route path="/athletes" element={<Athletes />} />
                 <Route path="/add-athlete" element={<AddAthlete />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/prediction" element={<Prediction />} />
                 <Route path="/upload-video" element={<UploadVideo />} />
                 <Route path="/videos" element={<ViewVideos />} />
+                <Route path="/reports" element={<Reports />} />
             </Route>
 
         </Routes>

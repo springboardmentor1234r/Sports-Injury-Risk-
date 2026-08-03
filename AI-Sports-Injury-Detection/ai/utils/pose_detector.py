@@ -27,6 +27,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Load video
 video_path = os.path.join(BASE_DIR, "..", "sample_videos", "sample.mp4")
 output_path = os.path.join(BASE_DIR, "..", "outputs", "output_video.mp4")
+headless = os.getenv("AI_HEADLESS", "1") == "1"
 
 
 if len(sys.argv) > 1:
@@ -317,27 +318,23 @@ while video.isOpened():
 
     # Show video
     out.write(frame)
-    cv2.imshow("Pose Detection", frame)
-    
-
-    # Press Q to quit
-    if cv2.waitKey(20) & 0xFF == ord("q"):
-        break
+    if not headless:
+        cv2.imshow("Pose Detection", frame)
+        if cv2.waitKey(20) & 0xFF == ord("q"):
+            break
 
 # Generate report after processing the whole video
 if len(left_knees) > 0:
     generate_report(
-        generate_report(
-            left_knees,
-            right_knees,
-            risk_scores,
-            movement_score,
-            movement_quality,
-            ml_prediction,
-            running_phase,
-            symmetry,
-            recommendations
-        )
+        left_knees,
+        right_knees,
+        risk_scores,
+        movement_score,
+        movement_quality,
+        ml_prediction,
+        running_phase,
+        symmetry,
+        recommendations
     )
     generate_graph(
     left_knees,
@@ -361,4 +358,5 @@ if video.isOpened():
     video.release()
 if out.isOpened():
     out.release()
-cv2.destroyAllWindows()
+if not headless:
+    cv2.destroyAllWindows()

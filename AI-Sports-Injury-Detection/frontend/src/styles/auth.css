@@ -1,0 +1,10 @@
+.auth-error {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #f2c4c0;
+  border-radius: 7px;
+  background: #fff7f6;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1.45;
+}

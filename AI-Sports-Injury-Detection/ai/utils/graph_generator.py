@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPORTS_DIR = os.path.join(BASE_DIR, "..", "reports")
 
 def generate_graph(left_knees, right_knees):
 
-    os.makedirs("../reports", exist_ok=True)
+    os.makedirs(REPORTS_DIR, exist_ok=True)
 
     plt.figure(figsize=(10, 5))
 
@@ -19,7 +21,7 @@ def generate_graph(left_knees, right_knees):
 
     plt.grid(True)
 
-    plt.savefig("../reports/knee_angle_graph.png")
+    plt.savefig(os.path.join(REPORTS_DIR, "knee_angle_graph.png"))
 
     plt.close()
 

@@ -1,64 +1,10 @@
-import {useState} from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";
-function Register(){
-    const [name,setName]=useState("");
-    const [email,setEmail]=useState("");
 
-    const [password,setPassword]=useState("");
-    const [role,setRole]=useState("athlete");
-    const navigate=useNavigate();
-    const handleRegister=async ()=>{
-        try{
-            const response=await API.post("/auth/register",{
-                name,
-                email,
-                password,
-                role,
-            });
-            alert(response.data.message);
-            navigate("/login")
-
-        }catch(error){
-            alert(error.response?.data?.message|| "Registration Failed");
-        }
-    }
-    return (
-        <div>
-            <h1>Register</h1>
-            <input type="text"
-            placeholder="Enter Name"
-            value={name}
-            onChange={(e)=>setName(e.target.value)}
-            />
-
-            <br /> <br />
-            <input type="email"
-            placeholder="Enter Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            />
-            <br /> <br />
-            <input type="password"
-            placeholder="Enter Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            />
-            <br /><br />
-            <select 
-            value={role}
-            onChange={(e)=>setRole(e.target.value)}
-            >
-                <option value="athlete">Athlete</option>
-                <option value="coach">Coach</option>
-            </select>
-            <br /><br />
-            <button onClick={handleRegister}>
-                Register
-            </button>
-        </div>
-    );
-
-    
+function Register() {
+    const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [role, setRole] = useState("athlete"); const navigate = useNavigate();
+    const handleRegister = async () => { try { await API.post("/auth/register", { name, email, password, role }); navigate("/login"); } catch (error) { alert(error.response?.data?.message || "Registration failed"); } };
+    return <main className="auth-page"><aside className="auth-aside"><Link className="public-brand" to="/" style={{color: "#fff"}}><span className="brand-mark">SG</span>SportGuard AI</Link><h1>Your athletes, understood in motion.</h1><p>Build a living picture of readiness, technique, and risk across your whole roster.</p></aside><section className="auth-form-wrap"><div className="auth-form"><p className="eyebrow">Get started</p><h2>Create your workspace</h2><p>Set up your account in less than a minute.</p><div className="form-field"><label htmlFor="name">Full name</label><input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" /></div><div className="form-field"><label htmlFor="register-email">Email address</label><input id="register-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" /></div><div className="form-field"><label htmlFor="register-password">Password</label><input id="register-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" /></div><div className="form-field"><label htmlFor="role">I am joining as</label><select id="role" value={role} onChange={(e) => setRole(e.target.value)}><option value="athlete">Athlete</option><option value="coach">Coach</option></select></div><button className="btn btn-primary" onClick={handleRegister}>Create account</button><p className="auth-switch">Already have an account? <Link to="/login">Sign in</Link></p></div></section></main>;
 }
 export default Register;
