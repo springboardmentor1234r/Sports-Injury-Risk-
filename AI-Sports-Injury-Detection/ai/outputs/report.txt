@@ -12,12 +12,12 @@ Weight    : 58 kg
 
 Joint Angles
 -------------------------
-Left Elbow: 125°
-Right Elbow: 52°
-Left Knee: 118°
-Right Knee: 167°
-Left Hip: 150°
-Right Hip: 171°
+Left Elbow: 139°
+Right Elbow: 70°
+Left Knee: 105°
+Right Knee: 159°
+Left Hip: 149°
+Right Hip: 168°
 
 Risk Score: 0%
 
@@ -26,9 +26,9 @@ Movement Quality: Fair
 
 Symmetry Analysis
 -------------------------
-Knee Difference : 49.3°
+Knee Difference : 53.7°
 Knee Status     : High Imbalance
-Elbow Difference: 73.9°
+Elbow Difference: 68.7°
 Elbow Status    : High Imbalance
 
 Warnings

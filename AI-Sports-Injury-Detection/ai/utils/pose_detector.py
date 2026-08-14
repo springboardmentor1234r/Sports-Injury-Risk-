@@ -70,12 +70,23 @@ symmetry = {
 
 recommendations = []
 
+frame_count = 0
+processed_count = 0
+max_processed_frames = 150
+
 while video.isOpened():
 
     success, frame = video.read()
 
     if not success:
         break
+
+    frame_count += 1
+    if frame_count % 3 != 0:
+        continue
+    if processed_count >= max_processed_frames:
+        break
+    processed_count += 1
 
     # Resize frame
     frame = cv2.resize(frame, (800, 450))

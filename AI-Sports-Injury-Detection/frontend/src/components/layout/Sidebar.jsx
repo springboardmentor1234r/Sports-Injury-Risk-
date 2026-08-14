@@ -1,26 +1,45 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 function Sidebar(){
-    return(
+    const [role, setRole] = useState("");
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const decoded = JSON.parse(jsonPayload);
+                setRole(decoded.role || "athlete");
+            } catch (error) {
+                console.error("Error decoding token in Sidebar:", error);
+            }
+        }
+    }, []);
+
+    const showAthletesLink = role !== "athlete";
+
+    return (
         <aside className="sidebar">
             <div className="brand">
-                <div className="brand-mark">SG</div>
+                <img src="/logo.png" alt="SportGuard AI Logo" className="brand-logo-img" />
                 <div>
                     <h1>SportGuard AI</h1>
-                    <small>Biomechanics lab</small>
                 </div>
             </div>
             <p className="nav-label">Workspace</p>
             <nav>
-                <NavLink className="nav-link" to="/dashboard"><span className="nav-icon">+</span>Dashboard</NavLink>
-                <NavLink className="nav-link" to="/athletes"><span className="nav-icon">O</span>Athletes</NavLink>
-                <NavLink className="nav-link" to="/upload-video"><span className="nav-icon">^</span>Upload video</NavLink>
-                <NavLink className="nav-link" to="/videos"><span className="nav-icon">[]</span>Analysis results</NavLink>
-                <NavLink className="nav-link" to="/reports"><span className="nav-icon">#</span>Reports</NavLink>
-                <NavLink className="nav-link" to="/profile"><span className="nav-icon">@</span>Profile</NavLink>
+                <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
+                {showAthletesLink && <NavLink className="nav-link" to="/athletes">Athletes</NavLink>}
+                <NavLink className="nav-link" to="/upload-video">Upload video</NavLink>
+                <NavLink className="nav-link" to="/reports">Analysis reports</NavLink>
+                <NavLink className="nav-link" to="/profile">Profile</NavLink>
             </nav>
-            <div className="sidebar-footer">AI-assisted screening for stronger, healthier performance.</div>
         </aside>
-    )
+    );
 }
 export default Sidebar;

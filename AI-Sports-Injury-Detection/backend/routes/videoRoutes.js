@@ -8,7 +8,7 @@ const upload=require("../middleware/uploadMiddleware");
 router.post(
     "/upload",
     authMiddleware,
-    authorizeRoles("coach","admin"),
+    authorizeRoles("coach","admin","physiotherapist","sports_scientist","athlete"),
     upload.single("video"),
     uploadVideo
 
@@ -17,7 +17,7 @@ router.post(
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("coach","admin"),
+    authorizeRoles("coach","admin","physiotherapist","sports_scientist","athlete"),
     getAllVideos
 )
 

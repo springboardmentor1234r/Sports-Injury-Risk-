@@ -8,20 +8,20 @@
         "height_cm": 165,
         "weight_kg": 58
     },
-    "Frames Analysed": 484,
+    "Frames Analysed": 150,
     "Left Knee": {
-        "Maximum": 176.17391672943384,
-        "Minimum": 65.94409555219605,
-        "Average": 138.87
+        "Maximum": 174.39691320816107,
+        "Minimum": 72.95031395342315,
+        "Average": 139.19
     },
     "Right Knee": {
-        "Maximum": 179.47781128377707,
-        "Minimum": 59.41704833995805,
-        "Average": 136.12
+        "Maximum": 175.81277548116088,
+        "Minimum": 66.76198428731445,
+        "Average": 136.18
     },
     "Risk Score": {
-        "Maximum": 50,
-        "Average": 7.98
+        "Maximum": 30,
+        "Average": 7.2
     },
     "Movement Score": 60,
     "Movement Quality": "Fair",

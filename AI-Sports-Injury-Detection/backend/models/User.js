@@ -18,7 +18,7 @@ const userSchema=new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["athlete","coach","physiotherapist","admin"],
+        enum:["athlete","coach","physiotherapist","sports_scientist","admin"],
         default:"athlete",
     },
 },

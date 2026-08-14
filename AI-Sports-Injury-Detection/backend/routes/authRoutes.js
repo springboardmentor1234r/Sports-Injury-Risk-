@@ -10,5 +10,5 @@ const authorizeRoles=require("../middleware/roleMiddleware");
 
 router.post("/register",registerUser);
 router.post("/login",loginUser);
-router.get("/profile",authMiddleware,authorizeRoles("admin"),getProfile);
+router.get("/profile",authMiddleware,getProfile);
 module.exports=router;

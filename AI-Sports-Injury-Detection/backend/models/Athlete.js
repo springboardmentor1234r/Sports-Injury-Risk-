@@ -42,7 +42,7 @@ const athleteSchema=new mongoose.Schema({
         required:true,
         min:10,
     },
-    dominantLeg:{
+        dominantLeg:{
         type:String,
         enum:["Left","Right","Both"],
         default:"Right",
@@ -52,6 +52,10 @@ const athleteSchema=new mongoose.Schema({
             type:String,
         }
     ],
+    isProfileComplete:{
+        type:Boolean,
+        default:false
+    },
     createdBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",

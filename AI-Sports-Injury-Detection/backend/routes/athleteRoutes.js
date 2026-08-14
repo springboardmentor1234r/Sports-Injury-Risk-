@@ -6,11 +6,11 @@ const {createAthlete,getAllAthletes,getAthleteById,updateAthlete,deleteAthlete}=
 const authMiddleware=require("../middleware/authMiddleware");
 const authorizeRoles=require("../middleware/roleMiddleware");
 
-router.post("/",authMiddleware,authorizeRoles("coach","admin") ,createAthlete);
-router.get("/",authMiddleware,authorizeRoles("coach","admin"),getAllAthletes);
-router.get("/:id",authMiddleware,authorizeRoles("coach","admin"),getAthleteById);
-router.put("/:id",authMiddleware,authorizeRoles("coach","admin"),updateAthlete);
-router.delete("/:id",authMiddleware,authorizeRoles("coach","admin"),deleteAthlete);
+router.post("/",authMiddleware,authorizeRoles("coach","admin","physiotherapist","sports_scientist") ,createAthlete);
+router.get("/",authMiddleware,authorizeRoles("coach","admin","physiotherapist","sports_scientist","athlete"),getAllAthletes);
+router.get("/:id",authMiddleware,authorizeRoles("coach","admin","physiotherapist","sports_scientist","athlete"),getAthleteById);
+router.put("/:id",authMiddleware,authorizeRoles("coach","admin","physiotherapist","sports_scientist","athlete"),updateAthlete);
+router.delete("/:id",authMiddleware,authorizeRoles("coach","admin","physiotherapist","sports_scientist"),deleteAthlete);
 
 
 module.exports=router;
