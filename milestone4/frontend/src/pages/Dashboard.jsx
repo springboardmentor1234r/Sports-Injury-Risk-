@@ -2082,7 +2082,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                 cursor: 'pointer'
                               }}
                             >
-                              <option value="cohort">📊 Executive 12-Athlete Research Cohort (Full Summary)</option>
+                              <option value="cohort">📊 Executive Research Cohort (Full Roster Summary)</option>
                               {(assignedAthletes.length > 0 ? assignedAthletes : [
                                 { athlete_id: 'ATH-001', fullname: 'Marcus Rashford', sport_type: 'Soccer' },
                                 { athlete_id: 'ATH-002', fullname: 'Serena Williams', sport_type: 'Tennis' },
@@ -2101,6 +2101,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                   👤 {a.fullname} ({a.athlete_id}) - {a.sport_type}
                                 </option>
                               ))}
+
 
                             </select>
                           </div>

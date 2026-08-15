@@ -46,11 +46,11 @@ async def generate_cohort_pdf_report(
     if not current_user:
         raise HTTPException(status_code=401, detail="User not found.")
 
-    all_athletes = await db.athlete_profiles.find({}).to_list(length=100)
+    all_athletes = await db.athlete_profiles.find({}).to_list(length=1000)
     if not all_athletes:
         all_athletes = DEFAULT_12_ATHLETES
 
-    all_preds = await db.predictions.find({}).to_list(length=100)
+    all_preds = await db.predictions.find({}).to_list(length=1000)
     preds_by_athlete = {p.get("athlete_id"): p for p in all_preds}
 
     buffer = io.BytesIO()
@@ -63,7 +63,8 @@ async def generate_cohort_pdf_report(
 
     elements = []
     elements.append(Paragraph("SPORTS INJURY RISK DETECTION (SIRD) PLATFORM", title_style))
-    elements.append(Paragraph(f"Executive Research Cohort Matrix — 12 Athlete Analysis — {datetime.utcnow().strftime('%B %d, %Y')}", subtitle_style))
+    elements.append(Paragraph(f"Executive Research Cohort Matrix — Dynamic {len(all_athletes)} Athlete Analysis — {datetime.utcnow().strftime('%B %d, %Y')}", subtitle_style))
+
     elements.append(Spacer(1, 10))
     elements.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0f766e'), spaceAfter=15))
 
