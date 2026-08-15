@@ -1,0 +1,227 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MoveIQ - Sign up</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#003ea8",
+                      "surface": "#f7f9fb",
+                      "on-error-container": "#93000a",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "inverse-surface": "#2d3133",
+                      "surface-container": "#eceef0",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "on-surface": "#191c1e",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed-dim": "#c0c7d0",
+                      "surface-container-low": "#f2f4f6",
+                      "primary": "#004ac6",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#40484f",
+                      "surface-variant": "#e0e3e5",
+                      "on-secondary-container": "#5c647a",
+                      "outline-variant": "#c3c6d7",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#d8dadc",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-tint": "#0053db",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed": "#00174b",
+                      "on-background": "#191c1e",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#dae2fd",
+                      "on-error": "#ffffff",
+                      "tertiary": "#4e565d",
+                      "inverse-primary": "#b4c5ff",
+                      "surface-container-high": "#e6e8ea",
+                      "on-primary": "#ffffff",
+                      "on-surface-variant": "#434655",
+                      "tertiary-fixed": "#dce3ec",
+                      "outline": "#737686",
+                      "on-tertiary-fixed": "#151c23",
+                      "on-primary-container": "#eeefff",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "surface-container-highest": "#e0e3e5",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-bright": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "secondary-container": "#dae2fd",
+                      "tertiary-container": "#676e76",
+                      "on-tertiary-container": "#eaf1fa",
+                      "primary-container": "#2563eb",
+                      "secondary": "#565e74",
+                      "on-secondary-fixed": "#131b2e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "lg": "24px",
+                      "gutter": "24px",
+                      "margin-desktop": "48px",
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "base": "4px",
+                      "xl": "32px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "caption": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-background min-h-screen font-body-md text-on-background flex antialiased selection:bg-primary-container selection:text-on-primary">
+<div class="flex w-full min-h-screen">
+<!-- Left Panel: Branding & Value Prop (45%) -->
+<div class="hidden lg:flex w-[45%] flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#EFF6FF] to-[#ffffff] border-r border-outline-variant/30">
+<div class="p-12 z-10 flex flex-col items-start gap-6">
+<div class="flex items-center gap-2">
+<img alt="MoveIQ Icon" class="w-12 h-12 object-contain rounded-full shadow-sm bg-white" src="/images/moveiq_icon.png">
+<span class="font-bold text-[32px] leading-[40px] text-on-surface tracking-tight text-[#0F172A]">MoveIQ</span>
+</div>
+<h2 class="text-[24px] font-semibold leading-tight text-[#334155]">
+                    AI-powered injury risk detection for athletes
+                </h2>
+</div>
+<!-- Hero Image Integration -->
+<div class="relative w-full flex-grow flex items-center justify-center p-6 z-0 group">
+<div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10 pointer-events-none"></div>
+<div class="absolute w-[80%] h-[80%] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<img alt="Biomechanics Visualization" class="w-full max-w-[500px] object-cover rounded-xl shadow-lg border border-outline-variant/20 relative z-0 transition-transform duration-700 ease-out group-hover:scale-[1.02]" src="/images/biomechanics_visualization.png">
+</div>
+<div class="p-12 z-10 bg-white/80 backdrop-blur-md border-t border-outline-variant/10">
+<ul class="flex flex-col gap-2 text-[16px] text-on-surface-variant text-[#475569]">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                        Real-time form analysis
+                    </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                        Risk scoring
+                    </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                        Team dashboards
+                    </li>
+</ul>
+</div>
+</div>
+<!-- Right Panel: Sign Up Form (55%) -->
+<div class="w-full lg:w-[55%] flex flex-col justify-center items-center bg-white px-6 py-8 lg:p-12 relative">
+<!-- Mobile Header (Hidden on Desktop) -->
+<div class="w-full max-w-[440px] flex lg:hidden items-center gap-2 mb-6">
+<img alt="MoveIQ Icon" class="w-10 h-10 object-contain rounded-full shadow-sm bg-surface" src="/images/moveiq_icon.png">
+<span class="text-[24px] font-bold text-on-surface tracking-tight text-[#0F172A]">MoveIQ</span>
+</div>
+<div class="w-full max-w-[440px] flex flex-col gap-8">
+<div class="text-center lg:text-left">
+<h1 class="text-[24px] lg:text-[32px] font-bold text-[#0F172A] mb-1">Create your account</h1>
+<p class="text-[16px] text-on-surface-variant">Get started with professional biomechanics tracking.</p>
+</div>
+<!-- Form Section -->
+<form action="#" class="flex flex-col gap-6" method="POST">
+<div class="flex flex-col gap-2">
+<button class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-[16px] text-on-surface hover:bg-[#f2f4f6] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="button">
+<svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
+                            Sign up with Google
+                        </button>
+</div>
+<!-- Divider -->
+<div class="flex items-center gap-2 my-1">
+<div class="h-px bg-outline-variant flex-grow"></div>
+<span class="text-[12px] text-on-surface-variant uppercase tracking-wider">or</span>
+<div class="h-px bg-outline-variant flex-grow"></div>
+</div>
+<!-- Input Fields -->
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-1">
+<label class="text-[14px] font-semibold text-[#0F172A]" for="fullName">Full Name</label>
+<input class="w-full rounded-lg border border-outline-variant bg-white px-4 py-2 text-[16px] text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="fullName" name="fullName" placeholder="Dr. Jane Smith" type="text">
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[14px] font-semibold text-[#0F172A]" for="email">Email address</label>
+<input class="w-full rounded-lg border border-outline-variant bg-white px-4 py-2 text-[16px] text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="email" name="email" placeholder="jane.smith@team.com" type="email">
+</div>
+<div class="flex flex-col gap-1 relative">
+<label class="text-[14px] font-semibold text-[#0F172A]" for="password">Password</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-outline-variant bg-white px-4 py-2 pr-10 text-[16px] text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="password" name="password" placeholder="••••••••" type="password">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[14px] font-semibold text-[#0F172A]" for="role">Role</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg border border-outline-variant bg-white px-4 py-2 pr-10 text-[16px] text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="role" name="role">
+<option value="coach">Coach</option>
+<option value="athlete">Athlete</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Terms -->
+<div class="flex items-start gap-2 mt-1">
+<div class="flex items-center h-6">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/50 focus:ring-2 bg-surface cursor-pointer" id="terms" name="terms" type="checkbox">
+</div>
+<label class="text-sm text-on-surface-variant cursor-pointer select-none" for="terms">
+                            I agree to the <a class="text-primary hover:underline font-medium" href="#">Terms of Service</a> and <a class="text-primary hover:underline font-medium" href="#">Privacy Policy</a>
+</label>
+</div>
+<!-- Submit -->
+<button class="w-full bg-[#2563eb] text-white font-semibold py-2 px-4 rounded-lg shadow-[0px_4px_20px_rgba(15,23,42,0.05)] hover:bg-[#2563eb]/90 active:scale-[0.99] transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 mt-1" type="submit">
+                        Sign up
+                    </button>
+</form>
+<!-- Footer Nav & Copyright -->
+<div class="flex flex-col items-center gap-4 mt-6">
+<p class="text-[16px] text-on-surface-variant">
+                        Already have an account? 
+                        <a class="text-primary font-semibold hover:underline" href="#">Log in</a>
+</p>
+<footer class="w-full flex flex-col items-center justify-center gap-1 mt-6 opacity-80 hover:opacity-100 transition-opacity">
+<div class="flex gap-4 text-[12px] text-tertiary">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+<p class="text-[12px] text-tertiary">© 2026 MoveIQ</p>
+</footer>
+</div>
+</div>
+</div>
+</div>
+</body></html>
