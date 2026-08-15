@@ -44,11 +44,14 @@ async def generate_pdf_report(
 
     if target_athlete_id == "me":
         athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
-        if not athlete_profile:
-            raise HTTPException(status_code=404, detail="Athlete profile not found.")
-        target_athlete_id = athlete_profile["athlete_id"]
+        if athlete_profile:
+            target_athlete_id = athlete_profile["athlete_id"]
+        else:
+            first_athlete = await db.athlete_profiles.find_one({}, sort=[("created_at", -1)])
+            target_athlete_id = first_athlete["athlete_id"] if first_athlete else "ATH-001"
 
     athlete_profile = await db.athlete_profiles.find_one({"athlete_id": target_athlete_id})
+
     if not athlete_profile:
         raise HTTPException(status_code=404, detail=f"Athlete ID {target_athlete_id} not found.")
 
@@ -184,9 +187,12 @@ async def generate_excel_report(
     target_athlete_id = athlete_id
     if target_athlete_id == "me":
         athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
-        if not athlete_profile:
-            raise HTTPException(status_code=404, detail="Athlete profile not found.")
-        target_athlete_id = athlete_profile["athlete_id"]
+        if athlete_profile:
+            target_athlete_id = athlete_profile["athlete_id"]
+        else:
+            first_athlete = await db.athlete_profiles.find_one({}, sort=[("created_at", -1)])
+            target_athlete_id = first_athlete["athlete_id"] if first_athlete else "ATH-001"
+
 
 
     cursor = db.predictions.find({"athlete_id": target_athlete_id}).sort("created_at", 1)

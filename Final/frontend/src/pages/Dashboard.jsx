@@ -115,14 +115,35 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const selectedAthlete = assignedAthletes.find(a => a.athlete_id === selectedAthleteId);
 
   const downloadPdfReport = (athleteId = 'me') => {
-    const targetId = athleteId === 'me' && athleteProfile ? athleteProfile.athlete_id : athleteId;
-    window.open(`http://localhost:8000/api/reports/pdf/${targetId}?token=${token}`, '_blank');
+    let targetId = athleteId;
+    if (targetId === 'me') {
+      if (athleteProfile?.athlete_id) {
+        targetId = athleteProfile.athlete_id;
+      } else if (selectedAthleteId) {
+        targetId = selectedAthleteId;
+      } else {
+        targetId = 'me';
+      }
+    }
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    window.open(`${apiBase}/api/reports/pdf/${targetId}?token=${token}`, '_blank');
   };
 
   const downloadExcelReport = (athleteId = 'me') => {
-    const targetId = athleteId === 'me' && athleteProfile ? athleteProfile.athlete_id : athleteId;
-    window.open(`http://localhost:8000/api/reports/excel/${targetId}?token=${token}`, '_blank');
+    let targetId = athleteId;
+    if (targetId === 'me') {
+      if (athleteProfile?.athlete_id) {
+        targetId = athleteProfile.athlete_id;
+      } else if (selectedAthleteId) {
+        targetId = selectedAthleteId;
+      } else {
+        targetId = 'me';
+      }
+    }
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    window.open(`${apiBase}/api/reports/excel/${targetId}?token=${token}`, '_blank');
   };
+
 
 
   const fetchSystemMetrics = async () => {
@@ -2015,14 +2036,15 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Contains 33 3D body keypoints, joint angles, and risk scores across 12 athlete profiles.</p>
                           </div>
                           <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={() => downloadPdfReport('ATH-001')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem' }}>
+                            <button onClick={() => downloadPdfReport(selectedAthleteId || athleteProfile?.athlete_id || 'me')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem' }}>
                               <FileDown size={16} />
                               <span>Download PDF Summary</span>
                             </button>
-                            <button onClick={() => downloadExcelReport('ATH-001')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem' }}>
+                            <button onClick={() => downloadExcelReport(selectedAthleteId || athleteProfile?.athlete_id || 'me')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem' }}>
                               <FileSpreadsheet size={16} />
                               <span>Export Research CSV</span>
                             </button>
+
                           </div>
                         </div>
                       </div>
