@@ -116,13 +116,13 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const downloadPdfReport = async (athleteId = 'me') => {
     let targetId = athleteId;
-    if (targetId === 'me') {
+    if (targetId === 'me' || targetId === 'cohort') {
       if (athleteProfile?.athlete_id) {
         targetId = athleteProfile.athlete_id;
-      } else if (selectedAthleteId) {
+      } else if (selectedAthleteId && selectedAthleteId !== 'cohort') {
         targetId = selectedAthleteId;
       } else {
-        targetId = 'cohort';
+        targetId = 'ATH-001';
       }
     }
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -146,18 +146,19 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const downloadExcelReport = async (athleteId = 'me') => {
     let targetId = athleteId;
-    if (targetId === 'me') {
+    if (targetId === 'me' || targetId === 'cohort') {
       if (athleteProfile?.athlete_id) {
         targetId = athleteProfile.athlete_id;
-      } else if (selectedAthleteId) {
+      } else if (selectedAthleteId && selectedAthleteId !== 'cohort') {
         targetId = selectedAthleteId;
       } else {
-        targetId = 'cohort';
+        targetId = 'ATH-001';
       }
     }
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     try {
       const response = await fetch(`${apiBase}/api/reports/excel/${targetId}?token=${token}`);
+
       if (!response.ok) throw new Error('Failed to export CSV');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -2069,7 +2070,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             </div>
                             
                             <select
-                              value={selectedAthleteId || 'cohort'}
+                              value={selectedAthleteId || 'ATH-001'}
                               onChange={(e) => setSelectedAthleteId(e.target.value)}
                               style={{
                                 padding: '10px 16px',
@@ -2082,7 +2083,6 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                 cursor: 'pointer'
                               }}
                             >
-                              <option value="cohort">📊 Executive Research Cohort (Full Roster Summary)</option>
                               {(assignedAthletes.length > 0 ? assignedAthletes : [
                                 { athlete_id: 'ATH-001', fullname: 'Marcus Rashford', sport_type: 'Soccer' },
                                 { athlete_id: 'ATH-002', fullname: 'Serena Williams', sport_type: 'Tennis' },
@@ -2102,22 +2102,22 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                 </option>
                               ))}
 
-
                             </select>
                           </div>
 
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                            <button onClick={() => downloadPdfReport(selectedAthleteId || 'cohort')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem', fontWeight: '600' }}>
+                            <button onClick={() => downloadPdfReport(selectedAthleteId || 'ATH-001')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem', fontWeight: '600' }}>
                               <FileDown size={16} />
                               <span>Download PDF Summary</span>
                             </button>
-                            <button onClick={() => downloadExcelReport(selectedAthleteId || 'cohort')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem', fontWeight: '600' }}>
+                            <button onClick={() => downloadExcelReport(selectedAthleteId || 'ATH-001')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem', fontWeight: '600' }}>
                               <FileSpreadsheet size={16} />
                               <span>Export Research CSV</span>
                             </button>
                           </div>
                         </div>
                       </div>
+
 
                     </div>
                   )}
