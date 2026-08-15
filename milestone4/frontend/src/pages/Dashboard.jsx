@@ -2030,24 +2030,49 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <p className="workspace-desc">Export anonymized motion telemetry datasets and research matrices.</p>
                       
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
-                        <div style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: '700' }}>Full Anonymized Research Dataset Matrix</h3>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Contains 33 3D body keypoints, joint angles, and risk scores across 12 athlete profiles.</p>
+                        <div style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: '700' }}>Select Target Athlete Profile or Full Roster</h3>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Choose an individual athlete or export the complete 12-athlete research matrix.</p>
+                            </div>
+                            
+                            <select
+                              value={selectedAthleteId || 'cohort'}
+                              onChange={(e) => setSelectedAthleteId(e.target.value)}
+                              style={{
+                                padding: '10px 16px',
+                                backgroundColor: 'var(--bg-dark)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="cohort">📊 Executive 12-Athlete Research Cohort (Full Summary)</option>
+                              {assignedAthletes.map(a => (
+                                <option key={a.athlete_id} value={a.athlete_id}>
+                                  👤 {a.fullname} ({a.athlete_id}) - {a.sport_type}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={() => downloadPdfReport(selectedAthleteId || athleteProfile?.athlete_id || 'me')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem' }}>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                            <button onClick={() => downloadPdfReport(selectedAthleteId || 'cohort')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem', fontWeight: '600' }}>
                               <FileDown size={16} />
                               <span>Download PDF Summary</span>
                             </button>
-                            <button onClick={() => downloadExcelReport(selectedAthleteId || athleteProfile?.athlete_id || 'me')} className="form-submit-btn" style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem' }}>
+                            <button onClick={() => downloadExcelReport(selectedAthleteId || 'cohort')} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem', fontWeight: '600' }}>
                               <FileSpreadsheet size={16} />
                               <span>Export Research CSV</span>
                             </button>
-
                           </div>
                         </div>
                       </div>
+
                     </div>
                   )}
 
