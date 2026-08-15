@@ -1,0 +1,26 @@
+# ===========================
+# Frontend .dockerignore
+# ===========================
+
+# Never copy these — they are installed fresh inside the image
+node_modules/
+
+# Next.js build output — gets rebuilt inside the image
+.next/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Editor
+.vscode/
+.idea/

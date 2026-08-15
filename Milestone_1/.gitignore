@@ -1,0 +1,70 @@
+# Environments and Secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.docker
+*.env
+steps.md
+scripts/
+Docs/
+# Python 
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Pytest and coverage
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.sved
+.hypothesis/
+.pytest_cache/
+pytestdebug.log
+
+# Virtual Environments
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project Specific Directories
+temp/
+uploads/
+videos/
+outputs/
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

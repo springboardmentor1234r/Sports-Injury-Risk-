@@ -1,0 +1,206 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MoveIQ - Login</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-surface": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#c0c7d0",
+                        "surface-container-low": "#f2f4f6",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#40484f",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#5c647a",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-tint": "#0053db",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00174b",
+                        "on-background": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#dae2fd",
+                        "on-error": "#ffffff",
+                        "tertiary": "#4e565d",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "tertiary-fixed": "#dce3ec",
+                        "outline": "#737686",
+                        "on-tertiary-fixed": "#151c23",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-bright": "#f7f9fb",
+                        "background": "#f7f9fb",
+                        "secondary-container": "#dae2fd",
+                        "tertiary-container": "#676e76",
+                        "on-tertiary-container": "#eaf1fa",
+                        "primary-container": "#2563eb",
+                        "secondary": "#565e74",
+                        "on-secondary-fixed": "#131b2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- Left Panel (45%) -->
+<div class="hidden lg:flex w-[45%] flex-col relative overflow-hidden bg-gradient-to-b from-[#EFF6FF] to-white p-12 border-r border-surface-variant">
+<!-- Header -->
+<div class="flex items-center gap-4 z-10">
+<img alt="MoveIQ Icon" class="w-12 h-12 object-contain" src="/images/moveiq_icon.png">
+<span class="text-[32px] font-bold text-on-surface tracking-tight">MoveIQ</span>
+</div>
+<!-- Tagline -->
+<div class="mt-8 z-10 max-w-sm">
+<h1 class="text-[32px] font-bold text-on-surface mb-2 leading-tight">
+                See risk before it becomes an injury
+            </h1>
+</div>
+<!-- Hero Image -->
+<div class="flex-grow flex items-center justify-center mt-6 relative z-0">
+<div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10 pointer-events-none rounded-2xl"></div>
+<img alt="Professional sports biomechanics visualization" class="w-full h-full object-cover rounded-2xl shadow-sm opacity-90" src="/images/biomechanics_visualization.png">
+</div>
+<!-- Feature Callouts -->
+<div class="mt-auto pt-6 z-10 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<span class="text-[16px] text-on-surface-variant">Real-time form analysis</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<span class="text-[16px] text-on-surface-variant">Risk scoring</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<span class="text-[16px] text-on-surface-variant">Team dashboards</span>
+</div>
+</div>
+</div>
+<!-- Right Panel (55%) -->
+<div class="w-full lg:w-[55%] flex flex-col items-center justify-center p-6 bg-white relative">
+<!-- Mobile Logo (Hidden on Desktop) -->
+<div class="lg:hidden flex items-center justify-center gap-2 mb-8 w-full">
+<img alt="MoveIQ Icon" class="w-10 h-10 object-contain" src="/images/moveiq_icon.png">
+<span class="text-[24px] font-bold text-on-surface tracking-tight">MoveIQ</span>
+</div>
+<div class="w-full max-w-[440px] flex flex-col">
+<h2 class="text-[24px] md:text-[32px] font-bold text-on-surface text-center mb-8">
+                Welcome back
+            </h2>
+<!-- SSO Buttons -->
+<div class="flex flex-col gap-4 mb-8">
+<button class="w-full flex items-center justify-center gap-4 py-3 px-4 bg-white border border-outline-variant rounded-xl hover:bg-[#f2f4f6] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<img class="w-5 h-5 object-contain" src="/images/moveiq_icon.png">
+<span class="text-[14px] font-semibold text-on-surface">Continue with Google</span>
+</button>
+</div>
+<!-- Divider -->
+<div class="flex items-center mb-8">
+<div class="flex-grow border-t border-surface-variant"></div>
+<span class="px-4 text-[12px] text-on-surface-variant uppercase tracking-widest">or</span>
+<div class="flex-grow border-t border-surface-variant"></div>
+</div>
+<!-- Login Form -->
+<form class="flex flex-col gap-6">
+<div class="flex flex-col gap-1">
+<label class="text-[14px] font-semibold text-on-surface" for="email">Email address</label>
+<input class="w-full bg-white border border-outline-variant rounded-xl px-4 py-3 text-[16px] text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" id="email" placeholder="name@example.com" type="email">
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<label class="text-[14px] font-semibold text-on-surface" for="password">Password</label>
+<a class="text-[12px] text-primary hover:underline" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-xl pl-4 pr-12 py-3 text-[16px] text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" id="password" placeholder="••••••••" type="password">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<button class="mt-2 w-full bg-[#2563eb] text-white py-3 px-4 rounded-xl text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="submit">
+                    Sign in
+                </button>
+</form>
+<div class="mt-8 text-center">
+<p class="text-[16px] text-on-surface-variant">
+                    Don't have an account? <a class="text-primary hover:underline font-semibold" href="#">Sign up</a>
+</p>
+</div>
+</div>
+<!-- Footer -->
+<footer class="absolute bottom-6 w-full text-center pointer-events-none">
+<span class="text-[12px] text-outline">© 2026 MoveIQ Biomechanics.</span>
+</footer>
+</div>
+</body></html>

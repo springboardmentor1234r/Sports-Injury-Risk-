@@ -1,0 +1,78 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+USE_LOCAL_DB = os.getenv("USE_LOCAL_DB", "false").lower() == "true"
+
+if USE_LOCAL_DB:
+    from .mysql_utils import (
+        get_connection,
+        release_connection,
+        create_user,
+        get_user_by_email,
+        assign_role,
+        get_user_roles,
+        get_user_by_id,
+        update_user_account,
+        update_user_profile_picture,
+        update_user_password,
+        search_coaches_by_name,
+        get_assigned_athletes,
+        create_athlete_by_coach,
+        remove_athlete_from_coach,
+        request_coach,
+        get_athlete_coach,
+        get_coach_requests,
+        respond_coach_request,
+        get_notifications,
+        create_notification,
+        create_team,
+        add_athlete_to_team,
+        get_teams_with_athletes,
+        delete_team_by_id,
+        get_all_users_paginated,
+        update_user_roles,
+        toggle_user_status,
+        get_platform_analytics,
+        get_session_audit_log,
+        create_webhook,
+        get_webhooks_by_user,
+        delete_webhook,
+        get_webhooks_by_event
+    )
+else:
+    from .postgres_utils import (
+        get_connection,
+        release_connection,
+        create_user,
+        get_user_by_email,
+        assign_role,
+        get_user_roles,
+        get_user_by_id,
+        update_user_account,
+        update_user_profile_picture,
+        update_user_password,
+        search_coaches_by_name,
+        get_assigned_athletes,
+        create_athlete_by_coach,
+        remove_athlete_from_coach,
+        request_coach,
+        get_athlete_coach,
+        get_coach_requests,
+        respond_coach_request,
+        get_notifications,
+        create_notification,
+        create_team,
+        add_athlete_to_team,
+        get_teams_with_athletes,
+        delete_team_by_id,
+        get_all_users_paginated,
+        update_user_roles,
+        toggle_user_status,
+        get_platform_analytics,
+        get_session_audit_log,
+        create_webhook,
+        get_webhooks_by_user,
+        delete_webhook,
+        get_webhooks_by_event
+    )
