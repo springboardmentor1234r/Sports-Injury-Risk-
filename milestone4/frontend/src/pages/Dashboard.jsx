@@ -114,7 +114,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const selectedAthlete = assignedAthletes.find(a => a.athlete_id === selectedAthleteId);
 
-  const downloadPdfReport = (athleteId = 'me') => {
+  const downloadPdfReport = async (athleteId = 'me') => {
     let targetId = athleteId;
     if (targetId === 'me') {
       if (athleteProfile?.athlete_id) {
@@ -122,14 +122,29 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       } else if (selectedAthleteId) {
         targetId = selectedAthleteId;
       } else {
-        targetId = 'me';
+        targetId = 'cohort';
       }
     }
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    window.open(`${apiBase}/api/reports/pdf/${targetId}?token=${token}`, '_blank');
+    try {
+      const response = await fetch(`${apiBase}/api/reports/pdf/${targetId}?token=${token}`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SIRD_Report_${targetId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PDF Download Error:', err);
+      window.open(`${apiBase}/api/reports/pdf/${targetId}?token=${token}`, '_blank');
+    }
   };
 
-  const downloadExcelReport = (athleteId = 'me') => {
+  const downloadExcelReport = async (athleteId = 'me') => {
     let targetId = athleteId;
     if (targetId === 'me') {
       if (athleteProfile?.athlete_id) {
@@ -137,12 +152,28 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       } else if (selectedAthleteId) {
         targetId = selectedAthleteId;
       } else {
-        targetId = 'me';
+        targetId = 'cohort';
       }
     }
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    window.open(`${apiBase}/api/reports/excel/${targetId}?token=${token}`, '_blank');
+    try {
+      const response = await fetch(`${apiBase}/api/reports/excel/${targetId}?token=${token}`);
+      if (!response.ok) throw new Error('Failed to export CSV');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SIRD_Telemetry_${targetId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('CSV Export Error:', err);
+      window.open(`${apiBase}/api/reports/excel/${targetId}?token=${token}`, '_blank');
+    }
   };
+
 
 
 
@@ -2052,11 +2083,25 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               }}
                             >
                               <option value="cohort">📊 Executive 12-Athlete Research Cohort (Full Summary)</option>
-                              {assignedAthletes.map(a => (
+                              {(assignedAthletes.length > 0 ? assignedAthletes : [
+                                { athlete_id: 'ATH-001', fullname: 'Marcus Rashford', sport_type: 'Soccer' },
+                                { athlete_id: 'ATH-002', fullname: 'Serena Williams', sport_type: 'Tennis' },
+                                { athlete_id: 'ATH-003', fullname: 'Erling Haaland', sport_type: 'Soccer' },
+                                { athlete_id: 'ATH-004', fullname: 'Simone Biles', sport_type: 'Gymnastics' },
+                                { athlete_id: 'ATH-005', fullname: 'Michael Phelps', sport_type: 'Swimming' },
+                                { athlete_id: 'ATH-006', fullname: 'LeBron James', sport_type: 'Basketball' },
+                                { athlete_id: 'ATH-007', fullname: 'Katie Ledecky', sport_type: 'Swimming' },
+                                { athlete_id: 'ATH-008', fullname: 'Novak Djokovic', sport_type: 'Tennis' },
+                                { athlete_id: 'ATH-009', fullname: 'Yulimar Rojas', sport_type: 'Track & Field' },
+                                { athlete_id: 'ATH-010', fullname: 'Kylian Mbappé', sport_type: 'Soccer' },
+                                { athlete_id: 'ATH-011', fullname: 'Naomi Osaka', sport_type: 'Tennis' },
+                                { athlete_id: 'ATH-012', fullname: 'Giannis Antetokounmpo', sport_type: 'Basketball' }
+                              ]).map(a => (
                                 <option key={a.athlete_id} value={a.athlete_id}>
                                   👤 {a.fullname} ({a.athlete_id}) - {a.sport_type}
                                 </option>
                               ))}
+
                             </select>
                           </div>
 
