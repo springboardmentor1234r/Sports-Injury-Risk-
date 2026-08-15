@@ -133,13 +133,14 @@ async def generate_cohort_pdf_report(
     elements.append(t_cohort)
 
     doc.build(elements)
-    buffer.seek(0)
+    pdf_bytes = buffer.getvalue()
     filename = f"SIRD_Cohort_Research_Report_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
-    return StreamingResponse(
-        buffer,
+    return Response(
+        content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
 
 
     if target_athlete_id == "me":
@@ -256,14 +257,15 @@ async def generate_cohort_pdf_report(
     elements.append(t_rec)
 
     doc.build(elements)
-    buffer.seek(0)
+    pdf_bytes = buffer.getvalue()
 
     filename = f"SIRD_Report_{target_athlete_id}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
-    return StreamingResponse(
-        buffer,
+    return Response(
+        content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
 
 @router.get("/excel/{athlete_id}")
 async def generate_excel_report(
