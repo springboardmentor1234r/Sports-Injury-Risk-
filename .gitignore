@@ -40,3 +40,8 @@ storage/uploads/*
 !storage/uploads/.gitkeep
 storage/processed/*
 !storage/processed/.gitkeep
+
+# Generator Scripts & Raw Templates
+build_sird_presentation.py
+Presentation - CampusEventHub Overview Edited 7thOCT (3).pptx
+
