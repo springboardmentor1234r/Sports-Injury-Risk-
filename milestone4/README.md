@@ -4,14 +4,14 @@ This directory contains the completed **Milestone 4** production-ready codebase 
 
 ---
 
-## 📋 Task List & Completion Status
+## Task List & Completion Status
 
 - [x] **Notification & Alert System**
   - Built database-driven event triggers (`notification_routes.py`) delivering **High-Risk Movement Alerts**, **Training Load Warnings**, **Recovery Reminders**, and **Assessment Completion Notifications**.
   - Built interactive topbar `NotificationBell.jsx` component with real-time unread badge counter and slide-over alert drawer.
 
 - [x] **Reports & Export System**
-  - Integrated ReportLab PDF engine (`reportload_routes.py`) producing downloadable, formatted **PDF Injury Risk & Biomechanical Assessment Reports** (`/api/reports/pdf/{athlete_id}`).
+  - Integrated ReportLab PDF engine (`report_routes.py`) producing downloadable, formatted **PDF Injury Risk & Biomechanical Assessment Reports** (`/api/reports/pdf/{athlete_id}`).
   - Built CSV/Excel export endpoints (`/api/reports/excel/{athlete_id}`) for tabular telemetry analysis.
 
 - [x] **Executive Dashboards & System Monitoring**
@@ -28,13 +28,12 @@ This directory contains the completed **Milestone 4** production-ready codebase 
 
 ---
 
-## 🚀 Execution & Testing Instructions
+## Execution & Testing Instructions
 
 ### 1. Running Locally (Development Mode)
 ```powershell
 # Start Backend
 cd milestone4/backend
-..\..\milestone2\backend\venv\Scripts\activate
 python -m uvicorn app.main:app --reload --port 8000
 
 # Start Frontend
