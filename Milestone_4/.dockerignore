@@ -1,0 +1,51 @@
+# ===========================
+# Backend .dockerignore
+# ===========================
+
+# Virtual environment (never copy into image)
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment secrets (injected via docker-compose env_file)
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# Frontend (backend image doesn't need it)
+frontend/
+
+# Local output / data directories (these are ephemeral)
+outputs/
+temp/
+data/
+logs/
+*.log
+
+# Large model files
+models/
+
+# Test artifacts
+tests/
+.pytest_cache/
+.coverage
+coverage.xml
+
+# IDE
+.vscode/
+.idea/
+
+# Docker files themselves (not needed inside the image)
+Dockerfile
+docker-compose*.yml
+.dockerignore

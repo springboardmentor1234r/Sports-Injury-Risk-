@@ -1,0 +1,24 @@
+# ============================================================
+# docker-compose.override.yml — Local Development Overrides
+#
+# This file is AUTOMATICALLY merged with docker-compose.yml
+# when you run: docker-compose up
+#
+# It enables hot-reloading so you can edit Python code and
+# see changes without rebuilding the Docker image.
+# ============================================================
+
+services:
+
+  # Override api: mount source code live + enable --reload
+  api:
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app                 # Live mount: code changes reflect instantly
+      - temp_uploads:/app/temp # Keep shared video volume
+
+  # Override worker: mount source code live
+  worker:
+    volumes:
+      - .:/app
+      - temp_uploads:/app/temp

@@ -1,0 +1,126 @@
+# ============================================================
+# MoveIQ — Docker Compose (Full Stack)
+# Run:  docker-compose up --build
+# Stop: docker-compose down
+# ============================================================
+
+services:
+
+  # ── Redis ──────────────────────────────────────────────────
+  # Message broker for Celery + WebSocket Pub/Sub channel
+  redis:
+    image: redis:7-alpine
+    container_name: moveiq_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Elasticsearch ──────────────────────────────────────────
+  # Powers the Coach Dashboard athlete search (fuzzy search)
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: moveiq_elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Capped at 512MB RAM for dev
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ── API (FastAPI) ──────────────────────────────────────────
+  # Main web server — handles all HTTP and WebSocket requests
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moveiq_api
+    restart: unless-stopped
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      # Shared volume: api writes uploaded video, worker reads it
+      - temp_uploads:/app/temp
+
+  # ── Celery Worker ──────────────────────────────────────────
+  # Background processor: video analysis, email sending, ES sync
+  # Uses the same image as api — only the command changes
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moveiq_worker
+    restart: unless-stopped
+    command: >
+      celery -A src.worker.celery_app worker
+      --loglevel=info
+      -P threads
+      -Q video_processing,default,high_priority,low_priority
+      --concurrency=4
+    env_file:
+      - .env.docker
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      # Same shared volume as api for video file handoff
+      - temp_uploads:/app/temp
+
+  # ── Celery Beat ────────────────────────────────────────────
+  # Cron scheduler: daily reassessment reminders, weekly reports, cleanup
+  # Uses the same image as api — only the command changes
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moveiq_beat
+    restart: unless-stopped
+    command: celery -A src.worker.celery_app beat --loglevel=info
+    env_file:
+      - .env.docker
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ── Frontend (Next.js) ────────────────────────────────────
+  # The web UI served at http://localhost:3000
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: moveiq_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+# ── Named Volumes ──────────────────────────────────────────
+volumes:
+  # Persists Elasticsearch index data across container restarts
+  es_data:
+    driver: local
+
+  # Shared temporary storage for video files between api ↔ worker
+  temp_uploads:
+    driver: local
