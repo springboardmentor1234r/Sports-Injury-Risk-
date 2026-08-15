@@ -1,8 +1,0 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: AWS CloudFormation template for Sports Injury Risk Detection Platform
-Resources:
-  EC2Instance:
-    Type: AWS::EC2::Instance
-    Properties:
-      InstanceType: t3.medium
-      ImageId: ami-0c55b159cbfafe1f0
