@@ -1,0 +1,231 @@
+import io
+import csv
+from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse, Response
+from app.database import get_db
+from app.auth import get_current_user
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import StreamingResponse, Response
+from app.database import get_db
+from app.auth import get_current_user, verify_token
+
+router = APIRouter(prefix="/api/reports", tags=["Reports & Export System"])
+
+async def get_user_from_header_or_query(token: str = Query(None), db = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    return current_user
+
+@router.get("/pdf/{athlete_id}")
+async def generate_pdf_report(
+    athlete_id: str,
+    token: str = Query(None),
+    db = Depends(get_db)
+):
+    """Generates a professional PDF Injury Risk & Biomechanical Assessment Report."""
+    user_email = None
+    if token:
+        payload = verify_token(token)
+        if payload:
+            user_email = payload.get("sub")
+    
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Not authenticated. Valid bearer token or ?token parameter required.")
+
+    current_user = await db.users.find_one({"email": user_email})
+    if not current_user:
+        raise HTTPException(status_code=401, detail="User not found.")
+
+    target_athlete_id = athlete_id
+
+    if target_athlete_id == "me":
+        athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
+        if not athlete_profile:
+            raise HTTPException(status_code=404, detail="Athlete profile not found.")
+        target_athlete_id = athlete_profile["athlete_id"]
+
+    athlete_profile = await db.athlete_profiles.find_one({"athlete_id": target_athlete_id})
+    if not athlete_profile:
+        raise HTTPException(status_code=404, detail=f"Athlete ID {target_athlete_id} not found.")
+
+    latest_prediction = await db.predictions.find_one({"athlete_id": target_athlete_id}, sort=[("created_at", -1)])
+    latest_analysis = await db.video_analyses.find_one({"athlete_id": target_athlete_id}, sort=[("upload_date", -1)])
+
+    # Build PDF buffer using ReportLab
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+    styles = getSampleStyleSheet()
+
+    # Custom styles
+    title_style = ParagraphStyle('DocTitle', parent=styles['Heading1'], fontSize=20, leading=24, textColor=colors.HexColor('#1e3a8a'))
+    subtitle_style = ParagraphStyle('DocSub', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#475569'))
+    h2_style = ParagraphStyle('H2', parent=styles['Heading2'], fontSize=12, leading=16, textColor=colors.HexColor('#0f172a'), spaceBefore=12, spaceAfter=6)
+
+    elements = []
+
+    # Title Header
+    elements.append(Paragraph("SPORTS INJURY RISK DETECTION (SIRD) PLATFORM", title_style))
+    elements.append(Paragraph(f"Official Biomechanical & ML Injury Risk Report — Generated on {datetime.utcnow().strftime('%B %d, %Y')}", subtitle_style))
+    elements.append(Spacer(1, 10))
+    elements.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#2563eb'), spaceAfter=15))
+
+    # Athlete Information Table
+    elements.append(Paragraph("1. Athlete Physical Profile", h2_style))
+    profile_data = [
+        ["Athlete ID:", athlete_profile.get("athlete_id"), "Sport Type:", athlete_profile.get("sport_type")],
+        ["Age:", f"{athlete_profile.get('age')} years", "Position:", athlete_profile.get("position")],
+        ["Height / Weight:", f"{athlete_profile.get('height')}cm / {athlete_profile.get('weight')}kg", "Weekly Load:", athlete_profile.get("training_load")],
+        ["Assigned Coach:", athlete_profile.get("assigned_coach") or "N/A", "Assigned Physio:", athlete_profile.get("assigned_physio") or "N/A"]
+    ]
+    t_profile = Table(profile_data, colWidths=[110, 150, 110, 150])
+    t_profile.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8fafc')),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#1e293b')),
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('FONTNAME', (2,0), (2,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0'))
+    ]))
+    elements.append(t_profile)
+    elements.append(Spacer(1, 15))
+
+    # ML Injury Risk Predictions Table
+    elements.append(Paragraph("2. ML Model Category Predictions (RandomForest Classifiers)", h2_style))
+    pred_dict = latest_prediction.get("injury_predictions", {}) if latest_prediction else {}
+    
+    pred_table_data = [["Injury Category", "Risk Score (%)", "Risk Classification", "Model Confidence"]]
+    for cat_name, data in pred_dict.items():
+        pred_table_data.append([
+            cat_name,
+            f"{data.get('score')}%",
+            data.get('level'),
+            f"{int(data.get('probability', 0.9) * 100)}%"
+        ])
+
+    if len(pred_table_data) == 1:
+        pred_table_data.append(["No prediction record", "N/A", "N/A", "N/A"])
+
+    t_pred = Table(pred_table_data, colWidths=[180, 100, 130, 110])
+    t_pred.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1e293b')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f1f5f9')])
+    ]))
+    elements.append(t_pred)
+    elements.append(Spacer(1, 15))
+
+    # Corrective Recommendations
+    elements.append(Paragraph("3. Prescribed Corrective Exercises & Mobility Routines", h2_style))
+    recs = latest_prediction.get("recommendations", []) if latest_prediction else []
+    
+    rec_table_data = [["Title", "Category", "Priority", "Target Body Region", "Frequency"]]
+    for r in recs:
+        rec_table_data.append([
+            r.get("title", "Drill"),
+            r.get("category", "Corrective"),
+            r.get("priority", "High"),
+            r.get("body_region", "Lower Limb"),
+            r.get("frequency", "3x/week")
+        ])
+
+    if len(rec_table_data) == 1:
+        rec_table_data.append(["Standard Warmup", "Mobility", "Low", "Full Body", "Daily"])
+
+    t_rec = Table(rec_table_data, colWidths=[160, 110, 70, 100, 80])
+    t_rec.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0f766e')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8.5),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#ccfbf1')),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f0fdf4')])
+    ]))
+    elements.append(t_rec)
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    filename = f"SIRD_Report_{target_athlete_id}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@router.get("/excel/{athlete_id}")
+async def generate_excel_report(
+    athlete_id: str,
+    token: str = Query(None),
+    db = Depends(get_db)
+):
+    """Generates a CSV / Excel format dataset report for an athlete."""
+    user_email = None
+    if token:
+        payload = verify_token(token)
+        if payload:
+            user_email = payload.get("sub")
+    
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Not authenticated. Valid bearer token or ?token parameter required.")
+
+    current_user = await db.users.find_one({"email": user_email})
+    if not current_user:
+        raise HTTPException(status_code=401, detail="User not found.")
+
+    target_athlete_id = athlete_id
+    if target_athlete_id == "me":
+        athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
+        if not athlete_profile:
+            raise HTTPException(status_code=404, detail="Athlete profile not found.")
+        target_athlete_id = athlete_profile["athlete_id"]
+
+
+    cursor = db.predictions.find({"athlete_id": target_athlete_id}).sort("created_at", 1)
+    predictions = await cursor.to_list(length=100)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write CSV Header
+    writer.writerow([
+        "Report ID", "Athlete ID", "Analysis Date", "Injury Risk Score (%)",
+        "Movement Quality Score (%)", "Symmetry Score (%)", "Fatigue Score (%)",
+        "ACL Risk (%)", "Hamstring Risk (%)", "Ankle Risk (%)", "Shoulder Risk (%)",
+        "Lower Back Risk (%)", "Overuse Risk (%)"
+    ])
+
+    for p in predictions:
+        scores = p.get("scores", {})
+        preds = p.get("injury_predictions", {})
+        writer.writerow([
+            p.get("report_id", "N/A"),
+            p.get("athlete_id", target_athlete_id),
+            p.get("created_at", datetime.utcnow()).strftime("%Y-%m-%d %H:%M"),
+            scores.get("injury_risk_score", 0),
+            scores.get("movement_quality_score", 0),
+            scores.get("symmetry_score", 0),
+            scores.get("fatigue_score", 0),
+            preds.get("ACL Injury Risk", {}).get("score", 0),
+            preds.get("Hamstring Injury Risk", {}).get("score", 0),
+            preds.get("Ankle Sprain Risk", {}).get("score", 0),
+            preds.get("Shoulder Injury Risk", {}).get("score", 0),
+            preds.get("Lower Back Injury Risk", {}).get("score", 0),
+            preds.get("Overuse Injury Risk", {}).get("score", 0)
+        ])
+
+    output.seek(0)
+    filename = f"SIRD_Telemetry_{target_athlete_id}.csv"
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

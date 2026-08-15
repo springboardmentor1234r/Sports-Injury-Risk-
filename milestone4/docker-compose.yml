@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sird_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MONGODB_URL=mongodb+srv://forgotpassnewmade:Avengers0000@cluster0.ikewtpy.mongodb.net/sports_injury?appName=Cluster0
+      - JWT_SECRET_KEY=c0fda31c14076334b731ec543c60d641192f12cefd1d31870de82b229748bf92
+      - FRONTEND_URL=http://localhost
+    volumes:
+      - ./backend/storage:/app/storage
+
+  # React Production Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sird_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
