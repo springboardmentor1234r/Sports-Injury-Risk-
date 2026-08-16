@@ -429,3 +429,67 @@ async def get_latest_analysis(
         )
         
     return latest_analysis
+
+
+@router.get("/history/{athlete_id}")
+async def get_video_history(
+    athlete_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    target_athlete_id = athlete_id
+    
+    if target_athlete_id == "me":
+        if current_user.get("role") != "Athlete":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The 'me' shortcut is only available for Athlete accounts."
+            )
+        athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
+        if not athlete_profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Athlete profile does not exist."
+            )
+        target_athlete_id = athlete_profile["athlete_id"]
+
+    role = current_user.get("role")
+    fullname = current_user.get("fullname")
+    
+    if role == "Coach":
+        is_assigned = await db.athlete_profiles.find_one({"athlete_id": target_athlete_id, "assigned_coach": fullname})
+        if not is_assigned:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access Denied: This athlete is not assigned to you."
+            )
+    elif role == "Physiotherapist":
+        is_assigned = await db.athlete_profiles.find_one({"athlete_id": target_athlete_id, "assigned_physio": fullname})
+        if not is_assigned:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access Denied: This patient is not assigned to you."
+            )
+    elif role == "Sports Scientist" or role == "Administrator":
+        pass
+    elif role == "Athlete":
+        athlete_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
+        if not athlete_profile or athlete_profile["athlete_id"] != target_athlete_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access Denied: You can only access your own video history."
+            )
+            
+    cursor = db.video_analyses.find(
+        {"athlete_id": target_athlete_id, "status": "Completed"}
+    ).sort("upload_date", -1)
+    
+    analyses = await cursor.to_list(length=100)
+    
+    formatted = []
+    for doc in analyses:
+        doc["_id"] = str(doc["_id"])
+        formatted.append(doc)
+        
+    return formatted
+

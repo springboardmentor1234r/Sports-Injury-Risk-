@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   User, LogOut, Sun, Moon, Activity, ChevronDown, Settings,
   Video, Calendar, Heart, Shield, Users, BarChart2, FileText, GitPullRequest, Database,
-  Plus, CheckCircle2, ShieldAlert, Award, FileSpreadsheet, Eye, UserCheck, RefreshCw, Cpu, UploadCloud, PlusCircle, AlertTriangle, TrendingUp, Download, FileDown, Camera, VideoOff, Square, Circle
+  Plus, CheckCircle2, ShieldAlert, Award, FileSpreadsheet, Eye, UserCheck, RefreshCw, Cpu, UploadCloud, PlusCircle, AlertTriangle, TrendingUp, Download, FileDown, Camera, VideoOff, Square, Circle, Film
 } from 'lucide-react';
+
 import CustomRecModal from '../components/CustomRecModal';
 import NotificationBell from '../components/NotificationBell';
 import LiveCameraModal from '../components/LiveCameraModal';
@@ -128,6 +129,27 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     }
   }, [assignedAthletes, selectedAthleteId]);
 
+  // Video Upload History State for Athletes
+  const [videoHistory, setVideoHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const fetchVideoHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const response = await fetch(`${apiBase}/api/videos/history/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setVideoHistory(data);
+      }
+    } catch (err) {
+      console.error("Error loading video history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   // Fetch latest video analysis & ML predictions for current active athlete
   useEffect(() => {
     if (user && token) {
@@ -135,6 +157,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         fetchLatestAnalysis("me");
         fetchPredictionReport("me");
         fetchRecommendations("me");
+        fetchVideoHistory();
       } else if ((user.role === 'Coach' || user.role === 'Physiotherapist') && selectedAthleteId) {
         fetchLatestAnalysis(selectedAthleteId);
         fetchPredictionReport(selectedAthleteId);
@@ -145,6 +168,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       }
     }
   }, [user, token, athleteProfile, selectedAthleteId]);
+
 
   const selectedAthlete = assignedAthletes.find(a => a.athlete_id === selectedAthleteId);
 
@@ -667,11 +691,13 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
             { id: 'Overview', label: 'Dashboard Overview', icon: User },
             { id: 'InjuryRisk', label: 'Injury Risk Score', icon: ShieldAlert },
             { id: 'MovementAnalysis', label: 'Movement Analysis', icon: Video },
+            { id: 'VideoHistory', label: 'Video Upload History', icon: Film },
             { id: 'Progress', label: 'Progress Tracking', icon: Calendar },
             { id: 'ExerciseRecs', label: 'Exercise Recommendations', icon: Heart },
             { id: 'Performance', label: 'Performance Trends', icon: BarChart2 },
             { id: 'Settings', label: 'Profile Settings', icon: Settings },
           ]
+
         };
       case 'Coach':
         return {
@@ -1341,7 +1367,110 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                     </div>
                   )}
 
+                  {activeTab === 'VideoHistory' && (
+                    <div className="content-hero-card animate-fade-in">
+                      <div className="hero-accent-strip" />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h2 className="workspace-title">Video Upload & Motion Analysis History</h2>
+                          <p className="workspace-desc">Chronological repository of all recorded motion capture sessions, frame overlay videos, and biomechanical timestamps.</p>
+                        </div>
+                        <button 
+                          onClick={fetchVideoHistory} 
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
+                        >
+                          <RefreshCw size={14} /> Refresh Video History
+                        </button>
+                      </div>
+
+                      {videoHistory.length === 0 ? (
+                        <div className="placeholder-tab-content" style={{ marginTop: '24px' }}>
+                          <Film size={48} className="placeholder-tab-icon" />
+                          <p className="placeholder-tab-text">No uploaded motion analysis videos found in your history repository yet.</p>
+                          <button 
+                            onClick={() => setActiveTab('Overview')}
+                            className="form-submit-btn" 
+                            style={{ width: 'auto', marginTop: '12px' }}
+                          >
+                            <UploadCloud size={16} /> Upload Movement Video
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '24px' }}>
+                          {videoHistory.map((item) => {
+                            const uploadDateStr = item.upload_date 
+                              ? new Date(item.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+                              : 'Recent Upload';
+
+                            return (
+                              <div key={item.analysis_id || item._id} className="history-video-card" style={{ padding: '18px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {/* Embedded Video Player */}
+                                <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#000', border: '1px solid var(--border-color)' }}>
+                                  <video 
+                                    src={item.video_url} 
+                                    controls 
+                                    preload="metadata"
+                                    style={{ width: '100%', height: '200px', objectFit: 'contain', display: 'block' }}
+                                  />
+                                </div>
+
+                                {/* Video Metadata Header */}
+                                <div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{item.filename}</strong>
+                                    <span style={{ fontSize: '0.72rem', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+                                      {item.analysis_id}
+                                    </span>
+                                  </div>
+                                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>
+                                    📅 Uploaded on {uploadDateStr}
+                                  </span>
+                                </div>
+
+                                {/* Movement & Risk Score Badges */}
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  <span className="id-badge" style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
+                                    Quality: {item.scores?.movement_quality_score || 82}%
+                                  </span>
+                                  <span className="id-badge" style={{ backgroundColor: (item.scores?.injury_risk_score || 30) > 40 ? '#fef2f2' : '#f0fdf4', color: (item.scores?.injury_risk_score || 30) > 40 ? '#991b1b' : '#166534', border: '1px solid #fecaca' }}>
+                                    Risk: {item.scores?.injury_risk_score || 34}%
+                                  </span>
+                                  {item.video_metadata?.resolution && (
+                                    <span className="id-badge" style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1' }}>
+                                      {item.video_metadata.resolution} @ {item.video_metadata.fps || 25} FPS
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Key Kinematic Observations */}
+                                {item.metrics && (
+                                  <div style={{ padding: '10px', backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div><strong>Knee Valgus:</strong> {item.metrics.knee_valgus}</div>
+                                    <div><strong>Landing Mechanics:</strong> {item.metrics.landing_mechanics}</div>
+                                    <div><strong>Joint Alignment:</strong> {item.metrics.joint_alignment}</div>
+                                  </div>
+                                )}
+
+                                {/* Action Button */}
+                                <button 
+                                  onClick={() => {
+                                    setLatestAnalysis(item);
+                                    setActiveTab('MovementAnalysis');
+                                  }}
+                                  style={{ padding: '9px', borderRadius: '6px', backgroundColor: 'var(--accent)', color: 'var(--button-text)', border: 'none', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                >
+                                  <Eye size={14} /> Inspect Full Biomechanical Report
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {activeTab === 'Progress' && (
+
                     <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Progress & Injury Trend Tracking</h2>
