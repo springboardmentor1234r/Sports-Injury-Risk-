@@ -253,6 +253,7 @@ export function RiskTrendAreaChart({ history, athleteName = "Current Athlete" })
           </div>
         </div>
 
+
         {/* Right Column: Trajectory Session Table */}
         <div className="chart-side-panel">
           <div className="side-panel-header">
@@ -276,3 +277,140 @@ export function RiskTrendAreaChart({ history, athleteName = "Current Athlete" })
     </div>
   );
 }
+
+// 4. Interactive Roster Cohort Scatter Matrix Chart SVG Component
+export function CohortScatterMatrixChart({ athletesList }) {
+
+  const [selectedAthlete, setSelectedAthlete] = React.useState(null);
+
+  const defaultAthletes = [
+    { id: 'ATH-1001', name: 'Marcus Rashford', sport: 'Soccer', quality: 85.0, risk: 30, valgus: 8.5, x: 220, y: 160, color: '#22c55e' },
+    { id: 'ATH-1002', name: 'Serena Williams', sport: 'Tennis', quality: 92.4, risk: 18, valgus: 4.2, x: 310, y: 200, color: '#22c55e' },
+    { id: 'ATH-1003', name: 'Simone Biles', sport: 'Gymnastics', quality: 96.2, risk: 12, valgus: 3.1, x: 350, y: 220, color: '#22c55e' },
+    { id: 'ATH-1004', name: 'Erling Haaland', sport: 'Soccer', quality: 88.0, risk: 95, valgus: 15.2, x: 250, y: 40, color: '#ef4444' },
+    { id: 'ATH-1005', name: 'LeBron James', sport: 'Basketball', quality: 91.5, risk: 95, valgus: 14.8, x: 300, y: 40, color: '#ef4444' },
+    { id: 'ATH-1006', name: 'Katie Ledecky', sport: 'Swimming', quality: 94.8, risk: 15, valgus: 3.5, x: 335, y: 210, color: '#22c55e' },
+    { id: 'ATH-1007', name: 'Novak Djokovic', sport: 'Tennis', quality: 95.1, risk: 14, valgus: 3.8, x: 340, y: 215, color: '#22c55e' },
+    { id: 'ATH-1008', name: 'Yulimar Rojas', sport: 'Track & Field', quality: 89.3, risk: 52, valgus: 9.8, x: 270, y: 110, color: '#f59e0b' },
+    { id: 'ATH-1009', name: 'Kylian Mbappé', sport: 'Soccer', quality: 87.6, risk: 26, valgus: 7.2, x: 245, y: 170, color: '#22c55e' },
+    { id: 'ATH-1010', name: 'Naomi Osaka', sport: 'Tennis', quality: 90.2, risk: 22, valgus: 5.5, x: 285, y: 185, color: '#22c55e' },
+    { id: 'ATH-1011', name: 'Giannis Antetokounmpo', sport: 'Basketball', quality: 93.0, risk: 95, valgus: 16.1, x: 320, y: 40, color: '#ef4444' },
+    { id: 'ATH-1012', name: 'Alex Morgan', sport: 'Soccer', quality: 89.0, risk: 35, valgus: 8.9, x: 265, y: 150, color: '#f59e0b' },
+    { id: 'ATH-1013', name: 'Caeleb Dressel', sport: 'Swimming', quality: 92.0, risk: 20, valgus: 4.8, x: 305, y: 195, color: '#22c55e' }
+  ];
+
+  const data = athletesList && athletesList.length > 0 ? athletesList : defaultAthletes;
+
+  return (
+    <div className="cohort-scatter-card" style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', marginTop: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0, color: 'var(--text-primary)' }}>
+            🎯 13-Athlete Roster Kinematic Cohort Matrix
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+            Interactive scatter plot mapping Movement Quality vs. Injury Risk probability across the 13 roster profiles.
+          </p>
+        </div>
+        <span style={{ fontSize: '0.75rem', fontWeight: '700', padding: '4px 12px', borderRadius: '12px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+          13 Active Athletes Synced
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', alignItems: 'center' }}>
+        {/* SVG Scatter Plot Grid */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <svg viewBox="0 0 400 260" style={{ width: '100%', height: 'auto', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            {/* Quadrant Background Colors */}
+            <rect x="40" y="20" width="170" height="110" fill="rgba(239, 68, 68, 0.06)" />
+            <rect x="210" y="20" width="170" height="110" fill="rgba(245, 158, 11, 0.08)" />
+            <rect x="40" y="130" width="170" height="100" fill="rgba(245, 158, 11, 0.06)" />
+            <rect x="210" y="130" width="170" height="100" fill="rgba(34, 197, 94, 0.08)" />
+
+            {/* Grid Axes */}
+            <line x1="40" y1="230" x2="380" y2="230" stroke="#cbd5e1" strokeWidth="1.5" />
+            <line x1="40" y1="20" x2="40" y2="230" stroke="#cbd5e1" strokeWidth="1.5" />
+
+            {/* Quadrant Divider Dotted Lines */}
+            <line x1="210" y1="20" x2="210" y2="230" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,4" />
+            <line x1="40" y1="130" x2="380" y2="130" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,4" />
+
+            {/* Axis Labels */}
+            <text x="210" y="252" textAnchor="middle" fontSize="10" fontWeight="700" fill="#475569">
+              Movement Quality Index Score (%) →
+            </text>
+            <text x="18" y="135" textAnchor="middle" fontSize="10" fontWeight="700" fill="#475569" transform="rotate(-90 18 135)">
+              ← Injury Risk Index (%)
+            </text>
+
+            {/* Quadrant Labels */}
+            <text x="50" y="36" fontSize="9" fontWeight="800" fill="#dc2626">High Risk Alert Zone</text>
+            <text x="370" y="36" textAnchor="end" fontSize="9" fontWeight="800" fill="#d97706">Overuse Caution Zone</text>
+            <text x="370" y="222" textAnchor="end" fontSize="9" fontWeight="800" fill="#16a34a">Optimal Performance Zone</text>
+
+            {/* Athlete Scatter Bubbles */}
+            {data.map((ath, idx) => (
+              <g 
+                key={ath.id || idx} 
+                style={{ cursor: 'pointer' }}
+                onClick={() => setSelectedAthlete(ath)}
+                onMouseEnter={() => setSelectedAthlete(ath)}
+              >
+                <circle 
+                  cx={ath.x} 
+                  cy={ath.y} 
+                  r="8" 
+                  fill={ath.color} 
+                  stroke="#ffffff" 
+                  strokeWidth="2" 
+                  style={{ transition: 'all 0.2s ease', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}
+                />
+                <text 
+                  x={ath.x} 
+                  y={ath.y - 11} 
+                  textAnchor="middle" 
+                  fontSize="8" 
+                  fontWeight="700" 
+                  fill="#1e293b"
+                >
+                  {ath.name.split(' ')[0]}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* Right Side Info Box for Hovered/Selected Athlete */}
+        <div style={{ padding: '16px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {selectedAthlete ? (
+            <>
+              <div style={{ borderBottom: '1px solid #cbd5e1', paddingBottom: '6px' }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1e40af' }}>{selectedAthlete.name}</strong>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>{selectedAthlete.sport} | ID: {selectedAthlete.id}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Movement Quality:</span> <strong>{selectedAthlete.quality}%</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Injury Risk Score:</span> <strong style={{ color: selectedAthlete.risk > 40 ? '#dc2626' : '#16a34a' }}>{selectedAthlete.risk}%</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Knee Valgus Angle:</span> <strong>{selectedAthlete.valgus}°</strong>
+                </div>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '6px' }}>
+                ⚡ Hover over any bubble to inspect individual athlete kinematics within the 13-roster cohort.
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '0.82rem', padding: '12px 0' }}>
+              👆 Hover over or click any athlete node on the scatter matrix to view individual kinematics.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

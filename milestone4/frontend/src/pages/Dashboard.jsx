@@ -7,7 +7,8 @@ import {
 import CustomRecModal from '../components/CustomRecModal';
 import NotificationBell from '../components/NotificationBell';
 import LiveCameraModal from '../components/LiveCameraModal';
-import { BodyHeatmapGraphic, JointAngleRadarChart, RiskTrendAreaChart } from '../components/BiomechanicalCharts';
+import { BodyHeatmapGraphic, JointAngleRadarChart, RiskTrendAreaChart, CohortScatterMatrixChart } from '../components/BiomechanicalCharts';
+
 import './Dashboard.css';
 
 export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
@@ -2109,8 +2110,12 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             </div>
                           </div>
                         </div>
+
+                        {/* Interactive 13-Athlete Roster Cohort Scatter Matrix Chart */}
+                        <CohortScatterMatrixChart athletesList={assignedAthletes} />
                       </div>
                     </div>
+
                   )}
 
                   {activeTab === 'InjuryPrediction' && (
