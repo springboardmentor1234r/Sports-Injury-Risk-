@@ -40,10 +40,28 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [coachesList, setCoachesList] = useState([]);
   const [physiosList, setPhysiosList] = useState([]);
 
-  // Assigned athletes list for Coach / Physio
-  const [assignedAthletes, setAssignedAthletes] = useState([]);
+  // Default 13 Roster Athletes for Instant 0-delay Display
+  const DEFAULT_ROSTER_ATHLETES = [
+    { athlete_id: 'ATH-1001', name: 'Marcus Rashford', fullname: 'Marcus Rashford', sport_type: 'Soccer', position: 'Forward', age: 26, height: 180, weight: 70, movement_quality_score: 85.0 },
+    { athlete_id: 'ATH-1002', name: 'Serena Williams', fullname: 'Serena Williams', sport_type: 'Tennis', position: 'Singles', age: 42, height: 175, weight: 72, movement_quality_score: 92.4 },
+    { athlete_id: 'ATH-1003', name: 'Simone Biles', fullname: 'Simone Biles', sport_type: 'Gymnastics', position: 'All-Around', age: 27, height: 142, weight: 47, movement_quality_score: 96.2 },
+    { athlete_id: 'ATH-1004', name: 'Erling Haaland', fullname: 'Erling Haaland', sport_type: 'Soccer', position: 'Striker', age: 24, height: 194, weight: 88, movement_quality_score: 88.0 },
+    { athlete_id: 'ATH-1005', name: 'LeBron James', fullname: 'LeBron James', sport_type: 'Basketball', position: 'Small Forward', age: 39, height: 206, weight: 113, movement_quality_score: 91.5 },
+    { athlete_id: 'ATH-1006', name: 'Katie Ledecky', fullname: 'Katie Ledecky', sport_type: 'Swimming', position: 'Freestyle', age: 27, height: 183, weight: 73, movement_quality_score: 94.8 },
+    { athlete_id: 'ATH-1007', name: 'Novak Djokovic', fullname: 'Novak Djokovic', sport_type: 'Tennis', position: 'Singles', age: 37, height: 188, weight: 77, movement_quality_score: 95.1 },
+    { athlete_id: 'ATH-1008', name: 'Yulimar Rojas', fullname: 'Yulimar Rojas', sport_type: 'Track & Field', position: 'Triple Jump', age: 28, height: 192, weight: 72, movement_quality_score: 89.3 },
+    { athlete_id: 'ATH-1009', name: 'Kylian Mbappé', fullname: 'Kylian Mbappé', sport_type: 'Soccer', position: 'Forward', age: 25, height: 178, weight: 75, movement_quality_score: 87.6 },
+    { athlete_id: 'ATH-1010', name: 'Naomi Osaka', fullname: 'Naomi Osaka', sport_type: 'Tennis', position: 'Singles', age: 26, height: 180, weight: 69, movement_quality_score: 90.2 },
+    { athlete_id: 'ATH-1011', name: 'Giannis Antetokounmpo', fullname: 'Giannis Antetokounmpo', sport_type: 'Basketball', position: 'Power Forward', age: 29, height: 211, weight: 110, movement_quality_score: 93.0 },
+    { athlete_id: 'ATH-1012', name: 'Alex Morgan', fullname: 'Alex Morgan', sport_type: 'Soccer', position: 'Forward', age: 35, height: 170, weight: 62, movement_quality_score: 89.0 },
+    { athlete_id: 'ATH-1013', name: 'Caeleb Dressel', fullname: 'Caeleb Dressel', sport_type: 'Swimming', position: 'Butterfly', age: 27, height: 191, weight: 88, movement_quality_score: 92.0 }
+  ];
+
+  // Assigned athletes list for Coach / Physio / Sports Scientist (Instant 13 Athletes fallback)
+  const [assignedAthletes, setAssignedAthletes] = useState(DEFAULT_ROSTER_ATHLETES);
   const [loadingAthletes, setLoadingAthletes] = useState(false);
-  const [selectedAthleteId, setSelectedAthleteId] = useState('');
+  const [selectedAthleteId, setSelectedAthleteId] = useState('ATH-1001');
+
 
   // Latest processed video analysis metrics
   const [latestAnalysis, setLatestAnalysis] = useState(null);
@@ -384,8 +402,11 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       });
       if (response.ok) {
         const data = await response.json();
-        setAssignedAthletes(data);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setAssignedAthletes(data);
+        }
       }
+
     } catch (err) {
       console.error("Error loading assigned athletes:", err);
     } finally {

@@ -71,7 +71,12 @@ async def seed_demo_accounts():
         {"email": "scientist.marie@sird.com", "fullname": "Marie Curie", "role": "Sports Scientist"}
     ]
     
-    all_demos = demo_coaches + demo_physios + demo_scientists
+    demo_admins = [
+        {"email": "admin.steve@sird.com", "fullname": "Steve Rogers", "role": "Administrator"}
+    ]
+    
+    all_demos = demo_coaches + demo_physios + demo_scientists + demo_admins
+
     
     for demo in all_demos:
         existing = await db.users.find_one({"email": demo["email"]})
