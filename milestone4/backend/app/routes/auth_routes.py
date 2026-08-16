@@ -97,7 +97,7 @@ async def google_login(role: UserRole):
 async def google_callback(code: str = None, state: str = None, error: str = None, db = Depends(get_db)):
     if error:
         logger.error(f"Google OAuth error: {error}")
-        return RedirectResponse(f"{settings.FRONTEND_URL}/auth?error={quote(error)}")
+        return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?error={quote(error)}")
         
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code is missing")
@@ -132,16 +132,17 @@ async def google_callback(code: str = None, state: str = None, error: str = None
             user_info = userinfo_response.json()
         except httpx.HTTPStatusError as e:
             logger.error(f"Failed to communicate with Google: {e.response.text}")
-            return RedirectResponse(f"{settings.FRONTEND_URL}/auth?error=google_auth_failed")
+            return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?error=google_auth_failed")
         except Exception as e:
             logger.error(f"Error during Google callback exchange: {str(e)}")
-            return RedirectResponse(f"{settings.FRONTEND_URL}/auth?error=google_auth_failed")
+            return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?error=google_auth_failed")
             
     email = user_info.get("email", "").lower()
     fullname = user_info.get("name", "Google User")
     
     if not email:
-        return RedirectResponse(f"{settings.FRONTEND_URL}/auth?error=no_email_provided")
+        return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?error=no_email_provided")
+
         
     # Check if user exists
     user = await db.users.find_one({"email": email})

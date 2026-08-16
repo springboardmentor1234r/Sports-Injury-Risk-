@@ -13,11 +13,13 @@ class Settings:
 
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/auth/google/callback")
+    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "https://sports-injury-risk.onrender.com/api/auth/google/callback")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://sird.netlify.app").rstrip("/")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     PORT: int = int(os.getenv("PORT", 8000))
 
     HOST: str = os.getenv("HOST", "127.0.0.1")
 
 settings = Settings()
+
 
