@@ -587,18 +587,31 @@
 }
 
 .form-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 8px;
+  white-space: nowrap;
   align-self: flex-start;
   background-color: var(--accent);
   color: var(--button-text);
   border: none;
-  padding: 16px 36px;
+  padding: 12px 24px;
   border-radius: var(--radius-sm);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: var(--transition-smooth);
 }
+
+.form-submit-btn svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 
 .form-submit-btn:hover:not(:disabled) {
   background-color: var(--accent-hover);
