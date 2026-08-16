@@ -11,7 +11,9 @@ import { BodyHeatmapGraphic, JointAngleRadarChart, RiskTrendAreaChart } from '..
 import './Dashboard.css';
 
 export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const [profileOpen, setProfileOpen] = useState(false);
+
   const [activeTab, setActiveTab] = useState('Overview');
   const [isLiveCameraModalOpen, setIsLiveCameraModalOpen] = useState(false);
 
