@@ -621,17 +621,26 @@
 
 /* Milestone 3 ML Prediction & Recommendation Engine Styles */
 .ml-prediction-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 24px;
   margin-top: 20px;
+  width: 100%;
+}
+
+.charts-two-column-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
 }
 
 @media (max-width: 900px) {
-  .ml-prediction-grid {
+  .charts-two-column-row {
     grid-template-columns: 1fr;
   }
 }
+
 
 .prediction-categories-card, .heatmap-and-trend-card {
   background-color: var(--bg-surface);

@@ -1226,16 +1226,17 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             </div>
                           </div>
 
+                          {/* 2. Full-Width Graphical Anatomical Risk Heatmap Card */}
+                          <BodyHeatmapGraphic heatmapData={predictionReport.body_heatmap} athleteName={user.fullname} metrics={latestAnalysis?.metrics} />
 
-                          {/* Graphical Visualizations Column */}
-                          <div className="graphics-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <BodyHeatmapGraphic heatmapData={predictionReport.body_heatmap} athleteName={user.fullname} metrics={latestAnalysis?.metrics} />
+                          {/* 3. Side-by-Side Biomechanical Radar & Trajectory Trends Row */}
+                          <div className="charts-two-column-row">
                             <JointAngleRadarChart metrics={latestAnalysis?.metrics} athleteName={user.fullname} />
                             <RiskTrendAreaChart history={null} athleteName={user.fullname} />
                           </div>
 
-
                         </div>
+
                       ) : (
                         <div className="placeholder-tab-content">
                           <ShieldAlert size={48} className="placeholder-tab-icon" />
