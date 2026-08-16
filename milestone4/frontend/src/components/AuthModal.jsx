@@ -11,6 +11,20 @@ const ROLES = [
 ];
 
 const DEMO_ACCOUNTS = {
+  Athlete: [
+    { email: 'marcus.rashford@sird.com', label: 'Marcus Rashford (Soccer)' },
+    { email: 'serena.williams@sird.com', label: 'Serena Williams (Tennis)' },
+    { email: 'erling.haaland@sird.com', label: 'Erling Haaland (Soccer)' },
+    { email: 'simone.biles@sird.com', label: 'Simone Biles (Gymnastics)' },
+    { email: 'michael.phelps@sird.com', label: 'Michael Phelps (Swimming)' },
+    { email: 'lebron.james@sird.com', label: 'LeBron James (Basketball)' },
+    { email: 'katie.ledecky@sird.com', label: 'Katie Ledecky (Swimming)' },
+    { email: 'novak.djokovic@sird.com', label: 'Novak Djokovic (Tennis)' },
+    { email: 'yulimar.rojas@sird.com', label: 'Yulimar Rojas (Track & Field)' },
+    { email: 'kylian.mbappe@sird.com', label: 'Kylian Mbappé (Soccer)' },
+    { email: 'naomi.osaka@sird.com', label: 'Naomi Osaka (Tennis)' },
+    { email: 'giannis.antetokounmpo@sird.com', label: 'Giannis Antetokounmpo (Basketball)' }
+  ],
   Coach: [
     { email: 'coach.alex@sird.com', label: 'Alex Ferguson (Coach)' },
     { email: 'coach.pep@sird.com', label: 'Pep Guardiola (Coach)' },
@@ -28,6 +42,9 @@ const DEMO_ACCOUNTS = {
   'Sports Scientist': [
     { email: 'scientist.newton@sird.com', label: 'Newton Galileo (Scientist)' },
     { email: 'scientist.marie@sird.com', label: 'Marie Curie (Scientist)' },
+  ],
+  Administrator: [
+    { email: 'admin.steve@sird.com', label: 'Steve Rogers (Admin)' }
   ]
 };
 
@@ -41,6 +58,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +77,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
       : { email, password };
 
     try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`${apiBase}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -71,7 +90,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
 
       if (activeTab === 'signup') {
         // Automatically sign in after signup
-        const loginResponse = await fetch('http://localhost:8000/api/auth/login', {
+        const loginResponse = await fetch(`${apiBase}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
@@ -96,8 +115,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
       return;
     }
     // Redirect to backend Google login route, sending the role as a query parameter
-    window.location.href = `http://localhost:8000/api/auth/google/login?role=${role}`;
+    window.location.href = `${apiBase}/api/auth/google/login?role=${role}`;
   };
+
 
   return (
     <div className="modal-overlay" onClick={onClose}>

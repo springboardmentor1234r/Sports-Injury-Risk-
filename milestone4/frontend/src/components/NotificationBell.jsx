@@ -13,9 +13,11 @@ export default function NotificationBell({ token }) {
     }
   }, [token]);
 
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/notifications/me', {
+      const response = await fetch(`${apiBase}/api/notifications/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401) {
@@ -37,7 +39,7 @@ export default function NotificationBell({ token }) {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`http://localhost:8000/api/notifications/${id}/read`, {
+      await fetch(`${apiBase}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -49,7 +51,7 @@ export default function NotificationBell({ token }) {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('http://localhost:8000/api/notifications/read-all', {
+      await fetch(`${apiBase}/api/notifications/read-all`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -58,6 +60,7 @@ export default function NotificationBell({ token }) {
       console.error("Error marking all read:", err);
     }
   };
+
 
   const getPriorityIcon = (priority, type) => {
     if (priority === 'High' || type === 'High-Risk Alert') {

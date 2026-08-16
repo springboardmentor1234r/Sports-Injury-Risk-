@@ -180,7 +180,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const fetchSystemMetrics = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/system/metrics`, {
+      const response = await fetch(`${apiBase}/api/system/metrics`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401) {
@@ -199,7 +199,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const fetchPredictionReport = async (athleteId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/predictions/${athleteId}/latest`, {
+      const response = await fetch(`${apiBase}/api/predictions/${athleteId}/latest`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -217,7 +217,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const fetchRecommendations = async (athleteId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/recommendations/${athleteId}`, {
+      const response = await fetch(`${apiBase}/api/recommendations/${athleteId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -231,7 +231,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const fetchDatasetInsights = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/predictions/insights/dataset-metrics`, {
+      const response = await fetch(`${apiBase}/api/predictions/insights/dataset-metrics`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -246,7 +246,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const fetchAthleteProfile = async () => {
     setLoadingProfile(true);
     try {
-      const response = await fetch('http://localhost:8000/api/users/athlete-profile', {
+      const response = await fetch(`${apiBase}/api/users/athlete-profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 404) {
@@ -278,11 +278,12 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const testGeminiAgent = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/system/test-gemini');
+      const res = await fetch(`${apiBase}/api/system/test-gemini`);
       const data = await res.json();
       setAiAgentStatus(data);
       if (data.status === 'success') {
-        setSuccessMsg(`✅ AI Agent Online! Active Model: ${data.working_model}`);
+        setSuccessMsg(`AI Agent Online! Active Model: ${data.working_model}`);
+
         setTimeout(() => setSuccessMsg(''), 5000);
       }
     } catch (err) {
@@ -294,7 +295,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
     setLoadingAnalysis(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/videos/latest/${athleteId}`, {
+      const response = await fetch(`${apiBase}/api/videos/latest/${athleteId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -314,17 +315,18 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   const fetchCoachesAndPhysios = async () => {
     try {
-      const cRes = await fetch('http://localhost:8000/api/users/coaches');
+      const cRes = await fetch(`${apiBase}/api/users/coaches`);
       if (cRes.ok) {
         const coaches = await cRes.json();
         setCoachesList(coaches);
       }
       
-      const pRes = await fetch('http://localhost:8000/api/users/physiotherapists');
+      const pRes = await fetch(`${apiBase}/api/users/physiotherapists`);
       if (pRes.ok) {
         const physios = await pRes.json();
         setPhysiosList(physios);
       }
+
     } catch (err) {
       console.error("Error loading dropdown data:", err);
     }
@@ -333,7 +335,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const fetchAssignedAthletes = async () => {
     setLoadingAthletes(true);
     try {
-      const response = await fetch('http://localhost:8000/api/users/my-athletes', {
+      const response = await fetch(`${apiBase}/api/users/my-athletes`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -350,7 +352,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const fetchAnonymizedAthletes = async () => {
     setLoadingAnonymized(true);
     try {
-      const response = await fetch('http://localhost:8000/api/users/all-athletes-anonymized', {
+      const response = await fetch(`${apiBase}/api/users/all-athletes-anonymized`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401) {
@@ -443,7 +445,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     formData.append("file", file);
     
     try {
-      const response = await fetch("http://localhost:8000/api/videos/upload", {
+      const response = await fetch("${apiBase}/api/videos/upload", {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`
@@ -499,7 +501,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/athlete-profile', {
+      const response = await fetch(`${apiBase}/api/users/athlete-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -541,7 +543,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/athlete-profile', {
+      const response = await fetch(`${apiBase}/api/users/athlete-profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -549,6 +551,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         },
         body: JSON.stringify(payload)
       });
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.detail || "Failed to update profile.");

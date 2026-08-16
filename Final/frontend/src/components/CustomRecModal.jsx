@@ -22,8 +22,10 @@ export default function CustomRecModal({ isOpen, onClose, athleteId, athleteName
     setSubmitting(true);
     setErrorMsg('');
 
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     try {
-      const response = await fetch('http://localhost:8000/api/recommendations/custom', {
+      const response = await fetch(`${apiBase}/api/recommendations/custom`, {
+
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
