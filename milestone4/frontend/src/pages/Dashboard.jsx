@@ -1163,7 +1163,11 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <span className="summary-title-label">Latest Assessment Result</span>
                               <h4>{latestAnalysis.filename}</h4>
                               <div className="analysis-id-badge">ID: {latestAnalysis.analysis_id}</div>
+                              <div className="analysis-time-badge" style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                📅 Processed: {latestAnalysis.upload_date ? new Date(latestAnalysis.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                              </div>
                             </div>
+
 
                             <div className="outcome-metrics-grid">
                               <div className="outcome-metric-box">
