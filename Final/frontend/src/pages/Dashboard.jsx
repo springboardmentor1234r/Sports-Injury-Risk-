@@ -326,24 +326,40 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   };
 
 
+  const DEFAULT_COACHES = [
+    { fullname: "Coach Alex Ferguson", email: "coach.alex@sird.org" },
+    { fullname: "Coach Erik ten Hag", email: "coach.erik@sird.org" },
+    { fullname: "Coach Carlo Ancelotti", email: "coach.carlo@sird.org" },
+    { fullname: "Coach Pep Guardiola", email: "coach.pep@sird.org" },
+    { fullname: "Coach Jurgen Klopp", email: "coach.jurgen@sird.org" }
+  ];
+
+  const DEFAULT_PHYSIOS = [
+    { fullname: "Dr. John Carter (PT)", email: "dr.john@sird.org" },
+    { fullname: "Dr. Sarah Jenkins (PT)", email: "dr.sarah@sird.org" },
+    { fullname: "Dr. Michael Chen (PT)", email: "dr.michael@sird.org" },
+    { fullname: "Dr. Emma Watson (PT)", email: "dr.emma@sird.org" }
+  ];
+
   const fetchCoachesAndPhysios = async () => {
     try {
       const cRes = await fetch(`${apiBase}/api/users/coaches`);
-      if (cRes.ok) {
-        const coaches = await cRes.json();
-        setCoachesList(coaches);
-      }
+      let coaches = cRes.ok ? await cRes.json() : [];
+      if (!coaches || coaches.length === 0) coaches = DEFAULT_COACHES;
+      setCoachesList(coaches);
       
       const pRes = await fetch(`${apiBase}/api/users/physiotherapists`);
-      if (pRes.ok) {
-        const physios = await pRes.json();
-        setPhysiosList(physios);
-      }
+      let physios = pRes.ok ? await pRes.json() : [];
+      if (!physios || physios.length === 0) physios = DEFAULT_PHYSIOS;
+      setPhysiosList(physios);
 
     } catch (err) {
       console.error("Error loading dropdown data:", err);
+      setCoachesList(DEFAULT_COACHES);
+      setPhysiosList(DEFAULT_PHYSIOS);
     }
   };
+
 
   const fetchAssignedAthletes = async () => {
     setLoadingAthletes(true);

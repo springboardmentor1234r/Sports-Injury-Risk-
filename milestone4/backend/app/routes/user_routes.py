@@ -168,15 +168,37 @@ async def update_athlete_profile(
     updated_profile = await db.athlete_profiles.find_one({"email": current_user["email"]})
     return updated_profile
 
+DEFAULT_COACHES = [
+    {"fullname": "Coach Alex Ferguson", "email": "coach.alex@sird.org"},
+    {"fullname": "Coach Erik ten Hag", "email": "coach.erik@sird.org"},
+    {"fullname": "Coach Carlo Ancelotti", "email": "coach.carlo@sird.org"},
+    {"fullname": "Coach Pep Guardiola", "email": "coach.pep@sird.org"},
+    {"fullname": "Coach Jurgen Klopp", "email": "coach.jurgen@sird.org"}
+]
+
+DEFAULT_PHYSIOS = [
+    {"fullname": "Dr. John Carter (PT)", "email": "dr.john@sird.org"},
+    {"fullname": "Dr. Sarah Jenkins (PT)", "email": "dr.sarah@sird.org"},
+    {"fullname": "Dr. Michael Chen (PT)", "email": "dr.michael@sird.org"},
+    {"fullname": "Dr. Emma Watson (PT)", "email": "dr.emma@sird.org"}
+]
+
 @router.get("/coaches")
 async def get_coaches(db = Depends(get_db)):
     cursor = db.users.find({"role": "Coach"}, {"fullname": 1, "email": 1, "_id": 0})
-    return await cursor.to_list(length=100)
+    coaches = await cursor.to_list(length=100)
+    if not coaches:
+        return DEFAULT_COACHES
+    return coaches
 
 @router.get("/physiotherapists")
 async def get_physiotherapists(db = Depends(get_db)):
     cursor = db.users.find({"role": "Physiotherapist"}, {"fullname": 1, "email": 1, "_id": 0})
-    return await cursor.to_list(length=100)
+    physios = await cursor.to_list(length=100)
+    if not physios:
+        return DEFAULT_PHYSIOS
+    return physios
+
 
 @router.get("/my-athletes")
 async def get_my_athletes(current_user: dict = Depends(get_current_user), db = Depends(get_db)):
