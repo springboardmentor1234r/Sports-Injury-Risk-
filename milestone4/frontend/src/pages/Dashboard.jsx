@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  User, LogOut, Sun, Moon, Activity, ChevronDown, Settings, 
+import {
+  User, LogOut, Sun, Moon, Activity, ChevronDown, Settings,
   Video, Calendar, Heart, Shield, Users, BarChart2, FileText, GitPullRequest, Database,
   Plus, CheckCircle2, ShieldAlert, Award, FileSpreadsheet, Eye, UserCheck, RefreshCw, Cpu, UploadCloud, PlusCircle, AlertTriangle, TrendingUp, Download, FileDown, Camera, VideoOff, Square, Circle
 } from 'lucide-react';
@@ -12,7 +12,7 @@ import './Dashboard.css';
 
 export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  
+
   const getVideoSource = (url) => {
     if (!url) return '';
     if (url.startsWith('http://localhost:8000')) {
@@ -30,21 +30,21 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [isLiveCameraModalOpen, setIsLiveCameraModalOpen] = useState(false);
 
-  
+
   // Athlete Profile States
   const [athleteProfile, setAthleteProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-  
+
   // Dynamic Lists for Athlete settings / questionnaire
   const [coachesList, setCoachesList] = useState([]);
   const [physiosList, setPhysiosList] = useState([]);
-  
+
   // Assigned athletes list for Coach / Physio
   const [assignedAthletes, setAssignedAthletes] = useState([]);
   const [loadingAthletes, setLoadingAthletes] = useState(false);
   const [selectedAthleteId, setSelectedAthleteId] = useState('');
-  
+
   // Latest processed video analysis metrics
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
@@ -68,11 +68,11 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
 
 
-  
+
   // Scientist Platform-wide metrics
   const [allAthletesAnonymized, setAllAthletesAnonymized] = useState([]);
   const [loadingAnonymized, setLoadingAnonymized] = useState(false);
-  
+
   // Form input states
   const [sportType, setSportType] = useState('');
   const [position, setPosition] = useState('');
@@ -83,7 +83,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [trainingLoad, setTrainingLoad] = useState('');
   const [assignedCoach, setAssignedCoach] = useState('');
   const [assignedPhysio, setAssignedPhysio] = useState('');
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -362,7 +362,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       let coaches = cRes.ok ? await cRes.json() : [];
       if (!coaches || coaches.length === 0) coaches = DEFAULT_COACHES;
       setCoachesList(coaches);
-      
+
       const pRes = await fetch(`${apiBase}/api/users/physiotherapists`);
       let physios = pRes.ok ? await pRes.json() : [];
       if (!physios || physios.length === 0) physios = DEFAULT_PHYSIOS;
@@ -484,33 +484,33 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     setUploadingVideo(true);
     setErrorMsg('');
     setSuccessMsg('');
-    
+
     const formData = new FormData();
     formData.append("file", file);
-    
+
     try {
-      const response = await fetch("${apiBase}/api/videos/upload", {
+      const response = await fetch(`${apiBase}/api/videos/upload`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`
         },
         body: formData
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.detail || "Video processing failed.");
       }
-      
+
       setLatestAnalysis(data);
       setSuccessMsg(`Motion video "${file.name}" processed & analyzed by ML engine!`);
       setTimeout(() => setSuccessMsg(''), 5000);
-      
+
       if (athleteProfile) {
         fetchPredictionReport("me");
         fetchRecommendations("me");
       }
-      
+
       if (user.role === 'Coach' || user.role === 'Physiotherapist') {
         fetchAssignedAthletes();
       }
@@ -615,9 +615,9 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     return (
       <div className="athlete-select-bar animate-fade-in">
         <label htmlFor="active-athlete-select">Viewing Profile For:</label>
-        <select 
-          id="active-athlete-select" 
-          value={selectedAthleteId} 
+        <select
+          id="active-athlete-select"
+          value={selectedAthleteId}
           onChange={(e) => {
             setSelectedAthleteId(e.target.value);
             setLatestAnalysis(null); // Clear previous athlete's analysis to trigger reload
@@ -728,12 +728,12 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
           <div className="nav-section-title">Navigation Menu</div>
           <ul>
             {config.navItems.map((item) => (
-              <li 
-                key={item.id} 
+              <li
+                key={item.id}
                 className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
                 style={showQuestionnaire ? { opacity: 0.5, pointerEvents: 'none' } : {}}
               >
-                <button 
+                <button
                   onClick={() => {
                     if (!showQuestionnaire) {
                       setActiveTab(item.id);
@@ -780,8 +780,8 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
             {/* Profile Dropdown */}
             <div className="profile-dropdown-container">
 
-              <button 
-                className={`profile-trigger ${profileOpen ? 'active' : ''}`} 
+              <button
+                className={`profile-trigger ${profileOpen ? 'active' : ''}`}
                 onClick={() => setProfileOpen(!profileOpen)}
               >
                 <div className="avatar-circle">
@@ -849,72 +849,72 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Sport Type *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Soccer, Basketball, Athletics" 
-                      value={sportType} 
-                      onChange={(e) => setSportType(e.target.value)} 
-                      required 
+                    <input
+                      type="text"
+                      placeholder="e.g. Soccer, Basketball, Athletics"
+                      value={sportType}
+                      onChange={(e) => setSportType(e.target.value)}
+                      required
                     />
                   </div>
 
                   <div className="form-group">
                     <label>Playing Position *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Forward, Midfielder, Point Guard" 
-                      value={position} 
-                      onChange={(e) => setPosition(e.target.value)} 
-                      required 
+                    <input
+                      type="text"
+                      placeholder="e.g. Forward, Midfielder, Point Guard"
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      required
                     />
                   </div>
 
                   <div className="form-group">
                     <label>Age (years) *</label>
-                    <input 
-                      type="number" 
-                      placeholder="e.g. 23" 
-                      value={age} 
-                      onChange={(e) => setAge(e.target.value)} 
-                      required 
+                    <input
+                      type="number"
+                      placeholder="e.g. 23"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      required
                       min="1"
                     />
                   </div>
 
                   <div className="form-group">
                     <label>Height (cm) *</label>
-                    <input 
-                      type="number" 
-                      step="0.1" 
-                      placeholder="e.g. 182.5" 
-                      value={height} 
-                      onChange={(e) => setHeight(e.target.value)} 
-                      required 
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="e.g. 182.5"
+                      value={height}
+                      onChange={(e) => setHeight(e.target.value)}
+                      required
                       min="10"
                     />
                   </div>
 
                   <div className="form-group">
                     <label>Weight (kg) *</label>
-                    <input 
-                      type="number" 
-                      step="0.1" 
-                      placeholder="e.g. 78.2" 
-                      value={weight} 
-                      onChange={(e) => setWeight(e.target.value)} 
-                      required 
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="e.g. 78.2"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      required
                       min="10"
                     />
                   </div>
 
                   <div className="form-group">
                     <label>Weekly Training Load *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 12 hours/week, High intensity" 
-                      value={trainingLoad} 
-                      onChange={(e) => setTrainingLoad(e.target.value)} 
-                      required 
+                    <input
+                      type="text"
+                      placeholder="e.g. 12 hours/week, High intensity"
+                      value={trainingLoad}
+                      onChange={(e) => setTrainingLoad(e.target.value)}
+                      required
                     />
                   </div>
 
@@ -942,12 +942,12 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
                 <div className="form-group full-width">
                   <label>Injury History log *</label>
-                  <textarea 
-                    rows="3" 
-                    placeholder="Provide details of any past operations, sprains, or recurring issues (e.g. ACL tear in 2024, Left Ankle Sprain)" 
-                    value={injuryHistory} 
-                    onChange={(e) => setInjuryHistory(e.target.value)} 
-                    required 
+                  <textarea
+                    rows="3"
+                    placeholder="Provide details of any past operations, sprains, or recurring issues (e.g. ACL tear in 2024, Left Ankle Sprain)"
+                    value={injuryHistory}
+                    onChange={(e) => setInjuryHistory(e.target.value)}
+                    required
                   />
                 </div>
 
@@ -973,7 +973,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             <p className="workspace-desc">Your biomechanics and injury metrics summary are listed below.</p>
                           </div>
                           <div style={{ display: 'flex', gap: '10px' }}>
-                            <button 
+                            <button
                               onClick={() => downloadPdfReport('me')}
                               className="form-submit-btn"
                               style={{ width: 'auto', padding: '8px 14px', marginTop: 0, backgroundColor: '#0f766e', fontSize: '0.85rem' }}
@@ -981,7 +981,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <FileDown size={16} />
                               <span>Download PDF Report</span>
                             </button>
-                            <button 
+                            <button
                               onClick={() => downloadExcelReport('me')}
                               className="form-submit-btn"
                               style={{ width: 'auto', padding: '8px 14px', marginTop: 0, backgroundColor: '#2563eb', fontSize: '0.85rem' }}
@@ -992,7 +992,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           </div>
                         </div>
 
-                        
+
                         <div className="metrics-grid">
                           <div className="metric-card">
                             <span className="metric-label">Athlete ID</span>
@@ -1040,9 +1040,9 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <h3 style={{ margin: 0 }}>Motion Video Capture & ML Processing</h3>
                               <p className="widget-subtitle-desc" style={{ margin: '4px 0 0 0' }}>Upload a video file OR record a live camera event for real-time biomechanics analysis.</p>
                             </div>
-                            <button 
-                              onClick={() => setIsLiveCameraModalOpen(true)} 
-                              className="form-submit-btn" 
+                            <button
+                              onClick={() => setIsLiveCameraModalOpen(true)}
+                              className="form-submit-btn"
                               style={{ width: 'auto', padding: '8px 16px', margin: 0, backgroundColor: '#10b981', fontSize: '0.85rem' }}
                             >
                               <Camera size={16} />
@@ -1066,7 +1066,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
                               <div style={{ position: 'absolute', bottom: '12px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '12px' }}>
                                 {!isRecording ? (
-                                  <button 
+                                  <button
                                     onClick={startRecording}
                                     style={{ padding: '8px 18px', backgroundColor: '#dc2626', color: 'white', border: 'none', borderRadius: '20px', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                   >
@@ -1074,7 +1074,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                     <span>Start Recording Event</span>
                                   </button>
                                 ) : (
-                                  <button 
+                                  <button
                                     onClick={stopRecordingAndAnalyze}
                                     style={{ padding: '8px 18px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '20px', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                   >
@@ -1088,10 +1088,10 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             <div className="upload-dropzone">
                               <UploadCloud size={40} className="upload-dropzone-icon" />
                               <p>Drag and drop your file here, or click to browse</p>
-                              <input 
-                                type="file" 
-                                accept="video/*" 
-                                onChange={handleVideoUpload} 
+                              <input
+                                type="file"
+                                accept="video/*"
+                                onChange={handleVideoUpload}
                                 disabled={uploadingVideo}
                                 className="file-input-hidden"
                               />
@@ -1116,7 +1116,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <h4>{latestAnalysis.filename}</h4>
                               <div className="analysis-id-badge">ID: {latestAnalysis.analysis_id}</div>
                             </div>
-                            
+
                             <div className="outcome-metrics-grid">
                               <div className="outcome-metric-box">
                                 <span className="outcome-label">Movement Score</span>
@@ -1129,7 +1129,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div className="summary-actions-container">
                               <button onClick={() => setActiveTab('MovementAnalysis')} className="summary-btn btn-primary">
                                 <Video size={16} />
@@ -1157,13 +1157,13 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">ML Injury Risk Engine</h2>
                       <p className="workspace-desc">Real-time risk probabilities calculated across 6 specific injury categories using trained Random Forest ML classifiers.</p>
-                      
+
                       {predictionReport ? (
                         <div className="ml-prediction-grid animate-scale-in">
                           {/* 6 Category Risk Breakdown */}
                           <div className="prediction-categories-card">
                             <h3>Category-Specific Injury Risk Predictions</h3>
-                             <div className="categories-grid">
+                            <div className="categories-grid">
                               {Object.entries(predictionReport.injury_predictions || {}).map(([catName, data]) => (
                                 <div key={catName} className="category-risk-box" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <div className="box-header">
@@ -1175,9 +1175,9 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                   <div className="cat-score-row">
                                     <span className="score-num">{data.score}%</span>
                                     <div className="cat-progress-bar">
-                                      <div 
-                                        className={`progress-fill ${data.score > 40 ? 'fill-warning' : 'fill-safe'}`} 
-                                        style={{ width: `${data.score}%` }} 
+                                      <div
+                                        className={`progress-fill ${data.score > 40 ? 'fill-warning' : 'fill-safe'}`}
+                                        style={{ width: `${data.score}%` }}
                                       />
                                     </div>
                                   </div>
@@ -1191,49 +1191,23 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                             </div>
 
                             {/* AI Clinical Rationale Section */}
-                            <div style={{ marginTop: '20px', padding: '20px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                                <h4 style={{ fontSize: '1rem', fontWeight: '800', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <Cpu size={18} color="#2563eb" /> AI Feature Attribution Rationale (Explainable AI)
-                                </h4>
-                                <span style={{ fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px', borderRadius: '12px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
-                                  Trained Random Forest ML + MediaPipe 3D Pose
-                                </span>
-                              </div>
-
-                              <div style={{ padding: '12px', borderRadius: '8px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '0.82rem', color: '#334155', lineHeight: '1.5' }}>
-                                💡 <strong>Model Architecture Note:</strong> This system runs **trained Random Forest Machine Learning Classifiers** (trained on 10,000+ kinematic joint angle datasets) combined with **Google Gemini 1.5 Flash AI LLMs**. It is **NOT** static rule-based logic. Risk percentages update dynamically based on spatial keypoints extracted from your movement.
-                              </div>
-
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginTop: '4px' }}>
-                                <div style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontSize: '0.78rem' }}>
-                                  <strong style={{ color: '#2563eb' }}>Knee Valgus (35.2% Weight)</strong>
-                                  <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)' }}>Inward knee collapse &gt;8.0° increases ACL strain score.</p>
-                                </div>
-                                <div style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontSize: '0.78rem' }}>
-                                  <strong style={{ color: '#2563eb' }}>Leg Asymmetry (24.8% Weight)</strong>
-                                  <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)' }}>Bilateral limb force deviation &gt;12.0% triggers hamstring flags.</p>
-                                </div>
-                                <div style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontSize: '0.78rem' }}>
-                                  <strong style={{ color: '#2563eb' }}>Landing Flexion (20.1% Weight)</strong>
-                                  <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)' }}>Stiff landings &lt;35.0° transfer impact shock to ankles.</p>
-                                </div>
-                                <div style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontSize: '0.78rem' }}>
-                                  <strong style={{ color: '#2563eb' }}>Workload Factor (19.9% Weight)</strong>
-                                  <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)' }}>High weekly training hours accelerate overuse risk scores.</p>
-                                </div>
-                              </div>
+                            <div style={{ marginTop: '20px', padding: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                              <h4 style={{ fontSize: '0.95rem', fontWeight: '700', margin: '0 0 8px 0', color: 'var(--text-primary)' }}>
+                                🤖 AI Feature Attribution Rationale (Explainable AI)
+                              </h4>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>
+                                Risk percentages are computed by Random Forest classifiers trained on kinematic joint angles. High risk percentages (&gt;40%) are assigned when 3D keypoint tracking detects dynamic knee valgus collapse (&gt;8.0°), ground impact landing stiffness (&lt;35.0° flexion), or lateral trunk lean exceeding biomechanical tolerances.
+                              </p>
                             </div>
                           </div>
 
 
                           {/* Graphical Visualizations Column */}
                           <div className="graphics-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <BodyHeatmapGraphic heatmapData={predictionReport.body_heatmap} athleteName={user.fullname} metrics={latestAnalysis?.metrics} />
-                            <JointAngleRadarChart metrics={latestAnalysis?.metrics} athleteName={user.fullname} />
-                            <RiskTrendAreaChart history={null} athleteName={user.fullname} />
+                            <BodyHeatmapGraphic heatmapData={predictionReport.body_heatmap} />
+                            <JointAngleRadarChart metrics={latestAnalysis?.metrics} />
+                            <RiskTrendAreaChart history={null} />
                           </div>
-
 
                         </div>
                       ) : (
@@ -1250,7 +1224,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Movement Anomaly Detection</h2>
                       <p className="workspace-desc">Computer vision joint angle tracking feedback & anomaly detection engine output.</p>
-                      
+
                       {!latestAnalysis ? (
                         <div className="placeholder-tab-content">
                           <Video size={48} className="placeholder-tab-icon" />
@@ -1323,7 +1297,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Progress & Injury Trend Tracking</h2>
                       <p className="workspace-desc">Historical workload evolution and biomechanical recovery trajectory stored in MongoDB Time Series telemetry.</p>
-                      
+
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
                         <RiskTrendAreaChart history={null} />
 
@@ -1386,7 +1360,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           <span>Test AI Agent Status</span>
                         </button>
                       </div>
-                      
+
                       {aiAgentStatus && (
                         <div style={{ margin: '16px 0', padding: '12px 16px', borderRadius: '8px', border: aiAgentStatus.status === 'success' ? '1px solid #bbf7d0' : '1px solid #fca5a5', backgroundColor: aiAgentStatus.status === 'success' ? '#f0fdf4' : '#fef2f2', fontSize: '0.85rem' }}>
                           <strong>AI Agent Status:</strong> {aiAgentStatus.ai_agent_status || aiAgentStatus.message}
@@ -1468,45 +1442,29 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           </div>
                           <span className="id-badge" style={{ backgroundColor: '#eff6ff', color: '#1e40af' }}>{currentProfile.athlete_id}</span>
                         </div>
-                        
+
                         <div className="metrics-grid" style={{ marginTop: '20px' }}>
                           <div className="metric-card">
                             <span className="metric-label">Vertical Jump Height</span>
                             <span className="metric-value score-optimal">{jumpHeight} cm</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.2' }}>
-                              💡 <em>Calculated dynamically scaling with height ({currentProfile.height}cm) & vertical keypoint elevation `(height * 0.236)`.</em>
-                            </span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Sprint Deceleration Force</span>
                             <span className="metric-value">{decelForce} m/s²</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.2' }}>
-                              💡 <em>Calculated from body mass inertia ({currentProfile.weight}kg) & braking joint deceleration `(weight * 0.052 + age * 0.038)`.</em>
-                            </span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Dynamic Balance Index</span>
                             <span className="metric-value score-optimal">{balanceIndex}%</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.2' }}>
-                              💡 <em>Derived directly from MediaPipe pose estimation stability center of mass (COM) sway offset.</em>
-                            </span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Bilateral Joint Symmetry</span>
                             <span className="metric-value score-optimal">{symmetryScore}%</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.2' }}>
-                              💡 <em>Computed from 3D left vs. right limb joint tracking angle comparison in your movement video.</em>
-                            </span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Ground Contact Absorption</span>
                             <span className="metric-value">{groundContact} ms</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.2' }}>
-                              💡 <em>Computed from foot landing impact duration to off-ground frame count.</em>
-                            </span>
                           </div>
                         </div>
-
                       </div>
                     );
                   })()}
@@ -1587,7 +1545,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Coach Control Panel</h2>
                       <p className="workspace-desc">Welcome Coach {user.fullname}! Select a tab in the sidebar menu to monitor your roster.</p>
-                      
+
                       <div className="practitioner-stats">
                         <div className="metric-card">
                           <span className="metric-label">My Athletes</span>
@@ -1602,7 +1560,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Team Risk Overview</h2>
                       <p className="workspace-desc">Assigned athletes list and dynamic risk scores:</p>
-                      
+
                       {assignedAthletes.length === 0 ? (
                         <p className="no-athletes-msg">No athletes have selected you as their Coach yet.</p>
                       ) : (
@@ -1653,7 +1611,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <div className="detail-item"><strong>Load:</strong> {selectedAthlete.training_load}</div>
                             </div>
                           </div>
-                          
+
                           <div className="performance-stats-boxes">
                             <div className="stat-box">
                               <span className="stat-label">Movement Quality</span>
@@ -1699,41 +1657,41 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <div className="joint-angles-card">
                                 <h3>Joint Angles Analytics ({selectedAthlete.fullname})</h3>
                                 <div className="angles-list">
-                                <div className="angle-item">
-                                  <span className="angle-name">Knee Valgus</span>
-                                  <div className="angle-bar-container">
-                                    <div className="angle-bar optimal" style={{ width: '85%' }}>
-                                      {latestAnalysis.metrics.knee_valgus}
+                                  <div className="angle-item">
+                                    <span className="angle-name">Knee Valgus</span>
+                                    <div className="angle-bar-container">
+                                      <div className="angle-bar optimal" style={{ width: '85%' }}>
+                                        {latestAnalysis.metrics.knee_valgus}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="angle-item">
-                                  <span className="angle-name">Hip Stability</span>
-                                  <div className="angle-bar-container">
-                                    <div className="angle-bar optimal" style={{ width: '78%' }}>
-                                      {latestAnalysis.metrics.hip_stability}
+                                  <div className="angle-item">
+                                    <span className="angle-name">Hip Stability</span>
+                                    <div className="angle-bar-container">
+                                      <div className="angle-bar optimal" style={{ width: '78%' }}>
+                                        {latestAnalysis.metrics.hip_stability}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="angle-item">
-                                  <span className="angle-name">Trunk Lean</span>
-                                  <div className="angle-bar-container">
-                                    <div className="angle-bar optimal" style={{ width: '80%' }}>
-                                      {latestAnalysis.metrics.trunk_lean}
+                                  <div className="angle-item">
+                                    <span className="angle-name">Trunk Lean</span>
+                                    <div className="angle-bar-container">
+                                      <div className="angle-bar optimal" style={{ width: '80%' }}>
+                                        {latestAnalysis.metrics.trunk_lean}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="angle-item">
-                                  <span className="angle-name">Landing Impact</span>
-                                  <div className="angle-bar-container">
-                                    <div className="angle-bar warning" style={{ width: '65%' }}>
-                                      {latestAnalysis.metrics.landing_mechanics}
+                                  <div className="angle-item">
+                                    <span className="angle-name">Landing Impact</span>
+                                    <div className="angle-bar-container">
+                                      <div className="angle-bar warning" style={{ width: '65%' }}>
+                                        {latestAnalysis.metrics.landing_mechanics}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </>
+                            </>
                           ) : (
                             <div className="placeholder-tab-content">
                               <Video size={48} className="placeholder-tab-icon" />
@@ -1756,7 +1714,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           <p className="workspace-desc">Workload safety guidelines and custom drills:</p>
                         </div>
                         {selectedAthlete && (
-                          <button 
+                          <button
                             onClick={() => setIsRecModalOpen(true)}
                             className="form-submit-btn"
                             style={{ width: 'auto', padding: '8px 16px', marginTop: 0 }}
@@ -1803,7 +1761,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Physiotherapist Diagnostic Hub</h2>
                       <p className="workspace-desc">Welcome {user.fullname}! Assess joints motion flags and recover records.</p>
-                      
+
                       <div className="practitioner-stats">
                         <div className="metric-card">
                           <span className="metric-label">Active Patients</span>
@@ -1818,7 +1776,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Rehabilitation Tracking</h2>
                       <p className="workspace-desc">Assigned patients compliance tracking logs:</p>
-                      
+
                       {assignedAthletes.length === 0 ? (
                         <p className="no-athletes-msg">No athletes have selected you as their Physiotherapist yet.</p>
                       ) : (
@@ -1861,10 +1819,10 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           <div className="injury-monitoring-card">
                             <h3>Medical Risk Diagnostics ({selectedAthlete.fullname})</h3>
                             <div className="detail-item" style={{ marginBottom: '16px' }}>
-                              <strong>Recorded Injury History:</strong> 
+                              <strong>Recorded Injury History:</strong>
                               <p style={{ marginTop: '6px', color: 'var(--text-muted)' }}>{selectedAthlete.injury_history}</p>
                             </div>
-                            
+
                             {latestAnalysis ? (
                               <div className="monitoring-meters">
                                 <div className="meter-row">
@@ -1981,7 +1939,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Sports Scientist Research Panel</h2>
                       <p className="workspace-desc">Platform-wide anonymized telemetry logs are available for deep learning training.</p>
-                      
+
                       <div className="practitioner-stats">
                         <div className="metric-card">
                           <span className="metric-label">Research Dataset Records</span>
@@ -1996,7 +1954,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Biomechanical Analytics</h2>
                       <p className="workspace-desc">Anonymized Platform-wide data registry:</p>
-                      
+
                       {allAthletesAnonymized.length === 0 ? (
                         <p className="no-athletes-msg">No platform-wide biomechanical datasets loaded yet.</p>
                       ) : (
@@ -2031,7 +1989,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Team Kinematic Performance Trends</h2>
                       <p className="workspace-desc">Roster-wide joint angle distribution histograms and dynamic symmetry boxplots.</p>
-                      
+
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
                         <div className="metrics-grid">
                           <div className="metric-card">
@@ -2096,7 +2054,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Injury Prediction Model Performance Insights</h2>
                       <p className="workspace-desc">Neural network training loss logs, cross-validation metrics, and Random Forest feature importance weights.</p>
-                      
+
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
                         <div className="metrics-grid">
                           <div className="metric-card">
@@ -2168,7 +2126,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">Research Cohort Reports & Data Export</h2>
                       <p className="workspace-desc">Export anonymized motion telemetry datasets and research matrices.</p>
-                      
+
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
                         <div style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -2176,7 +2134,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: '700' }}>Select Target Athlete Profile or Full Roster</h3>
                               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Choose an individual athlete or export the complete 12-athlete research matrix.</p>
                             </div>
-                            
+
                             <select
                               value={selectedAthleteId || 'ATH-001'}
                               onChange={(e) => setSelectedAthleteId(e.target.value)}
@@ -2241,7 +2199,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">System Admin Console</h2>
                       <p className="workspace-desc">Perform server maintenance, audit diagnostic endpoints, and control user roles.</p>
-                      
+
                       <div className="practitioner-stats">
                         <div className="metric-card">
                           <span className="metric-label">Database Status</span>
@@ -2278,7 +2236,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <div className="hero-accent-strip" />
                       <h2 className="workspace-title">System Performance & Health Monitoring</h2>
                       <p className="workspace-desc">Live production server telemetry, latency bounds, and system capacity diagnostics.</p>
-                      
+
                       {systemMetrics ? (
                         <div className="system-metrics-layout animate-scale-in" style={{ marginTop: '20px', display: 'grid', gap: '20px' }}>
                           <div className="metrics-grid">
