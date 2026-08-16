@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, ShieldAlert, ArrowRight, X } from 'lucide-react';
+import { X, Mail, Lock, User, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
 import './AuthModal.css';
 
 const ROLES = [
   { value: 'Athlete', label: 'Athlete' },
-  { value: 'Coach', label: 'Coach / Trainer' },
+  { value: 'Coach', label: 'Coach' },
   { value: 'Physiotherapist', label: 'Physiotherapist' },
   { value: 'Sports Scientist', label: 'Sports Scientist' },
   { value: 'Administrator', label: 'Administrator' }
@@ -14,9 +14,8 @@ const DEMO_ACCOUNTS = {
   Athlete: [
     { email: 'marcus.rashford@sird.com', label: 'Marcus Rashford (Soccer)' },
     { email: 'serena.williams@sird.com', label: 'Serena Williams (Tennis)' },
-    { email: 'erling.haaland@sird.com', label: 'Erling Haaland (Soccer)' },
     { email: 'simone.biles@sird.com', label: 'Simone Biles (Gymnastics)' },
-    { email: 'michael.phelps@sird.com', label: 'Michael Phelps (Swimming)' },
+    { email: 'erling.haaland@sird.com', label: 'Erling Haaland (Soccer)' },
     { email: 'lebron.james@sird.com', label: 'LeBron James (Basketball)' },
     { email: 'katie.ledecky@sird.com', label: 'Katie Ledecky (Swimming)' },
     { email: 'novak.djokovic@sird.com', label: 'Novak Djokovic (Tennis)' },
@@ -50,7 +49,7 @@ const DEMO_ACCOUNTS = {
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab = 'signin' }) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('Athlete');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullname, setFullname] = useState('');
@@ -85,11 +84,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || 'Authentication failed. Please try again.');
+        throw new Error(data.detail || 'Authentication failed. Please check credentials.');
       }
 
       if (activeTab === 'signup') {
-        // Automatically sign in after signup
         const loginResponse = await fetch(`${apiBase}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -114,33 +112,52 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
       setError('Please select a role before signing in with Google.');
       return;
     }
-    // Redirect to backend Google login route, sending the role as a query parameter
     window.location.href = `${apiBase}/api/auth/google/login?role=${role}`;
   };
 
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container animate-scale-in" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
+      <div className="auth-modal-card animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <button className="auth-close-btn" onClick={onClose} aria-label="Close modal">
+          <X size={18} />
         </button>
 
-        <div className="modal-header">
-          <h2>{activeTab === 'signup' ? 'Create SIRD Account' : 'Welcome to SIRD'}</h2>
-          <p>{activeTab === 'signup' ? 'Get started by setting up your profile' : 'Sign in to access your dashboard'}</p>
+        {/* Modal Header */}
+        <div className="auth-modal-header">
+          <h2 className="auth-title">Welcome to SIRD</h2>
+          <p className="auth-subtitle">
+            {activeTab === 'signup' ? 'Create an account to start tracking injury risk' : 'Sign in to access your analytical dashboard'}
+          </p>
+
+          {/* Sign In / Sign Up Tab Selector */}
+          <div className="auth-tab-pills">
+            <button 
+              type="button" 
+              className={`tab-pill ${activeTab === 'signin' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('signin'); setError(''); }}
+            >
+              Sign In
+            </button>
+            <button 
+              type="button" 
+              className={`tab-pill ${activeTab === 'signup' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('signup'); setError(''); }}
+            >
+              Sign Up
+            </button>
+          </div>
         </div>
 
         {error && (
-          <div className="modal-error">
+          <div className="auth-error-banner">
             <ShieldAlert size={16} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="modal-form">
-          {/* Role Selection (Mandatory for both email and Google) */}
-          <div className="input-group">
+        <form onSubmit={handleSubmit} className="auth-modal-form">
+          {/* Role Selector */}
+          <div className="auth-input-group">
             <label htmlFor="role-select">Select Profile Role *</label>
             <select
               id="role-select"
@@ -148,22 +165,25 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
               onChange={(e) => {
                 setRole(e.target.value);
                 setError('');
+                setEmail('');
+                setPassword('');
               }}
               required
-              className="form-select"
+              className="auth-form-select"
             >
-              <option value="" disabled>-- Choose Your Role --</option>
               {ROLES.map((r) => (
                 <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </select>
           </div>
 
+          {/* Demo Account Quick Selector Callout */}
           {activeTab === 'signin' && DEMO_ACCOUNTS[role] && (
-            <div className="input-group demo-select-group animate-fade-in">
-              <label htmlFor="demo-select" style={{ color: 'var(--accent)', fontWeight: '700' }}>
-                Quick Select Demo Account
-              </label>
+            <div className="demo-select-callout">
+              <div className="demo-callout-header">
+                <span className="demo-callout-title"><Sparkles size={14} /> Quick Select Demo Profile</span>
+                <span className="demo-badge">One-Click Fill</span>
+              </div>
               <select
                 id="demo-select"
                 onChange={(e) => {
@@ -173,10 +193,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
                     setPassword('password123');
                   }
                 }}
-                className="form-select demo-select"
-                style={{ borderColor: 'var(--accent)' }}
+                className="auth-form-select demo-select-dropdown"
               >
-                <option value="">-- Choose Seeded Demo User --</option>
+                <option value="">-- Select Pre-seeded {role} Profile --</option>
                 {DEMO_ACCOUNTS[role].map((demo) => (
                   <option key={demo.email} value={demo.email}>{demo.label}</option>
                 ))}
@@ -184,18 +203,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
             </div>
           )}
 
-          <div className="divider-text">
-            <span>Authentication Method</span>
-          </div>
-
           {activeTab === 'signup' && (
-            <div className="input-group">
+            <div className="auth-input-group">
               <label>Full Name</label>
-              <div className="input-wrapper">
-                <User size={18} className="input-icon" />
+              <div className="auth-input-wrapper">
+                <User size={18} className="auth-input-icon" />
                 <input
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="e.g. Alex Morgan"
                   value={fullname}
                   onChange={(e) => setFullname(e.target.value)}
                   required
@@ -204,10 +219,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
             </div>
           )}
 
-          <div className="input-group">
+          <div className="auth-input-group">
             <label>Email Address</label>
-            <div className="input-wrapper">
-              <Mail size={18} className="input-icon" />
+            <div className="auth-input-wrapper">
+              <Mail size={18} className="auth-input-icon" />
               <input
                 type="email"
                 placeholder="you@example.com"
@@ -218,10 +233,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
             </div>
           </div>
 
-          <div className="input-group">
+          <div className="auth-input-group">
             <label>Password</label>
-            <div className="input-wrapper">
-              <Lock size={18} className="input-icon" />
+            <div className="auth-input-wrapper">
+              <Lock size={18} className="auth-input-icon" />
               <input
                 type="password"
                 placeholder="••••••••"
@@ -233,19 +248,20 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
             </div>
           </div>
 
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Processing...' : activeTab === 'signup' ? 'Register Now' : 'Sign In'}
+          <button type="submit" className="auth-submit-btn" disabled={loading}>
+            <span>{loading ? 'Processing...' : activeTab === 'signup' ? 'Create Account' : 'Sign In'}</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="divider-text">
+        <div className="auth-divider">
           <span>Or Continue With</span>
         </div>
 
         <button 
+          type="button"
           onClick={handleGoogleLogin} 
-          className="google-btn" 
+          className="auth-google-btn" 
           disabled={!role}
           title={!role ? "Please select a role first" : "Authenticate via Google"}
         >
@@ -258,19 +274,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialTab =
           <span>Continue with Google</span>
         </button>
 
-        <div className="modal-footer">
-          {activeTab === 'signup' ? (
-            <p>
-              Already have an account?{' '}
-              <button onClick={() => { setActiveTab('signin'); setError(''); }}>Sign In</button>
-            </p>
-          ) : (
-            <p>
-              Don't have an account?{' '}
-              <button onClick={() => { setActiveTab('signup'); setError(''); }}>Sign Up</button>
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );
