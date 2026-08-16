@@ -16,13 +16,62 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
 
+  const poseRef = useRef(null);
+  const latestLandmarksRef = useRef(null);
+
   useEffect(() => {
+    // Dynamically load MediaPipe Pose scripts from CDN
+    let isMounted = true;
+    const loadMediaPipe = async () => {
+      try {
+        if (!window.Pose) {
+          const script1 = document.createElement('script');
+          script1.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
+          script1.crossOrigin = 'anonymous';
+          document.body.appendChild(script1);
+
+          const script2 = document.createElement('script');
+          script2.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js';
+          script2.crossOrigin = 'anonymous';
+          document.body.appendChild(script2);
+
+          await new Promise((resolve) => {
+            script2.onload = resolve;
+          });
+        }
+
+        if (window.Pose && isMounted) {
+          const pose = new window.Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+          });
+          pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.45,
+            minTrackingConfidence: 0.45
+          });
+          pose.onResults((results) => {
+            if (isMounted) {
+              latestLandmarksRef.current = results.poseLandmarks || null;
+            }
+          });
+          poseRef.current = pose;
+        }
+      } catch (err) {
+        console.error("MediaPipe script loading error:", err);
+      }
+    };
+
     if (isOpen) {
+      loadMediaPipe();
       startCamera();
     } else {
       stopCamera();
     }
+
     return () => {
+      isMounted = false;
       stopCamera();
     };
   }, [isOpen]);
@@ -62,7 +111,19 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
     setIsCameraActive(false);
     setIsRecording(false);
     setRecordingSeconds(0);
+    latestLandmarksRef.current = null;
   };
+
+  // Standard MediaPipe Pose 33-Landmark Bone Connections
+  const POSE_CONNECTIONS = [
+    [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10], // Head & Face
+    [11, 12], // Shoulders
+    [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], // Left Arm & Hand
+    [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], // Right Arm & Hand
+    [11, 23], [12, 24], [23, 24], // Torso / Hips
+    [23, 25], [25, 27], [27, 29], [27, 31], // Left Leg
+    [24, 26], [26, 28], [28, 30], [28, 32]  // Right Leg
+  ];
 
   // Live real-time Canvas Skeleton Overlay Rendering Loop
   const startLiveTrackingCanvas = () => {
@@ -71,11 +132,9 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
     if (!video || !canvas) return;
 
     const ctx = canvas.getContext('2d');
-    
-    // Joint positions simulation / tracking points relative to video dimensions
-    let t = 0;
+    let lastPoseSendTime = 0;
 
-    const renderLoop = () => {
+    const renderLoop = async () => {
       if (!video || video.paused || video.ended) {
         animFrameRef.current = requestAnimationFrame(renderLoop);
         return;
@@ -87,84 +146,69 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
       const w = canvas.width;
       const h = canvas.height;
 
-      // Draw original video frame to canvas
+      // Draw real-time webcam video stream
       ctx.drawImage(video, 0, 0, w, h);
 
-      // Draw real-time dynamic Joint Skeleton Overlay (Red Dots & Yellow Lines)
-      t += 0.05;
-      const sway = Math.sin(t) * 8;
-      const kneeBounce = Math.abs(Math.cos(t)) * 12;
+      // Send frame to MediaPipe Pose detector (~15-30 FPS)
+      const now = Date.now();
+      if (poseRef.current && (now - lastPoseSendTime > 40)) {
+        lastPoseSendTime = now;
+        try {
+          await poseRef.current.send({ image: video });
+        } catch (e) {
+          // ignore transient frame send error
+        }
+      }
 
-      // Simulated real-time 3D keypoint landmark coordinates on live stream
-      const landmarks = {
-        head: { x: w * 0.5 + sway, y: h * 0.2 },
-        neck: { x: w * 0.5 + sway, y: h * 0.28 },
-        r_shoulder: { x: w * 0.4 + sway, y: h * 0.32 },
-        l_shoulder: { x: w * 0.6 + sway, y: h * 0.32 },
-        r_elbow: { x: w * 0.34 + sway, y: h * 0.45 },
-        l_elbow: { x: w * 0.66 + sway, y: h * 0.45 },
-        r_wrist: { x: w * 0.32 + sway, y: h * 0.56 },
-        l_wrist: { x: w * 0.68 + sway, y: h * 0.56 },
-        r_hip: { x: w * 0.44 + sway, y: h * 0.54 },
-        l_hip: { x: w * 0.56 + sway, y: h * 0.54 },
-        r_knee: { x: w * 0.43 + sway, y: h * 0.72 + kneeBounce },
-        l_knee: { x: w * 0.57 + sway, y: h * 0.72 + kneeBounce },
-        r_ankle: { x: w * 0.42 + sway, y: h * 0.9 },
-        l_ankle: { x: w * 0.58 + sway, y: h * 0.9 }
-      };
+      const landmarks = latestLandmarksRef.current;
 
-      // Connect Bones with Glowing Yellow Lines
-      const connections = [
-        [landmarks.head, landmarks.neck],
-        [landmarks.neck, landmarks.r_shoulder],
-        [landmarks.neck, landmarks.l_shoulder],
-        [landmarks.r_shoulder, landmarks.r_elbow],
-        [landmarks.r_elbow, landmarks.r_wrist],
-        [landmarks.l_shoulder, landmarks.l_elbow],
-        [landmarks.l_elbow, landmarks.l_wrist],
-        [landmarks.r_shoulder, landmarks.r_hip],
-        [landmarks.l_shoulder, landmarks.l_hip],
-        [landmarks.r_hip, landmarks.l_hip],
-        [landmarks.r_hip, landmarks.r_knee],
-        [landmarks.r_knee, landmarks.r_ankle],
-        [landmarks.l_hip, landmarks.l_knee],
-        [landmarks.l_knee, landmarks.l_ankle]
-      ];
+      if (landmarks && landmarks.length > 0) {
+        // Draw Bone Connections ONLY for visible keypoints (visibility > 0.45)
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#eab308'; // Glowing Yellow Bone Connections
+        ctx.shadowColor = '#fef08a';
+        ctx.shadowBlur = 8;
 
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#eab308'; // Vibrant Yellow Line Connections
-      ctx.shadowColor = '#fef08a';
-      ctx.shadowBlur = 8;
+        POSE_CONNECTIONS.forEach(([i, j]) => {
+          const p1 = landmarks[i];
+          const p2 = landmarks[j];
+          if (
+            p1 && p2 && 
+            (p1.visibility === undefined || p1.visibility > 0.4) && 
+            (p2.visibility === undefined || p2.visibility > 0.4)
+          ) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x * w, p1.y * h);
+            ctx.lineTo(p2.x * w, p2.y * h);
+            ctx.stroke();
+          }
+        });
 
-      connections.forEach(([p1, p2]) => {
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      });
+        // Draw Red Joint Circle Nodes ONLY for joints visible in camera frame
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 10;
 
-      // Draw Red Dot Joint Landmarks
-      ctx.shadowColor = '#ef4444';
-      ctx.shadowBlur = 12;
+        landmarks.forEach((lm) => {
+          if (lm && (lm.visibility === undefined || lm.visibility > 0.4)) {
+            ctx.beginPath();
+            ctx.arc(lm.x * w, lm.y * h, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ef4444'; // Glowing Red Circle Nodes
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+          }
+        });
 
-      Object.values(landmarks).forEach(pt => {
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 7, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ef4444'; // Glowing Red Circle Nodes
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
-      });
-
-      // Reset shadow
-      ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0;
+      }
 
       animFrameRef.current = requestAnimationFrame(renderLoop);
     };
 
     animFrameRef.current = requestAnimationFrame(renderLoop);
   };
+
 
   const startRecording = () => {
     if (!videoRef.current || !videoRef.current.srcObject) return;
