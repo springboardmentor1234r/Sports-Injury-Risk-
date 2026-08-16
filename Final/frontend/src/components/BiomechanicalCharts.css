@@ -17,17 +17,31 @@
   padding-bottom: 8px;
 }
 
+/* Side-by-Side Responsive Layout Container */
+.side-by-side-chart-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .side-by-side-chart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 1. Body Heatmap Graphic Styles */
 .heatmap-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .human-body-svg {
   width: 100%;
-  max-width: 200px;
+  max-width: 150px;
   height: auto;
 }
 
@@ -48,20 +62,22 @@
 
 .heatmap-legend {
   display: flex;
-  gap: 12px;
-  font-size: 0.78rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
 }
@@ -79,7 +95,7 @@
 
 .radar-svg {
   width: 100%;
-  max-width: 280px;
+  max-width: 220px;
   height: auto;
 }
 
@@ -88,79 +104,88 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .trend-svg {
   width: 100%;
-  max-width: 380px;
+  max-width: 260px;
   height: auto;
 }
 
 .trend-legend {
   display: flex;
-  gap: 16px;
-  font-size: 0.8rem;
+  gap: 12px;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
 .legend-line.red { color: #ef4444; font-weight: 700; }
 .legend-line.green { color: #22c55e; font-weight: 700; }
 
-/* Interactive Hover Chart Cards & Dialog Box */
-.chart-interactive-card {
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-
-.chart-interactive-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.12);
-}
-
-.chart-popover-dialog {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  z-index: 50;
-  background-color: var(--bg-primary, #ffffff);
-  border: 2px solid #2563eb;
+/* Side Diagnostics Panel (Right Column) */
+.chart-side-panel {
+  background-color: var(--bg-primary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 10px;
-  padding: 14px 16px;
-  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.25);
-  pointer-events: none;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  justify-content: center;
 }
 
-.popover-header {
+.side-panel-header {
   border-bottom: 1px solid var(--border-color, #cbd5e1);
   padding-bottom: 6px;
-  margin-bottom: 8px;
 }
 
-.popover-title {
+.side-panel-title {
   font-size: 0.85rem;
   font-weight: 800;
   color: #1e40af;
 }
 
-.popover-body {
+.side-panel-metrics-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.popover-metric-row {
+.side-metric-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.8rem;
   color: var(--text-primary, #1e293b);
 }
 
-.popover-footer-note {
+.side-label {
+  color: var(--text-secondary, #64748b);
+  font-size: 0.78rem;
+}
+
+.side-value {
+  font-size: 0.8rem;
+}
+
+.side-value.font-bold {
+  font-weight: 700;
+}
+
+.sub-val {
   font-size: 0.72rem;
   color: var(--text-muted, #64748b);
-  margin-top: 6px;
+  font-weight: 400;
+}
+
+.side-panel-footer {
+  font-size: 0.72rem;
+  color: var(--text-muted, #64748b);
+  font-style: normal;
   line-height: 1.3;
+  border-top: 1px solid var(--border-color, #cbd5e1);
+  padding-top: 8px;
+  margin-top: 2px;
 }
