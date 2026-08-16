@@ -480,9 +480,13 @@ async def get_video_history(
                 detail="Access Denied: You can only access your own video history."
             )
             
-    cursor = db.video_analyses.find(
-        {"athlete_id": target_athlete_id, "status": "Completed"}
-    ).sort("upload_date", -1)
+    user_email = current_user.get("email")
+    cursor = db.video_analyses.find({
+        "$or": [
+            {"athlete_id": target_athlete_id},
+            {"email": user_email}
+        ]
+    }).sort("upload_date", -1)
     
     analyses = await cursor.to_list(length=100)
     
@@ -492,4 +496,5 @@ async def get_video_history(
         formatted.append(doc)
         
     return formatted
+
 

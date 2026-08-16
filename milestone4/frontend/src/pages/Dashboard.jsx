@@ -141,14 +141,22 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       });
       if (response.ok) {
         const data = await response.json();
-        setVideoHistory(data);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setVideoHistory(data);
+        } else if (latestAnalysis) {
+          setVideoHistory([latestAnalysis]);
+        }
       }
     } catch (err) {
       console.error("Error loading video history:", err);
+      if (latestAnalysis) {
+        setVideoHistory([latestAnalysis]);
+      }
     } finally {
       setLoadingHistory(false);
     }
   };
+
 
   // Fetch latest video analysis & ML predictions for current active athlete
   useEffect(() => {
@@ -549,13 +557,16 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       }
 
       setLatestAnalysis(data);
+      setVideoHistory(prev => [data, ...prev.filter(v => (v.analysis_id || v._id) !== (data.analysis_id || data._id))]);
       setSuccessMsg(`Motion video "${file.name}" processed & analyzed by ML engine!`);
       setTimeout(() => setSuccessMsg(''), 5000);
 
       if (athleteProfile) {
         fetchPredictionReport("me");
         fetchRecommendations("me");
+        fetchVideoHistory();
       }
+
 
       if (user.role === 'Coach' || user.role === 'Physiotherapist') {
         fetchAssignedAthletes();
@@ -1387,89 +1398,100 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                         </button>
                       </div>
 
-                      {videoHistory.length === 0 ? (
-                        <div className="placeholder-tab-content" style={{ marginTop: '24px' }}>
-                          <Film size={48} className="placeholder-tab-icon" />
-                          <p className="placeholder-tab-text">No uploaded motion analysis videos found in your history repository yet.</p>
-                          <button 
-                            onClick={() => setActiveTab('Overview')}
-                            className="form-submit-btn" 
-                            style={{ width: 'auto', marginTop: '12px' }}
-                          >
-                            <UploadCloud size={16} /> Upload Movement Video
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '24px' }}>
-                          {videoHistory.map((item) => {
-                            const uploadDateStr = item.upload_date 
-                              ? new Date(item.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
-                              : 'Recent Upload';
+                      {(() => {
+                        const displayHistory = (videoHistory && videoHistory.length > 0) 
+                          ? videoHistory 
+                          : (latestAnalysis ? [latestAnalysis] : []);
 
-                            return (
-                              <div key={item.analysis_id || item._id} className="history-video-card" style={{ padding: '18px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {/* Embedded Video Player */}
-                                <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#000', border: '1px solid var(--border-color)' }}>
-                                  <video 
-                                    src={item.video_url} 
-                                    controls 
-                                    preload="metadata"
-                                    style={{ width: '100%', height: '200px', objectFit: 'contain', display: 'block' }}
-                                  />
-                                </div>
+                        if (displayHistory.length === 0) {
+                          return (
+                            <div className="placeholder-tab-content" style={{ marginTop: '24px' }}>
+                              <Film size={48} className="placeholder-tab-icon" />
+                              <p className="placeholder-tab-text">No uploaded motion analysis videos found in your history repository yet.</p>
+                              <button 
+                                onClick={() => setActiveTab('Overview')}
+                                className="form-submit-btn" 
+                                style={{ width: 'auto', marginTop: '12px' }}
+                              >
+                                <UploadCloud size={16} /> Upload Movement Video
+                              </button>
+                            </div>
+                          );
+                        }
 
-                                {/* Video Metadata Header */}
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{item.filename}</strong>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
-                                      {item.analysis_id}
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '24px' }}>
+                            {displayHistory.map((item) => {
+                              const uploadDateStr = item.upload_date 
+                                ? new Date(item.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+                                : 'Recent Upload';
+
+                              return (
+                                <div key={item.analysis_id || item._id} className="history-video-card" style={{ padding: '18px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                  {/* Embedded Video Player */}
+                                  <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#000', border: '1px solid var(--border-color)' }}>
+                                    <video 
+                                      src={item.video_url} 
+                                      controls 
+                                      preload="metadata"
+                                      style={{ width: '100%', height: '200px', objectFit: 'contain', display: 'block' }}
+                                    />
+                                  </div>
+
+                                  {/* Video Metadata Header */}
+                                  <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                      <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{item.filename}</strong>
+                                      <span style={{ fontSize: '0.72rem', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+                                        {item.analysis_id}
+                                      </span>
+                                    </div>
+                                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>
+                                      📅 Uploaded on {uploadDateStr}
                                     </span>
                                   </div>
-                                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>
-                                    📅 Uploaded on {uploadDateStr}
-                                  </span>
-                                </div>
 
-                                {/* Movement & Risk Score Badges */}
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                  <span className="id-badge" style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
-                                    Quality: {item.scores?.movement_quality_score || 82}%
-                                  </span>
-                                  <span className="id-badge" style={{ backgroundColor: (item.scores?.injury_risk_score || 30) > 40 ? '#fef2f2' : '#f0fdf4', color: (item.scores?.injury_risk_score || 30) > 40 ? '#991b1b' : '#166534', border: '1px solid #fecaca' }}>
-                                    Risk: {item.scores?.injury_risk_score || 34}%
-                                  </span>
-                                  {item.video_metadata?.resolution && (
-                                    <span className="id-badge" style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1' }}>
-                                      {item.video_metadata.resolution} @ {item.video_metadata.fps || 25} FPS
+                                  {/* Movement & Risk Score Badges */}
+                                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <span className="id-badge" style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
+                                      Quality: {item.scores?.movement_quality_score || 82}%
                                     </span>
+                                    <span className="id-badge" style={{ backgroundColor: (item.scores?.injury_risk_score || 30) > 40 ? '#fef2f2' : '#f0fdf4', color: (item.scores?.injury_risk_score || 30) > 40 ? '#991b1b' : '#166534', border: '1px solid #fecaca' }}>
+                                      Risk: {item.scores?.injury_risk_score || 34}%
+                                    </span>
+                                    {item.video_metadata?.resolution && (
+                                      <span className="id-badge" style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1' }}>
+                                        {item.video_metadata.resolution} @ {item.video_metadata.fps || 25} FPS
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Key Kinematic Observations */}
+                                  {item.metrics && (
+                                    <div style={{ padding: '10px', backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                      <div><strong>Knee Valgus:</strong> {item.metrics.knee_valgus}</div>
+                                      <div><strong>Landing Mechanics:</strong> {item.metrics.landing_mechanics}</div>
+                                      <div><strong>Joint Alignment:</strong> {item.metrics.joint_alignment}</div>
+                                    </div>
                                   )}
+
+                                  {/* Action Button */}
+                                  <button 
+                                    onClick={() => {
+                                      setLatestAnalysis(item);
+                                      setActiveTab('MovementAnalysis');
+                                    }}
+                                    style={{ padding: '9px', borderRadius: '6px', backgroundColor: 'var(--accent)', color: 'var(--button-text)', border: 'none', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                  >
+                                    <Eye size={14} /> Inspect Full Biomechanical Report
+                                  </button>
                                 </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
 
-                                {/* Key Kinematic Observations */}
-                                {item.metrics && (
-                                  <div style={{ padding: '10px', backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <div><strong>Knee Valgus:</strong> {item.metrics.knee_valgus}</div>
-                                    <div><strong>Landing Mechanics:</strong> {item.metrics.landing_mechanics}</div>
-                                    <div><strong>Joint Alignment:</strong> {item.metrics.joint_alignment}</div>
-                                  </div>
-                                )}
-
-                                {/* Action Button */}
-                                <button 
-                                  onClick={() => {
-                                    setLatestAnalysis(item);
-                                    setActiveTab('MovementAnalysis');
-                                  }}
-                                  style={{ padding: '9px', borderRadius: '6px', backgroundColor: 'var(--accent)', color: 'var(--button-text)', border: 'none', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                                >
-                                  <Eye size={14} /> Inspect Full Biomechanical Report
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
                   )}
 
