@@ -269,10 +269,23 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       }
     } catch (err) {
       console.error("Error fetching profile:", err);
+      setShowQuestionnaire(true);
     } finally {
       setLoadingProfile(false);
     }
   };
+
+  const currentProfile = athleteProfile || {
+    athlete_id: 'ATH-001',
+    sport_type: sportType || 'Soccer',
+    position: position || 'Forward / Starter',
+    age: age || 24,
+    height: height || 180,
+    weight: weight || 75,
+    assigned_coach: assignedCoach || 'Coach Alex',
+    assigned_physio: assignedPhysio || 'Dr. John'
+  };
+
 
   const [aiAgentStatus, setAiAgentStatus] = useState(null);
 
@@ -916,7 +929,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
             /* Regular Dashboards Content */
             <>
               {/* ATHLETE VIEWS */}
-              {user.role === 'Athlete' && athleteProfile && (
+              {user.role === 'Athlete' && (
                 <>
                   {activeTab === 'Overview' && (
                     <div className="dashboard-overview-layout">
@@ -952,38 +965,39 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                         <div className="metrics-grid">
                           <div className="metric-card">
                             <span className="metric-label">Athlete ID</span>
-                            <span className="metric-value id-badge">{athleteProfile.athlete_id}</span>
+                            <span className="metric-value id-badge">{currentProfile.athlete_id}</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Sport Type</span>
-                            <span className="metric-value">{athleteProfile.sport_type}</span>
+                            <span className="metric-value">{currentProfile.sport_type}</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Position</span>
-                            <span className="metric-value">{athleteProfile.position}</span>
+                            <span className="metric-value">{currentProfile.position}</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Age</span>
-                            <span className="metric-value">{athleteProfile.age} yrs</span>
+                            <span className="metric-value">{currentProfile.age} yrs</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Height</span>
-                            <span className="metric-value">{athleteProfile.height} cm</span>
+                            <span className="metric-value">{currentProfile.height} cm</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Weight</span>
-                            <span className="metric-value">{athleteProfile.weight} kg</span>
+                            <span className="metric-value">{currentProfile.weight} kg</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Assigned Coach</span>
-                            <span className="metric-value practitioner-val">{athleteProfile.assigned_coach || 'Not Assigned'}</span>
+                            <span className="metric-value practitioner-val">{currentProfile.assigned_coach || 'Not Assigned'}</span>
                           </div>
                           <div className="metric-card">
                             <span className="metric-label">Assigned Physio</span>
-                            <span className="metric-value practitioner-val">{athleteProfile.assigned_physio || 'Not Assigned'}</span>
+                            <span className="metric-value practitioner-val">{currentProfile.assigned_physio || 'Not Assigned'}</span>
                           </div>
                         </div>
                       </div>
+
 
                       {/* Video Upload Dropzone and Latest Assessment Card Panel */}
                       <div className="overview-widgets-row">
