@@ -40,6 +40,12 @@ app.mount("/storage", StaticFiles(directory="storage"), name="storage")
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "https://sird.netlify.app",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8000",
+    ],
     allow_origin_regex="https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
@@ -55,6 +61,30 @@ app.include_router(recommendation_routes.router)
 app.include_router(notification_routes.router)
 app.include_router(report_routes.router)
 app.include_router(system_routes.router)
+
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print("GLOBAL EXCEPTION DETECTED:")
+    traceback.print_exc()
+    
+    response = JSONResponse(
+        status_code=500,
+        content={
+            "detail": f"Internal Server Error: {str(exc)}",
+            "traceback": traceback.format_exc()
+        }
+    )
+    origin = request.headers.get("origin", "*")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
 
 
 

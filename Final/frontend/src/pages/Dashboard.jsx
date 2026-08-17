@@ -69,6 +69,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [scanningProgress, setScanningProgress] = useState('');
 
   // Live Camera Capture States
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -92,6 +93,10 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   // Scientist Platform-wide metrics
   const [allAthletesAnonymized, setAllAthletesAnonymized] = useState([]);
   const [loadingAnonymized, setLoadingAnonymized] = useState(false);
+
+  // Administrator User Management States
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Form input states
   const [sportType, setSportType] = useState('');
@@ -118,6 +123,8 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         fetchAssignedAthletes();
       } else if (user.role === 'Sports Scientist') {
         fetchAnonymizedAthletes();
+      } else if (user.role === 'Administrator') {
+        fetchAllUsers();
       }
     }
   }, [user, token]);
@@ -243,6 +250,66 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
 
 
+
+  const fetchAllUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await fetch(`${apiBase}/api/users/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.status === 401) {
+        logout();
+        return;
+      }
+      if (response.ok) {
+        const data = await response.json();
+        setAllUsers(data);
+      }
+    } catch (err) {
+      console.error("Error loading roster:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      const response = await fetch(`${apiBase}/api/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Failed to update role");
+      setSuccessMsg(`User role successfully changed to ${newRole}`);
+      setTimeout(() => setSuccessMsg(''), 4000);
+      fetchAllUsers();
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(''), 4000);
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you absolutely sure you want to permanently delete this user? All their athlete data and video history will be permanently deleted.")) return;
+    try {
+      const response = await fetch(`${apiBase}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Failed to delete user");
+      setSuccessMsg("User profile deleted successfully");
+      setTimeout(() => setSuccessMsg(''), 4000);
+      fetchAllUsers();
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(''), 4000);
+    }
+  };
 
   const fetchSystemMetrics = async () => {
     try {
@@ -538,11 +605,153 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     setUploadingVideo(true);
     setErrorMsg('');
     setSuccessMsg('');
-
-    const formData = new FormData();
-    formData.append("file", file);
+    setScanningProgress('Initializing MediaPipe Pose Engine...');
 
     try {
+      if (!window.FilesetResolver || !window.PoseLandmarker) {
+        throw new Error("MediaPipe Tasks Vision library failed to load from CDN. Check your network.");
+      }
+
+      const vision = await window.FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/wasm"
+      );
+
+      setScanningProgress('Loading Pose Estimation Model (3MB)...');
+      const poseLandmarker = await window.PoseLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numPoses: 1
+      });
+
+      setScanningProgress('Decoding video metadata...');
+      const video = document.createElement("video");
+      video.src = URL.createObjectURL(file);
+      video.muted = true;
+      video.playsInline = true;
+
+      await new Promise((resolve, reject) => {
+        video.onloadedmetadata = resolve;
+        video.onerror = () => reject(new Error("Unable to decode video metadata."));
+      });
+
+      const fps = 10.0;
+      const step = 1.0 / fps;
+      const duration = video.duration || 5.0;
+      const capDuration = Math.min(duration, 10.0);
+
+      const valgus_r = [];
+      const valgus_l = [];
+      const knee_flex_r = [];
+      const knee_flex_l = [];
+      const trunk_lean = [];
+      const pelvic_tilt = [];
+      const asymmetry = [];
+      const stride_m = [];
+      const com_x = [];
+      const shoulder_abd_r = [];
+      const lumbar_flex = [];
+      const ankle_inv = [];
+
+      const calcAngle3D = (p1, p2, p3) => {
+        const v1 = [p1.x - p2.x, p1.y - p2.y, p1.z - p2.z];
+        const v2 = [p3.x - p2.x, p3.y - p2.y, p3.z - p2.z];
+        const n1 = Math.sqrt(v1[0]*v1[0] + v1[1]*v1[1] + v1[2]*v1[2]);
+        const n2 = Math.sqrt(v2[0]*v2[0] + v2[1]*v2[1] + v2[2]*v2[2]);
+        if (n1 === 0 || n2 === 0) return 180.0;
+        const dot = v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+        const cosTheta = Math.max(-1.0, Math.min(1.0, dot / (n1 * n2)));
+        return (Math.acos(cosTheta) * 180.0) / Math.PI;
+      };
+
+      const calcAngle2D = (p1, p2, p3) => {
+        const v1 = [p1.x - p2.x, p1.y - p2.y];
+        const v2 = [p3.x - p2.x, p3.y - p2.y];
+        const n1 = Math.sqrt(v1[0]*v1[0] + v1[1]*v1[1]);
+        const n2 = Math.sqrt(v2[0]*v2[0] + v2[1]*v2[1]);
+        if (n1 === 0 || n2 === 0) return 180.0;
+        const dot = v1[0]*v2[0] + v1[1]*v2[1];
+        const cosTheta = Math.max(-1.0, Math.min(1.0, dot / (n1 * n2)));
+        return (Math.acos(cosTheta) * 180.0) / Math.PI;
+      };
+
+      const athlete_height_cm = parseFloat(athleteProfile?.height || 175.0);
+      const athlete_height_m = athlete_height_cm / 100.0;
+
+      let currentTime = 0;
+      let processedFrames = 0;
+
+      while (currentTime < capDuration) {
+        const pct = Math.round((currentTime / capDuration) * 100);
+        setScanningProgress(`Scanning biomechanical angles locally: ${pct}%`);
+
+        video.currentTime = currentTime;
+        await new Promise((resolve) => {
+          video.onseeked = resolve;
+        });
+
+        const timestampMs = Math.round(currentTime * 1000);
+        const result = poseLandmarker.detectForVideo(video, timestampMs);
+
+        if (result.poseLandmarks && result.poseLandmarks.length > 0) {
+          const lms = result.poseLandmarks[0];
+          if (lms.length >= 33) {
+            const ps_l = lms[11], ps_r = lms[12];
+            const ph_l = lms[23], ph_r = lms[24];
+            const pk_l = lms[25], pk_r = lms[26];
+            const pa_l = lms[27], pa_r = lms[28];
+
+            const fl_r = calcAngle3D(ph_r, pk_r, pa_r);
+            const fl_l = calcAngle3D(ph_l, pk_l, pa_l);
+            valgus_r.push(Math.abs(180.0 - calcAngle2D(ph_r, pk_r, pa_r)));
+            valgus_l.push(Math.abs(180.0 - calcAngle2D(ph_l, pk_l, pa_l)));
+            knee_flex_r.push(fl_r);
+            knee_flex_l.push(fl_l);
+
+            const sh_mx = (ps_l.x + ps_r.x) / 2.0;
+            const sh_my = (ps_l.y + ps_r.y) / 2.0;
+            const hi_mx = (ph_l.x + ph_r.x) / 2.0;
+            const hi_my = (ph_l.y + ph_r.y) / 2.0;
+
+            trunk_lean.push((Math.atan2(Math.abs(sh_mx - hi_mx), Math.abs(sh_my - hi_my) + 1e-6) * 180.0) / Math.PI);
+            pelvic_tilt.push((Math.atan2(Math.abs(ph_r.y - ph_l.y), Math.abs(ph_r.x - ph_l.x) + 1e-6) * 180.0) / Math.PI);
+
+            const asym = (Math.abs(fl_r - fl_l) / Math.max(fl_r, fl_l, 1.0)) * 100.0;
+            asymmetry.push(asym);
+
+            const ank_d = Math.sqrt(Math.pow(pa_r.x-pa_l.x, 2) + Math.pow(pa_r.y-pa_l.y, 2) + Math.pow(pa_r.z-pa_l.z, 2));
+            const torso_h = Math.max(0.1, Math.abs((ps_l.y + ps_r.y) / 2.0 - hi_my));
+            stride_m.push((ank_d / torso_h) * (athlete_height_m * 0.45));
+            com_x.push(hi_mx);
+
+            if (lms.length > 14) shoulder_abd_r.push(calcAngle3D(ph_r, ps_r, lms[14]));
+            if (lms.length > 32) ankle_inv.push(calcAngle2D(pk_r, pa_r, lms[32]));
+            lumbar_flex.push(calcAngle3D(ps_r, ph_r, pk_r));
+          }
+        }
+
+        currentTime += step;
+        processedFrames++;
+      }
+
+      setScanningProgress('Uploading movement telemetry to server...');
+
+      const telemetry = {
+        valgus_r, valgus_l, knee_flex_r, knee_flex_l,
+        trunk_lean, pelvic_tilt, asymmetry, stride_m,
+        com_x, shoulder_abd_r, lumbar_flex, ankle_inv,
+        width: video.videoWidth || 640,
+        height: video.videoHeight || 480,
+        fps: fps,
+        frame_count: processedFrames
+      };
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("telemetry", JSON.stringify(telemetry));
+
       const response = await fetch(`${apiBase}/api/videos/upload`, {
         method: "POST",
         headers: {
@@ -558,7 +767,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
       setLatestAnalysis(data);
       setVideoHistory(prev => [data, ...prev.filter(v => (v.analysis_id || v._id) !== (data.analysis_id || data._id))]);
-      setSuccessMsg(`Motion video "${file.name}" processed & analyzed by ML engine!`);
+      setSuccessMsg(`Motion video "${file.name}" analyzed & uploaded successfully!`);
       setTimeout(() => setSuccessMsg(''), 5000);
 
       if (athleteProfile) {
@@ -567,14 +776,15 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         fetchVideoHistory();
       }
 
-
       if (user.role === 'Coach' || user.role === 'Physiotherapist') {
         fetchAssignedAthletes();
       }
     } catch (err) {
-      setErrorMsg(err.message);
+      console.error(err);
+      setErrorMsg(err.message || "Failed to scan and upload video.");
     } finally {
       setUploadingVideo(false);
+      setScanningProgress('');
     }
   };
 
@@ -1160,7 +1370,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {uploadingVideo && (
                             <div className="upload-processing-spinner" style={{ marginTop: '12px' }}>
                               <div className="loading-spinner"></div>
-                              <span>Running MediaPipe Pose Estimation & ML Risk Engine...</span>
+                              <span>{scanningProgress || 'Running MediaPipe Pose Estimation & ML Risk Engine...'}</span>
                             </div>
                           )}
                         </div>
@@ -2434,24 +2644,116 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                   )}
 
                   {activeTab === 'UserManagement' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">User Management</h2>
-                      <div className="placeholder-tab-content">
-                        <Users size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">User Management Workspace. Global role configuration tables.</p>
-                      </div>
+                      <h2 className="workspace-title">User Account Management</h2>
+                      <p className="workspace-desc">View, assign, modify user roles, or delete system profiles globally.</p>
+
+                      {loadingUsers ? (
+                        <div className="placeholder-tab-content">
+                          <RefreshCw className="placeholder-tab-icon animate-spin" size={32} />
+                          <p className="placeholder-tab-text">Syncing user database roster...</p>
+                        </div>
+                      ) : allUsers.length === 0 ? (
+                        <p className="no-athletes-msg">No registered users found in the system registry.</p>
+                      ) : (
+                        <div style={{ marginTop: '20px', overflowX: 'auto' }}>
+                          <table className="athletes-table">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>System Role</th>
+                                <th>Registration Date</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {allUsers.map((u) => (
+                                <tr key={u.id}>
+                                  <td className="athlete-name">{u.fullname}</td>
+                                  <td>{u.email}</td>
+                                  <td>
+                                    <select
+                                      value={u.role}
+                                      onChange={(e) => updateUserRole(u.id, e.target.value)}
+                                      className="form-select"
+                                      style={{ padding: '4px 8px', fontSize: '0.85rem', width: 'auto', display: 'inline-block', margin: 0 }}
+                                    >
+                                      <option value="Athlete">Athlete</option>
+                                      <option value="Coach">Coach</option>
+                                      <option value="Physiotherapist">Physiotherapist</option>
+                                      <option value="Sports Scientist">Sports Scientist</option>
+                                      <option value="Administrator">Administrator</option>
+                                    </select>
+                                  </td>
+                                  <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                                  <td style={{ textAlign: 'right' }}>
+                                    <button
+                                      onClick={() => deleteUser(u.id)}
+                                      className="form-submit-btn"
+                                      style={{
+                                        width: 'auto',
+                                        padding: '4px 10px',
+                                        margin: 0,
+                                        backgroundColor: '#dc2626',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600'
+                                      }}
+                                    >
+                                      Delete Profile
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {activeTab === 'PlatformAnalytics' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">Platform Analytics</h2>
-                      <div className="placeholder-tab-content">
-                        <BarChart2 size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">Platform Analytics Workspace. Server throughput workloads.</p>
-                      </div>
+                      <h2 className="workspace-title">Platform Workload Analytics</h2>
+                      <p className="workspace-desc">Monitor total database records, video processing volumes, and server environment status.</p>
+
+                      {systemMetrics ? (
+                        <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
+                          <div className="metrics-grid">
+                            <div className="metric-card">
+                              <span className="metric-label">Total Users</span>
+                              <span className="metric-value">{systemMetrics.system_throughput?.total_users} Users</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Registered Athletes</span>
+                              <span className="metric-value">{systemMetrics.system_throughput?.registered_athletes} Profiles</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Processed Videos</span>
+                              <span className="metric-value score-optimal">{systemMetrics.system_throughput?.processed_videos} Uploads</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Generated ML Reports</span>
+                              <span className="metric-value score-optimal">{systemMetrics.system_throughput?.generated_ml_reports} Reports</span>
+                            </div>
+                          </div>
+
+                          <div className="detail-header-card" style={{ padding: '20px', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '12px' }}>Operational Baseline Bounds</h3>
+                            <div className="detail-grid">
+                              <div className="detail-item"><strong>Host Status:</strong> {systemMetrics.system_status}</div>
+                              <div className="detail-item"><strong>Runtime Environment:</strong> {systemMetrics.server_environment}</div>
+                              <div className="detail-item"><strong>Primary Storage:</strong> PostgreSQL (Core User Metadata)</div>
+                              <div className="detail-item"><strong>Telemetry DB:</strong> MongoDB Atlas (Timeseries Analytics)</div>
+                              <div className="detail-item"><strong>Diagnostic Status:</strong> Clean connection, ready for ingestion</div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="no-athletes-msg">Loading throughput analytics metrics...</p>
+                      )}
                     </div>
                   )}
 
@@ -2511,12 +2813,52 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
 
                   {activeTab === 'ReportManagement' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">Report Management</h2>
-                      <div className="placeholder-tab-content">
-                        <FileText size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">Report Management Workspace. PDF layout configuration settings.</p>
+                      <h2 className="workspace-title">Report Management Console</h2>
+                      <p className="workspace-desc">Query and download telemetry summaries or export CSV matrices globally.</p>
+
+                      <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
+                        <div style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: '700' }}>Select Target Athlete Profile</h3>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Choose an athlete to export individual injury predictions and dynamic biomechanics reports.</p>
+                            </div>
+
+                            <select
+                              value={selectedAthleteId || 'ATH-001'}
+                              onChange={(e) => setSelectedAthleteId(e.target.value)}
+                              style={{
+                                padding: '10px 16px',
+                                backgroundColor: 'var(--bg-dark)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {assignedAthletes.map(a => (
+                                <option key={a.athlete_id} value={a.athlete_id}>
+                                  👤 {a.fullname || a.name} ({a.athlete_id}) - {a.sport_type}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                            <button onClick={() => downloadPdfReport(selectedAthleteId)} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem', fontWeight: '600' }}>
+                              <FileDown size={16} />
+                              <span>Download PDF Summary</span>
+                            </button>
+                            <button onClick={() => downloadExcelReport(selectedAthleteId)} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem', fontWeight: '600' }}>
+                              <FileSpreadsheet size={16} />
+                              <span>Export Research CSV</span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
