@@ -8,6 +8,7 @@ import {
 import CustomRecModal from '../components/CustomRecModal';
 import NotificationBell from '../components/NotificationBell';
 import LiveCameraModal from '../components/LiveCameraModal';
+import PoseOverlayVideo from '../components/PoseOverlayVideo';
 import { BodyHeatmapGraphic, JointAngleRadarChart, RiskTrendAreaChart, CohortScatterMatrixChart } from '../components/BiomechanicalCharts';
 
 import './Dashboard.css';
@@ -1601,7 +1602,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {latestAnalysis.video_url && (
                             <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                               <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                              <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                              <PoseOverlayVideo key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} style={{ maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
                             </div>
                           )}
 
@@ -2155,7 +2156,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               {latestAnalysis.video_url && (
                                 <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                                   <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                                  <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                                  <PoseOverlayVideo key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} style={{ maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
                                 </div>
                               )}
                               <div className="joint-angles-card">
@@ -2370,7 +2371,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {latestAnalysis && latestAnalysis.video_url && (
                             <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                               <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                              <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                              <PoseOverlayVideo key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} style={{ maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
                             </div>
                           )}
                           <div className="correction-card">
