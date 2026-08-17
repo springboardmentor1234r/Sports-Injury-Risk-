@@ -96,3 +96,7 @@ class CustomRecommendationCreate(BaseModel):
     duration: str
     frequency: str
 
+class RoleUpdate(BaseModel):
+    role: UserRole
+
+

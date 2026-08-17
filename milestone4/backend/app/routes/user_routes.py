@@ -241,3 +241,60 @@ async def get_all_athletes_anonymized(current_user: dict = Depends(get_current_u
         
     cursor = db.athlete_profiles.find({}, {"email": 0, "_id": 0})
     return await cursor.to_list(length=200)
+
+@router.get("/all")
+async def get_all_users(current_user: dict = Depends(get_current_user), db = Depends(get_db)):
+    if current_user.get("role") != "Administrator":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Administrators can retrieve the global user roster."
+        )
+    cursor = db.users.find({}, {"password": 0})
+    users = await cursor.to_list(length=100)
+    for u in users:
+        u["id"] = str(u["_id"])
+        del u["_id"]
+    return users
+
+from app.schemas import RoleUpdate
+
+@router.put("/{user_id}/role")
+async def update_user_role(
+    user_id: str,
+    role_data: RoleUpdate,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    if current_user.get("role") != "Administrator":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Administrators can change user roles."
+        )
+    result = await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"role": role_data.role}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": f"User role updated to {role_data.role}"}
+
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    if current_user.get("role") != "Administrator":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Administrators can delete user profiles."
+        )
+    user_to_delete = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    await db.users.delete_one({"_id": ObjectId(user_id)})
+    # Also clean up their athlete profile if they are an athlete
+    await db.athlete_profiles.delete_one({"email": user_to_delete["email"]})
+    return {"message": "User deleted successfully"}
+
