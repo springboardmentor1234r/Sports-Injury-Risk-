@@ -26,6 +26,30 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
+  const formatDateTime = (dateInput) => {
+    if (!dateInput) return '';
+    try {
+      let d = dateInput;
+      if (typeof dateInput === 'string') {
+        if (!dateInput.endsWith('Z') && !dateInput.includes('+') && !dateInput.includes('GMT')) {
+          d = dateInput + 'Z';
+        }
+      }
+      const parsedDate = new Date(d);
+      if (isNaN(parsedDate.getTime())) return String(dateInput);
+      return parsedDate.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (e) {
+      return String(dateInput);
+    }
+  };
+
   const [profileOpen, setProfileOpen] = useState(false);
 
 
@@ -1385,7 +1409,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               <h4>{latestAnalysis.filename}</h4>
                               <div className="analysis-id-badge">ID: {latestAnalysis.analysis_id}</div>
                               <div className="analysis-time-badge" style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                📅 Processed: {latestAnalysis.upload_date ? new Date(latestAnalysis.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                                📅 Processed: {latestAnalysis.upload_date ? formatDateTime(latestAnalysis.upload_date) : formatDateTime(new Date())}
                               </div>
                             </div>
 
@@ -1633,7 +1657,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '24px' }}>
                             {displayHistory.map((item) => {
                               const uploadDateStr = item.upload_date 
-                                ? new Date(item.upload_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+                                ? formatDateTime(item.upload_date)
                                 : 'Recent Upload';
 
                               return (
