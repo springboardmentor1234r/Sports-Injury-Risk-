@@ -106,6 +106,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
   // Milestone 3 & 4 Prediction, Recommendation & System Metrics States
   const [predictionReport, setPredictionReport] = useState(null);
+  const [predictionHistory, setPredictionHistory] = useState([]);
   const [recommendationsData, setRecommendationsData] = useState({ automated: [], coach_custom: [] });
   const [datasetInsights, setDatasetInsights] = useState(null);
   const [systemMetrics, setSystemMetrics] = useState(null);
@@ -164,25 +165,22 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [videoHistory, setVideoHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const fetchVideoHistory = async () => {
+  const fetchVideoHistory = async (athleteId = 'me') => {
+    let targetId = athleteId;
+    if (targetId === 'me' && athleteProfile?.athlete_id) {
+      targetId = athleteProfile.athlete_id;
+    }
     setLoadingHistory(true);
     try {
-      const response = await fetch(`${apiBase}/api/videos/history/me`, {
+      const response = await fetch(`${apiBase}/api/videos/history/${targetId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
-        if (data && Array.isArray(data) && data.length > 0) {
-          setVideoHistory(data);
-        } else if (latestAnalysis) {
-          setVideoHistory([latestAnalysis]);
-        }
+        setVideoHistory(data || []);
       }
     } catch (err) {
       console.error("Error loading video history:", err);
-      if (latestAnalysis) {
-        setVideoHistory([latestAnalysis]);
-      }
     } finally {
       setLoadingHistory(false);
     }
@@ -195,12 +193,15 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       if (user.role === 'Athlete' && athleteProfile) {
         fetchLatestAnalysis("me");
         fetchPredictionReport("me");
+        fetchPredictionHistory("me");
         fetchRecommendations("me");
         fetchVideoHistory();
       } else if ((user.role === 'Coach' || user.role === 'Physiotherapist') && selectedAthleteId) {
         fetchLatestAnalysis(selectedAthleteId);
         fetchPredictionReport(selectedAthleteId);
+        fetchPredictionHistory(selectedAthleteId);
         fetchRecommendations(selectedAthleteId);
+        fetchVideoHistory(selectedAthleteId);
       } else if (user.role === 'Sports Scientist' || user.role === 'Administrator') {
         fetchDatasetInsights();
         fetchSystemMetrics();
@@ -368,6 +369,35 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     } catch (err) {
       console.error("Error loading ML prediction report:", err);
       setPredictionReport(null);
+    }
+  };
+
+  const fetchPredictionHistory = async (athleteId) => {
+    let targetId = athleteId;
+    if (targetId === 'me' && athleteProfile?.athlete_id) {
+      targetId = athleteProfile.athlete_id;
+    }
+    try {
+      const response = await fetch(`${apiBase}/api/predictions/${targetId}/history`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const formatted = data.map((item, idx) => {
+          const uDate = item.created_at ? new Date(item.created_at) : new Date();
+          return {
+            date: uDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            risk: item.scores?.injury_risk_score || 30,
+            quality: item.scores?.movement_quality_score || 80
+          };
+        });
+        setPredictionHistory(formatted);
+      } else {
+        setPredictionHistory([]);
+      }
+    } catch (err) {
+      console.error("Error loading ML prediction history:", err);
+      setPredictionHistory([]);
     }
   };
 
@@ -796,6 +826,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
       if (athleteProfile) {
         fetchPredictionReport("me");
+        fetchPredictionHistory("me");
         fetchRecommendations("me");
         fetchVideoHistory();
       }
@@ -1529,7 +1560,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {/* 3. Side-by-Side Biomechanical Radar & Trajectory Trends Row */}
                           <div className="charts-two-column-row">
                             <JointAngleRadarChart metrics={latestAnalysis?.metrics} athleteName={user.fullname} />
-                            <RiskTrendAreaChart history={null} athleteName={user.fullname} />
+                            <RiskTrendAreaChart history={predictionHistory} athleteName={user.fullname} />
                           </div>
 
                         </div>
@@ -1737,7 +1768,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                       <p className="workspace-desc">Historical workload evolution and biomechanical recovery trajectory stored in MongoDB Time Series telemetry.</p>
 
                       <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
-                        <RiskTrendAreaChart history={null} />
+                        <RiskTrendAreaChart history={predictionHistory} />
 
                         <div className="historical-table-card" style={{ padding: '20px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                           <h3 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '14px' }}>Historical Assessment Log</h3>
@@ -1752,33 +1783,40 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                <td style={{ padding: '10px' }}>Today (Latest)</td>
-                                <td style={{ padding: '10px', fontWeight: '600' }}>{latestAnalysis ? latestAnalysis.filename : 'Live Capture Session'}</td>
-                                <td style={{ padding: '10px' }}>
-                                  <span style={{ color: predictionReport?.overall_scores?.injury_risk_score > 40 ? '#ef4444' : '#22c55e', fontWeight: '700' }}>
-                                    {predictionReport ? predictionReport.overall_scores?.injury_risk_score : 28}%
-                                  </span>
-                                </td>
-                                <td style={{ padding: '10px', fontWeight: '700', color: '#2563eb' }}>
-                                  {predictionReport ? predictionReport.overall_scores?.movement_quality_score : 85}%
-                                </td>
-                                <td style={{ padding: '10px' }}>
-                                  <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#dcfce7', color: '#15803d', fontWeight: '700', fontSize: '0.75rem' }}>
-                                    {predictionReport?.risk_trend?.status || 'Optimal Alignment'}
-                                  </span>
-                                </td>
-                              </tr>
-                              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                <td style={{ padding: '10px' }}>Previous Assessment</td>
-                                <td style={{ padding: '10px' }}>sprint_baseline_01.mp4</td>
-                                <td style={{ padding: '10px', fontWeight: '700', color: '#f59e0b' }}>34%</td>
-                                <td style={{ padding: '10px', fontWeight: '700', color: '#2563eb' }}>81%</td>
-                                <td style={{ padding: '10px' }}>
-                                  <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#fffbeb', color: '#b45309', fontWeight: '700', fontSize: '0.75rem' }}>Moderate Risk</span>
-                                </td>
-                              </tr>
-                            </tbody>
+                               {videoHistory && videoHistory.length > 0 ? (
+                                 videoHistory.map((item, idx) => {
+                                   const isLatest = idx === 0;
+                                   const uploadDateStr = item.upload_date 
+                                     ? formatDateTime(item.upload_date)
+                                     : 'Recent Session';
+                                   return (
+                                     <tr key={item.analysis_id || idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                       <td style={{ padding: '10px' }}>{isLatest ? 'Today (Latest)' : uploadDateStr}</td>
+                                       <td style={{ padding: '10px', fontWeight: '600' }}>{item.filename}</td>
+                                       <td style={{ padding: '10px' }}>
+                                         <span style={{ color: item.scores?.injury_risk_score > 40 ? '#ef4444' : '#22c55e', fontWeight: '700' }}>
+                                           {item.scores?.injury_risk_score}%
+                                         </span>
+                                       </td>
+                                       <td style={{ padding: '10px', fontWeight: '700', color: '#2563eb' }}>
+                                         {item.scores?.movement_quality_score}%
+                                       </td>
+                                       <td style={{ padding: '10px' }}>
+                                         <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: item.scores?.injury_risk_score > 40 ? '#fffbeb' : '#dcfce7', color: item.scores?.injury_risk_score > 40 ? '#b45309' : '#15803d', fontWeight: '700', fontSize: '0.75rem' }}>
+                                           {item.scores?.injury_risk_score > 40 ? 'Moderate/High Risk' : 'Optimal Alignment'}
+                                         </span>
+                                       </td>
+                                     </tr>
+                                   );
+                                 })
+                               ) : (
+                                 <tr>
+                                   <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                     No historical logs found. Upload a video to populate your history.
+                                   </td>
+                                 </tr>
+                               )}
+                             </tbody>
                           </table>
                         </div>
                       </div>
