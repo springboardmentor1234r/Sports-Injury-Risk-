@@ -93,6 +93,10 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
   const [allAthletesAnonymized, setAllAthletesAnonymized] = useState([]);
   const [loadingAnonymized, setLoadingAnonymized] = useState(false);
 
+  // Administrator User Management States
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
   // Form input states
   const [sportType, setSportType] = useState('');
   const [position, setPosition] = useState('');
@@ -118,6 +122,8 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         fetchAssignedAthletes();
       } else if (user.role === 'Sports Scientist') {
         fetchAnonymizedAthletes();
+      } else if (user.role === 'Administrator') {
+        fetchAllUsers();
       }
     }
   }, [user, token]);
@@ -243,6 +249,66 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
 
 
+
+  const fetchAllUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await fetch(`${apiBase}/api/users/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.status === 401) {
+        logout();
+        return;
+      }
+      if (response.ok) {
+        const data = await response.json();
+        setAllUsers(data);
+      }
+    } catch (err) {
+      console.error("Error loading roster:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      const response = await fetch(`${apiBase}/api/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Failed to update role");
+      setSuccessMsg(`User role successfully changed to ${newRole}`);
+      setTimeout(() => setSuccessMsg(''), 4000);
+      fetchAllUsers();
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(''), 4000);
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you absolutely sure you want to permanently delete this user? All their athlete data and video history will be permanently deleted.")) return;
+    try {
+      const response = await fetch(`${apiBase}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Failed to delete user");
+      setSuccessMsg("User profile deleted successfully");
+      setTimeout(() => setSuccessMsg(''), 4000);
+      fetchAllUsers();
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(''), 4000);
+    }
+  };
 
   const fetchSystemMetrics = async () => {
     try {
@@ -2434,24 +2500,116 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                   )}
 
                   {activeTab === 'UserManagement' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">User Management</h2>
-                      <div className="placeholder-tab-content">
-                        <Users size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">User Management Workspace. Global role configuration tables.</p>
-                      </div>
+                      <h2 className="workspace-title">User Account Management</h2>
+                      <p className="workspace-desc">View, assign, modify user roles, or delete system profiles globally.</p>
+
+                      {loadingUsers ? (
+                        <div className="placeholder-tab-content">
+                          <RefreshCw className="placeholder-tab-icon animate-spin" size={32} />
+                          <p className="placeholder-tab-text">Syncing user database roster...</p>
+                        </div>
+                      ) : allUsers.length === 0 ? (
+                        <p className="no-athletes-msg">No registered users found in the system registry.</p>
+                      ) : (
+                        <div style={{ marginTop: '20px', overflowX: 'auto' }}>
+                          <table className="athletes-table">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>System Role</th>
+                                <th>Registration Date</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {allUsers.map((u) => (
+                                <tr key={u.id}>
+                                  <td className="athlete-name">{u.fullname}</td>
+                                  <td>{u.email}</td>
+                                  <td>
+                                    <select
+                                      value={u.role}
+                                      onChange={(e) => updateUserRole(u.id, e.target.value)}
+                                      className="form-select"
+                                      style={{ padding: '4px 8px', fontSize: '0.85rem', width: 'auto', display: 'inline-block', margin: 0 }}
+                                    >
+                                      <option value="Athlete">Athlete</option>
+                                      <option value="Coach">Coach</option>
+                                      <option value="Physiotherapist">Physiotherapist</option>
+                                      <option value="Sports Scientist">Sports Scientist</option>
+                                      <option value="Administrator">Administrator</option>
+                                    </select>
+                                  </td>
+                                  <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                                  <td style={{ textAlign: 'right' }}>
+                                    <button
+                                      onClick={() => deleteUser(u.id)}
+                                      className="form-submit-btn"
+                                      style={{
+                                        width: 'auto',
+                                        padding: '4px 10px',
+                                        margin: 0,
+                                        backgroundColor: '#dc2626',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600'
+                                      }}
+                                    >
+                                      Delete Profile
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {activeTab === 'PlatformAnalytics' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">Platform Analytics</h2>
-                      <div className="placeholder-tab-content">
-                        <BarChart2 size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">Platform Analytics Workspace. Server throughput workloads.</p>
-                      </div>
+                      <h2 className="workspace-title">Platform Workload Analytics</h2>
+                      <p className="workspace-desc">Monitor total database records, video processing volumes, and server environment status.</p>
+
+                      {systemMetrics ? (
+                        <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
+                          <div className="metrics-grid">
+                            <div className="metric-card">
+                              <span className="metric-label">Total Users</span>
+                              <span className="metric-value">{systemMetrics.system_throughput?.total_users} Users</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Registered Athletes</span>
+                              <span className="metric-value">{systemMetrics.system_throughput?.registered_athletes} Profiles</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Processed Videos</span>
+                              <span className="metric-value score-optimal">{systemMetrics.system_throughput?.processed_videos} Uploads</span>
+                            </div>
+                            <div className="metric-card">
+                              <span className="metric-label">Generated ML Reports</span>
+                              <span className="metric-value score-optimal">{systemMetrics.system_throughput?.generated_ml_reports} Reports</span>
+                            </div>
+                          </div>
+
+                          <div className="detail-header-card" style={{ padding: '20px', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '12px' }}>Operational Baseline Bounds</h3>
+                            <div className="detail-grid">
+                              <div className="detail-item"><strong>Host Status:</strong> {systemMetrics.system_status}</div>
+                              <div className="detail-item"><strong>Runtime Environment:</strong> {systemMetrics.server_environment}</div>
+                              <div className="detail-item"><strong>Primary Storage:</strong> PostgreSQL (Core User Metadata)</div>
+                              <div className="detail-item"><strong>Telemetry DB:</strong> MongoDB Atlas (Timeseries Analytics)</div>
+                              <div className="detail-item"><strong>Diagnostic Status:</strong> Clean connection, ready for ingestion</div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="no-athletes-msg">Loading throughput analytics metrics...</p>
+                      )}
                     </div>
                   )}
 
@@ -2511,12 +2669,52 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
 
 
                   {activeTab === 'ReportManagement' && (
-                    <div className="content-hero-card placeholder-tab-card animate-fade-in">
+                    <div className="content-hero-card animate-fade-in">
                       <div className="hero-accent-strip" />
-                      <h2 className="workspace-title">Report Management</h2>
-                      <div className="placeholder-tab-content">
-                        <FileText size={48} className="placeholder-tab-icon" />
-                        <p className="placeholder-tab-text">Report Management Workspace. PDF layout configuration settings.</p>
+                      <h2 className="workspace-title">Report Management Console</h2>
+                      <p className="workspace-desc">Query and download telemetry summaries or export CSV matrices globally.</p>
+
+                      <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
+                        <div style={{ padding: '24px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: '700' }}>Select Target Athlete Profile</h3>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Choose an athlete to export individual injury predictions and dynamic biomechanics reports.</p>
+                            </div>
+
+                            <select
+                              value={selectedAthleteId || 'ATH-001'}
+                              onChange={(e) => setSelectedAthleteId(e.target.value)}
+                              style={{
+                                padding: '10px 16px',
+                                backgroundColor: 'var(--bg-dark)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {assignedAthletes.map(a => (
+                                <option key={a.athlete_id} value={a.athlete_id}>
+                                  👤 {a.fullname || a.name} ({a.athlete_id}) - {a.sport_type}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                            <button onClick={() => downloadPdfReport(selectedAthleteId)} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#0f766e', fontSize: '0.85rem', fontWeight: '600' }}>
+                              <FileDown size={16} />
+                              <span>Download PDF Summary</span>
+                            </button>
+                            <button onClick={() => downloadExcelReport(selectedAthleteId)} className="form-submit-btn" style={{ width: 'auto', padding: '10px 20px', margin: 0, backgroundColor: '#2563eb', fontSize: '0.85rem', fontWeight: '600' }}>
+                              <FileSpreadsheet size={16} />
+                              <span>Export Research CSV</span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
