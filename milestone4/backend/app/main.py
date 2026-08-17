@@ -40,6 +40,12 @@ app.mount("/storage", StaticFiles(directory="storage"), name="storage")
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "https://sird.netlify.app",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8000",
+    ],
     allow_origin_regex="https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
