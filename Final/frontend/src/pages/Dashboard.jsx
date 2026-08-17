@@ -1601,7 +1601,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {latestAnalysis.video_url && (
                             <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                               <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                              <video src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                              <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
                             </div>
                           )}
 
@@ -1707,7 +1707,8 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                                   {/* Embedded Video Player */}
                                   <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#000', border: '1px solid var(--border-color)' }}>
                                     <video 
-                                      src={item.video_url} 
+                                      key={item.video_url || item.analysis_id || item._id}
+                                      src={getVideoSource(item.video_url)} 
                                       controls 
                                       preload="metadata"
                                       style={{ width: '100%', height: '200px', objectFit: 'contain', display: 'block' }}
@@ -2154,7 +2155,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                               {latestAnalysis.video_url && (
                                 <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                                   <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                                  <video src={latestAnalysis.video_url} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                                  <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
                                 </div>
                               )}
                               <div className="joint-angles-card">
@@ -2369,7 +2370,7 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
                           {latestAnalysis && latestAnalysis.video_url && (
                             <div className="video-player-card" style={{ marginBottom: '20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
                               <h3 style={{ marginBottom: '16px', fontSize: '1.15rem', fontWeight: '800' }}>Biomechanical Pose Tracking Video</h3>
-                              <video src={latestAnalysis.video_url} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
+                              <video key={latestAnalysis.video_url || latestAnalysis.analysis_id || latestAnalysis._id} src={getVideoSource(latestAnalysis.video_url)} controls style={{ width: '100%', maxWidth: '720px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }} />
                             </div>
                           )}
                           <div className="correction-card">
