@@ -24,7 +24,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: timedelta = Non
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=60) # Default to 60 mins expiry
+        expire = datetime.utcnow() + timedelta(hours=24) # 24-hour session token
     
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
