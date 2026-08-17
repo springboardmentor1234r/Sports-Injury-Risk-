@@ -162,17 +162,25 @@ async def upload_video(
         _fps = float(_meta.get('fps', 25.0))
         if _fps <= 0 or np.isnan(_fps):
             _fps = 25.0
+        
+        # Target 10 FPS processing to prevent memory overflow on 512MB RAM constraint
+        _fps_target = 10.0
+        _frame_step = max(1, int(round(_fps / _fps_target)))
+        _fps_out = _fps / _frame_step
+
         _size = _meta.get('size', (640, 480))
         _w, _h = _size[0], _size[1]
-        _tw = 640
+        
+        # Reduce target resolution width to 480px to save 40% memory per frame
+        _tw = 480
         _th = int(_h * (_tw / float(_w)))
         if _th % 2 != 0:
             _th += 1
 
-        # Open writer
+        # Open writer with downsampled FPS
         try:
             _writer = imageio.get_writer(
-                output_video_path, fps=_fps, codec='libx264',
+                output_video_path, fps=_fps_out, codec='libx264',
                 pixelformat='yuv420p', macro_block_size=16,
                 ffmpeg_params=['-preset', 'ultrafast']
             )
@@ -188,12 +196,19 @@ async def upload_video(
         )
 
         _frame_idx = 0
+        _processed_count = 0
         try:
+            import gc
             with PoseLandmarker.create_from_options(_opts) as _lm:
                 for _frame in _reader:
+                    # Skip frames to downsample to 10 FPS
+                    if _frame_idx % _frame_step != 0:
+                        _frame_idx += 1
+                        continue
+
                     _rf = cv2.resize(_frame, (_tw, _th))
                     _bgr = cv2.cvtColor(_rf, cv2.COLOR_RGB2BGR)
-                    _ts = int(_frame_idx * (1000.0 / _fps))
+                    _ts = int(_processed_count * (1000.0 / _fps_out))
                     _res = _lm.detect_for_video(
                         mp.Image(image_format=mp.ImageFormat.SRGB, data=_rf), _ts
                     )
@@ -240,12 +255,18 @@ async def upload_video(
                             frame_lumbar_flex.append(_calc_angle_3d(ps_r, ph_r, pk_r))
 
                     _writer.append_data(cv2.cvtColor(_bgr, cv2.COLOR_BGR2RGB))
+                    _processed_count += 1
                     _frame_idx += 1
+                    
+                    # Prevent memory leak buildup in loop
+                    if _processed_count % 15 == 0:
+                        gc.collect()
         except Exception as e:
             pass  # Partial frames are acceptable; continue to aggregation
         finally:
             _reader.close()
             _writer.close()
+            gc.collect()
 
         return {
             "frame_count": _frame_idx,
