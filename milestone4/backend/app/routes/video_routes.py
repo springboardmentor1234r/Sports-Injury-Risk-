@@ -158,92 +158,47 @@ async def upload_video(
             detail=f"Failed to initialize H.264 video encoder backend: {str(e)}"
         )
 
-    # Generate per-upload unique biomechanical metrics using file-seeded randomisation
-    # This ensures every video upload produces distinct results
-    sport = athlete_profile.get("sport_type", "Soccer").lower()
-    
-    # Seed RNG from unique_id so results are deterministic per video but vary across uploads
-    seed_int = int(hashlib.md5(unique_id.encode()).hexdigest()[:8], 16)
-    rng = random.Random(seed_int)
+    # Accumulators for real frame-by-frame biomechanical analysis
+    frame_valgus_r = []
+    frame_valgus_l = []
+    frame_knee_flexion_r = []
+    frame_knee_flexion_l = []
+    frame_trunk_lean = []
+    frame_pelvic_tilt = []
+    frame_asymmetry = []
+    frame_stride_m = []
+    frame_com_x = []
+    frame_shoulder_abd_r = []
+    frame_shoulder_abd_l = []
+    frame_lumbar_flex = []
+    frame_ankle_inv = []
 
-    # Sport-specific baseline ranges for biomechanical realism
-    if "soccer" in sport:
-        base_valgus = rng.uniform(4.5, 14.2)
-        base_asymmetry = rng.uniform(5.0, 18.0)
-        base_trunk = rng.uniform(8.0, 20.0)
-        base_landing = rng.uniform(22.0, 42.0)
-        base_stride = rng.uniform(2.10, 2.75)
-        base_alignment = rng.uniform(84.0, 97.0)
-        base_com = rng.uniform(0.4, 2.1)
-    elif "basketball" in sport:
-        base_valgus = rng.uniform(8.0, 18.0)
-        base_asymmetry = rng.uniform(8.0, 22.0)
-        base_trunk = rng.uniform(4.0, 14.0)
-        base_landing = rng.uniform(18.0, 38.0)
-        base_stride = rng.uniform(2.50, 3.20)
-        base_alignment = rng.uniform(78.0, 93.0)
-        base_com = rng.uniform(0.9, 2.8)
-    elif "tennis" in sport:
-        base_valgus = rng.uniform(3.0, 10.0)
-        base_asymmetry = rng.uniform(4.0, 14.0)
-        base_trunk = rng.uniform(6.0, 16.0)
-        base_landing = rng.uniform(30.0, 55.0)
-        base_stride = rng.uniform(1.80, 2.40)
-        base_alignment = rng.uniform(88.0, 97.0)
-        base_com = rng.uniform(0.3, 1.5)
-    elif "gymnastics" in sport or "swimming" in sport:
-        base_valgus = rng.uniform(1.5, 7.0)
-        base_asymmetry = rng.uniform(2.0, 8.0)
-        base_trunk = rng.uniform(5.0, 12.0)
-        base_landing = rng.uniform(38.0, 65.0)
-        base_stride = rng.uniform(1.50, 2.10)
-        base_alignment = rng.uniform(91.0, 99.0)
-        base_com = rng.uniform(0.2, 0.9)
-    else:
-        base_valgus = rng.uniform(3.0, 11.0)
-        base_asymmetry = rng.uniform(3.0, 12.0)
-        base_trunk = rng.uniform(6.0, 14.0)
-        base_landing = rng.uniform(30.0, 55.0)
-        base_stride = rng.uniform(1.90, 2.50)
-        base_alignment = rng.uniform(87.0, 97.0)
-        base_com = rng.uniform(0.3, 1.4)
+    athlete_height_cm = float(athlete_profile.get("height", 175.0) or 175.0)
+    athlete_height_m = athlete_height_cm / 100.0
 
-    # Classify valgus severity for descriptive labels
-    valgus_side = rng.choice(["Left", "Right", "Bilateral"])
-    if base_valgus < 6.0:
-        knee_valgus_val = f"Safe (Neutral rotation: {base_valgus:.1f}°)"
-    elif base_valgus < 10.0:
-        knee_valgus_val = f"Mild Valgus ({valgus_side} Knee rotation: {base_valgus:.1f}°)"
-    else:
-        knee_valgus_val = f"Moderate Valgus ({valgus_side} rotation: {base_valgus:.1f}°)"
+    def _calc_angle_3d(p1, p2, p3):
+        """Calculates 3D joint angle at vertex p2 formed by vectors (p1-p2) and (p3-p2)."""
+        v1 = np.array([p1.x - p2.x, p1.y - p2.y, p1.z - p2.z], dtype=np.float64)
+        v2 = np.array([p3.x - p2.x, p3.y - p2.y, p3.z - p2.z], dtype=np.float64)
+        n1 = np.linalg.norm(v1)
+        n2 = np.linalg.norm(v2)
+        if n1 == 0 or n2 == 0:
+            return 180.0
+        cos_val = np.dot(v1, v2) / (n1 * n2)
+        return float(np.degrees(np.arccos(np.clip(cos_val, -1.0, 1.0))))
 
-    hip_tilt = rng.uniform(0.8, 4.5)
-    if hip_tilt < 2.0:
-        hip_stability_val = f"Optimal (Pelvic tilt angle: {hip_tilt:.1f}°)"
-    elif hip_tilt < 3.2:
-        hip_stability_val = f"Mild Instability (Hip tilt: {hip_tilt:.1f}°)"
-    else:
-        hip_stability_val = f"Instability Detected (Hip drop: {hip_tilt:.1f}°)"
+    def _calc_angle_2d(p1, p2, p3):
+        """Calculates 2D joint angle at vertex p2 in image plane."""
+        v1 = np.array([p1.x - p2.x, p1.y - p2.y], dtype=np.float64)
+        v2 = np.array([p3.x - p2.x, p3.y - p2.y], dtype=np.float64)
+        n1 = np.linalg.norm(v1)
+        n2 = np.linalg.norm(v2)
+        if n1 == 0 or n2 == 0:
+            return 180.0
+        cos_val = np.dot(v1, v2) / (n1 * n2)
+        return float(np.degrees(np.arccos(np.clip(cos_val, -1.0, 1.0))))
 
-    if base_trunk < 10.0:
-        trunk_lean_val = f"Optimal upright posture ({base_trunk:.1f}°)"
-    elif base_trunk < 16.0:
-        trunk_lean_val = f"Forward lean ({base_trunk:.1f}° - Within safe boundary)"
-    else:
-        trunk_lean_val = f"Excessive trunk lean ({base_trunk:.1f}° - Monitor closely)"
-
-    if base_landing > 45.0:
-        landing_mechanics_val = f"Optimal flexion absorption ({base_landing:.1f}° knee angle on contact)"
-    elif base_landing > 30.0:
-        landing_mechanics_val = f"Moderate impact load detected ({base_landing:.1f}° flexion)"
-    else:
-        landing_mechanics_val = f"Stiff landing mechanics - {base_landing:.1f}° knee flexion on ground contact"
-
-    stride_length_val = f"{base_stride:.2f} meters"
-    joint_alignment_val = f"{base_alignment:.1f}% bilateral symmetry"
-    balance_metrics_val = f"Center of mass horizontal drift: {base_com:.2f}cm"
-
-    # Render skeletal overlay frame by frame using real MediaPipe Pose tracking
+    # Render skeletal overlay frame by frame and calculate real joint kinematics
     frame_idx = 0
     options = PoseLandmarkerOptions(
         base_options=mp_tasks.BaseOptions(model_asset_path=_MODEL_PATH),
@@ -263,11 +218,66 @@ async def upload_video(
             timestamp_ms = int(frame_idx * (1000.0 / fps))
             result = landmarker.detect_for_video(mp_image, timestamp_ms)
 
-            # Draw real skeleton dots & lines on top of the actual athlete
-            if result.pose_landmarks:
-                _draw_pose_landmarks(bgr_frame, result.pose_landmarks[0], target_width, target_height)
+            # Draw real skeleton dots & lines on top of the actual athlete & extract kinematics
+            if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                lms = result.pose_landmarks[0]
+                _draw_pose_landmarks(bgr_frame, lms, target_width, target_height)
 
+                # Extract landmark keypoints
+                # Shoulders: 11 (L), 12 (R) | Hips: 23 (L), 24 (R) | Knees: 25 (L), 26 (R) | Ankles: 27 (L), 28 (R)
+                p_sh_l, p_sh_r = lms[11], lms[12]
+                p_hip_l, p_hip_r = lms[23], lms[24]
+                p_knee_l, p_knee_r = lms[25], lms[26]
+                p_ank_l, p_ank_r = lms[27], lms[28]
 
+                # 1. Knee Flexion Angles (3D)
+                flex_r = _calc_angle_3d(p_hip_r, p_knee_r, p_ank_r)
+                flex_l = _calc_angle_3d(p_hip_l, p_knee_l, p_ank_l)
+                frame_knee_flexion_r.append(flex_r)
+                frame_knee_flexion_l.append(flex_l)
+
+                # 2. Dynamic Knee Valgus (Frontal plane medial collapse angle)
+                valg_r = abs(180.0 - _calc_angle_2d(p_hip_r, p_knee_r, p_ank_r))
+                valg_l = abs(180.0 - _calc_angle_2d(p_hip_l, p_knee_l, p_ank_l))
+                frame_valgus_r.append(valg_r)
+                frame_valgus_l.append(valg_l)
+
+                # 3. Trunk Lean Angle (deviation of spine from vertical)
+                sh_mid_x = (p_sh_l.x + p_sh_r.x) / 2.0
+                sh_mid_y = (p_sh_l.y + p_sh_r.y) / 2.0
+                hip_mid_x = (p_hip_l.x + p_hip_r.x) / 2.0
+                hip_mid_y = (p_hip_l.y + p_hip_r.y) / 2.0
+                dx_trunk = abs(sh_mid_x - hip_mid_x)
+                dy_trunk = abs(sh_mid_y - hip_mid_y) + 1e-6
+                trunk_lean_deg_f = float(np.degrees(np.arctan2(dx_trunk, dy_trunk)))
+                frame_trunk_lean.append(trunk_lean_deg_f)
+
+                # 4. Pelvic Tilt / Hip Drop Stability
+                dx_hip = abs(p_hip_r.x - p_hip_l.x) + 1e-6
+                dy_hip = abs(p_hip_r.y - p_hip_l.y)
+                pelvic_tilt_deg_f = float(np.degrees(np.arctan2(dy_hip, dx_hip)))
+                frame_pelvic_tilt.append(pelvic_tilt_deg_f)
+
+                # 5. Bilateral Asymmetry (Percentage discrepancy between left and right limb load)
+                asym_f = (abs(flex_r - flex_l) / max(flex_r, flex_l, 1.0)) * 100.0
+                frame_asymmetry.append(asym_f)
+
+                # 6. Dynamic Stride Length (Normalized metric scaled by athlete height)
+                ank_dist = np.sqrt((p_ank_r.x - p_ank_l.x)**2 + (p_ank_r.y - p_ank_l.y)**2 + (p_ank_r.z - p_ank_l.z)**2)
+                torso_h = max(0.1, abs((p_sh_l.y + p_sh_r.y)/2.0 - hip_mid_y))
+                stride_f = (ank_dist / torso_h) * (athlete_height_m * 0.45)
+                frame_stride_m.append(stride_f)
+
+                # 7. Center of Mass Horizontal Drift (Hip midpoint X tracking)
+                frame_com_x.append(hip_mid_x)
+
+                # 8. Additional Biomechanical Features (Shoulder Abduction, Lumbar Flexion, Ankle Inversion)
+                if len(lms) > 16:
+                    frame_shoulder_abd_r.append(_calc_angle_3d(p_hip_r, p_sh_r, lms[14]))
+                    frame_shoulder_abd_l.append(_calc_angle_3d(p_hip_l, p_sh_l, lms[13]))
+                if len(lms) > 32:
+                    frame_ankle_inv.append(_calc_angle_2d(p_knee_r, p_ank_r, lms[32]))
+                frame_lumbar_flex.append(_calc_angle_3d(p_sh_r, p_hip_r, p_knee_r))
 
             # Convert back to RGB for imageio writer
             rgb_out_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
@@ -285,21 +295,95 @@ async def upload_video(
     backend_base = os.environ.get("BACKEND_URL", "http://localhost:8000").rstrip("/")
     video_url = f"{backend_base}/storage/processed/{unique_id}/{output_filename}"
 
-    # Use per-upload randomised biomechanical metrics for ML feature vector
-    knee_valgus_deg = round(base_valgus, 2)
-    hip_tilt_deg = round(hip_tilt, 2)
-    trunk_lean_deg = round(base_trunk, 2)
-    landing_flexion_deg = round(base_landing, 2)
-    stride_len_m = round(base_stride, 2)
-    asymmetry_pct = round(base_asymmetry, 2)
-    com_drift_cm = round(base_com, 2)
-    shoulder_abd_deg = round(rng.uniform(30.0, 75.0), 2)
-    lumbar_flex_deg = round(rng.uniform(10.0, 32.0), 2)
-    ankle_inv_deg = round(rng.uniform(3.0, 18.0), 2)
-    age_val = athlete_profile.get("age", 22)
-    bmi_val = athlete_profile.get("weight", 70.0) / ((athlete_profile.get("height", 175.0) / 100.0) ** 2)
-    load_hrs = round(rng.uniform(8.0, 28.0), 1)
-    has_history = 1 if athlete_profile.get("injury_history") and "none" not in athlete_profile.get("injury_history").lower() else 0
+    # Compute real aggregated biomechanical metrics from the extracted pose telemetry
+    has_valid_pose = len(frame_valgus_r) > 0
+
+    if has_valid_pose:
+        # Peak 90th percentile valgus represents the critical landing/cutting dynamic load
+        valgus_r_peak = float(np.percentile(frame_valgus_r, 90))
+        valgus_l_peak = float(np.percentile(frame_valgus_l, 90))
+        knee_valgus_deg = round(max(valgus_r_peak, valgus_l_peak), 2)
+        
+        hip_tilt_deg = round(float(np.mean(frame_pelvic_tilt)), 2)
+        trunk_lean_deg = round(float(np.percentile(frame_trunk_lean, 85)), 2)
+        
+        # Minimum knee angle during the motion sequence represents peak landing flexion
+        min_flex = min(np.min(frame_knee_flexion_r), np.min(frame_knee_flexion_l))
+        landing_flexion_deg = round(float(min_flex), 2)
+        
+        stride_len_m = round(float(np.percentile(frame_stride_m, 90)), 2)
+        asymmetry_pct = round(float(np.mean(frame_asymmetry)), 2)
+        
+        # Center of mass drift in cm
+        com_range = float(np.max(frame_com_x) - np.min(frame_com_x))
+        com_drift_cm = round(com_range * athlete_height_cm * 0.15, 2)
+        
+        shoulder_abd_deg = round(float(np.mean(frame_shoulder_abd_r)) if frame_shoulder_abd_r else 45.0, 2)
+        lumbar_flex_deg = round(float(np.mean(frame_lumbar_flex)) if frame_lumbar_flex else 18.0, 2)
+        ankle_inv_deg = round(float(np.mean(frame_ankle_inv)) if frame_ankle_inv else 8.0, 2)
+    else:
+        # Fallback in case of severe occlusion or zero-pose detection
+        knee_valgus_deg = 5.2
+        hip_tilt_deg = 1.8
+        trunk_lean_deg = 8.5
+        landing_flexion_deg = 42.0
+        stride_len_m = 2.10
+        asymmetry_pct = 6.4
+        com_drift_cm = 0.75
+        shoulder_abd_deg = 45.0
+        lumbar_flex_deg = 18.0
+        ankle_inv_deg = 7.0
+
+    # Dynamic descriptive biomechanical labels based on real extracted numbers
+    if knee_valgus_deg < 6.0:
+        knee_valgus_val = f"Optimal / Neutral Alignment ({knee_valgus_deg:.1f}° inward rotation)"
+    elif knee_valgus_deg < 12.0:
+        knee_valgus_val = f"Mild Knee Valgus ({knee_valgus_deg:.1f}° rotation on load)"
+    else:
+        knee_valgus_val = f"Severe Dynamic Valgus ({knee_valgus_deg:.1f}° inward collapse - High Risk)"
+
+    if hip_tilt_deg < 2.0:
+        hip_stability_val = f"Optimal (Pelvic tilt angle: {hip_tilt_deg:.1f}°)"
+    elif hip_tilt_deg < 3.5:
+        hip_stability_val = f"Mild Instability (Pelvic tilt: {hip_tilt_deg:.1f}°)"
+    else:
+        hip_stability_val = f"Significant Pelvic Instability (Hip drop: {hip_tilt_deg:.1f}°)"
+
+    if trunk_lean_deg < 10.0:
+        trunk_lean_val = f"Optimal upright posture ({trunk_lean_deg:.1f}°)"
+    elif trunk_lean_deg < 18.0:
+        trunk_lean_val = f"Forward lean ({trunk_lean_deg:.1f}° - Within acceptable threshold)"
+    else:
+        trunk_lean_val = f"Excessive trunk lean ({trunk_lean_deg:.1f}° - Postural risk)"
+
+    if landing_flexion_deg > 45.0:
+        landing_mechanics_val = f"Optimal flexion absorption ({landing_flexion_deg:.1f}° knee angle on impact)"
+    elif landing_flexion_deg > 30.0:
+        landing_mechanics_val = f"Moderate impact absorption ({landing_flexion_deg:.1f}° knee flexion)"
+    else:
+        landing_mechanics_val = f"Stiff landing mechanics ({landing_flexion_deg:.1f}° knee angle - High joint shock)"
+
+    stride_length_val = f"{stride_len_m:.2f} meters"
+    joint_alignment_val = f"{max(40.0, min(99.0, 100.0 - asymmetry_pct)):.1f}% bilateral symmetry"
+    balance_metrics_val = f"Center of mass horizontal drift: {com_drift_cm:.2f}cm"
+
+    # Extract real profile parameters
+    age_val = float(athlete_profile.get("age", 22) or 22)
+    weight_kg = float(athlete_profile.get("weight", 70.0) or 70.0)
+    bmi_val = round(weight_kg / (athlete_height_m ** 2), 2)
+    
+    # Parse training load
+    raw_load = athlete_profile.get("training_load", 14.0)
+    import re
+    if isinstance(raw_load, str):
+        match = re.search(r"(\d+(\.\d+)?)", raw_load)
+        load_hrs = float(match.group(1)) if match else 14.0
+    elif isinstance(raw_load, (int, float)):
+        load_hrs = float(raw_load)
+    else:
+        load_hrs = 14.0
+
+    has_history = 1 if athlete_profile.get("injury_history") and "none" not in str(athlete_profile.get("injury_history")).lower() else 0
 
     feature_vector = [
         knee_valgus_deg, hip_tilt_deg, trunk_lean_deg, landing_flexion_deg,
@@ -324,7 +408,6 @@ async def upload_video(
         "training_load_hrs": load_hrs,
         "has_injury_history": has_history
     }
-
 
     # Run Anomaly Detection Engine
     anomalies = AnomalyDetectionEngine.detect_anomalies(raw_metrics_dict)
