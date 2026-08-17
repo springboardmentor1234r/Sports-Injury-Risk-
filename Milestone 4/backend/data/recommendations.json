@@ -1,0 +1,62 @@
+[
+  {
+    "id": "47ea9510-b0a6-4b85-b591-c87e9ed3a089",
+    "athlete_id": "23c1e5bd-75e4-4809-87d2-bc47596ba9f6",
+    "analysis_id": "5a77e7b0-5718-43a8-a834-2c45561ccd57",
+    "category": "Corrective Exercises",
+    "title": "Single-Leg Balance & Glute Activation",
+    "description": "Perform band-resisted single-leg balance holds to stabilize knee alignment and reduce valgus inward collapse.",
+    "priority": "High",
+    "target_area": "Gluteus Medius & Right Knee",
+    "frequency": "3 sets x 12 reps (4x/week)",
+    "reason": "Detected mild knee valgus and 37.5% ACL risk.",
+    "status": "In Progress",
+    "created_at": "2026-08-17T09:05:11.571878",
+    "_id": "47ea9510-b0a6-4b85-b591-c87e9ed3a089"
+  },
+  {
+    "id": "8b446bd8-5478-4a44-b83e-110589e7a11a",
+    "athlete_id": "23c1e5bd-75e4-4809-87d2-bc47596ba9f6",
+    "analysis_id": "5a77e7b0-5718-43a8-a834-2c45561ccd57",
+    "category": "Mobility",
+    "title": "Hip Flexor & Thoracic Extension Drills",
+    "description": "Perform half-kneeling hip flexor stretches to open up hip joint mobility and reduce forward trunk compensation.",
+    "priority": "Medium",
+    "target_area": "Hips & Thoracic Spine",
+    "frequency": "10 mins daily pre-practice",
+    "reason": "Trunk lean angle is elevated at 14.5\u00b0.",
+    "status": "Pending",
+    "created_at": "2026-08-17T09:05:11.571878",
+    "_id": "8b446bd8-5478-4a44-b83e-110589e7a11a"
+  },
+  {
+    "id": "18189d3c-daa5-407d-ab2e-52020df75d31",
+    "athlete_id": "8adf439c-9bb5-4dd6-9455-d59f7246251e",
+    "analysis_id": "6a35b9a0-3f05-4915-b2df-fd73bddc05bd",
+    "category": "Corrective Exercises",
+    "title": "Single-Leg Glute Medius & Knee Alignment Drills",
+    "description": "Perform single-leg squat taps with a resistance band around lower thighs to prevent inward knee collapse (valgus deviation).",
+    "priority": "Medium",
+    "target_area": "Gluteus Medius & Knee Complex",
+    "frequency": "3 sets x 12 reps (4x per week)",
+    "reason": "Detected Mild Valgus and elevated ACL risk (26.0%).",
+    "status": "Pending",
+    "created_at": "2026-08-17T09:20:07.914967",
+    "_id": "18189d3c-daa5-407d-ab2e-52020df75d31"
+  },
+  {
+    "id": "dc7657bd-3986-4fbb-9a76-b81cb04d794c",
+    "athlete_id": "8adf439c-9bb5-4dd6-9455-d59f7246251e",
+    "analysis_id": "6a35b9a0-3f05-4915-b2df-fd73bddc05bd",
+    "category": "Recovery",
+    "title": "Active Post-Session Myofascial Release & Contrast Bath",
+    "description": "Spend 10 minutes foam rolling calves, hamstrings, and IT bands followed by active mobility work.",
+    "priority": "Low",
+    "target_area": "Lower Limb Kinetic Chain",
+    "frequency": "Daily post-workout",
+    "reason": "Standard recovery recommendation to improve tissue compliance and speed fatigue recovery.",
+    "status": "Pending",
+    "created_at": "2026-08-17T09:20:07.914967",
+    "_id": "dc7657bd-3986-4fbb-9a76-b81cb04d794c"
+  }
+]
