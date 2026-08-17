@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import imageio
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from app.database import get_db
 from app.auth import get_current_user
 from pydantic import BaseModel
@@ -69,6 +69,7 @@ class VideoAnalysisResponse(BaseModel):
 @router.post("/upload", response_model=VideoAnalysisResponse, status_code=status.HTTP_201_CREATED)
 async def upload_video(
     file: UploadFile = File(...),
+    telemetry: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user),
     db = Depends(get_db)
 ):
@@ -292,40 +293,48 @@ async def upload_video(
             "ankle_inv": frame_ankle_inv,
         }
 
-    is_render = "RENDER" in os.environ or "onrender.com" in os.environ.get("BACKEND_URL", "")
+    import json
+    proc_result = None
 
-    if is_render:
-        print("RUNNING ON RENDER - BYPASSING MEDIAPIPE TO PREVENT SIGKILL OOM")
+    if telemetry:
         try:
-            shutil.copy(temp_input_path, output_video_path)
-        except Exception:
-            pass
-        proc_result = {
-            "fps": 25.0,
-            "width": 640,
-            "height": 480,
-            "frame_count": 0,
-            "valgus_r": [],
-            "valgus_l": [],
-            "knee_flex_r": [],
-            "knee_flex_l": [],
-            "trunk_lean": [],
-            "pelvic_tilt": [],
-            "asymmetry": [],
-            "stride_m": [],
-            "com_x": [],
-            "shoulder_abd_r": [],
-            "lumbar_flex": [],
-            "ankle_inv": []
-        }
-    else:
-        try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                proc_result = await loop.run_in_executor(pool, _process_video_sync)
-        except Exception as exc:
-            import traceback
-            print("VIDEO PIPELINE CRASH - GRACEFUL FALLBACK TRIGGERED:")
-            traceback.print_exc()
+            print("CLIENT TELEMETRY PROVIDED - BYPASSING SERVER PROCESSING")
+            telemetry_data = json.loads(telemetry)
+            proc_result = {
+                "fps": float(telemetry_data.get("fps", 25.0)),
+                "width": int(telemetry_data.get("width", 640)),
+                "height": int(telemetry_data.get("height", 480)),
+                "frame_count": int(telemetry_data.get("frame_count", 0)),
+                "valgus_r": [float(x) for x in telemetry_data.get("valgus_r", [])],
+                "valgus_l": [float(x) for x in telemetry_data.get("valgus_l", [])],
+                "knee_flex_r": [float(x) for x in telemetry_data.get("knee_flex_r", [])],
+                "knee_flex_l": [float(x) for x in telemetry_data.get("knee_flex_l", [])],
+                "trunk_lean": [float(x) for x in telemetry_data.get("trunk_lean", [])],
+                "pelvic_tilt": [float(x) for x in telemetry_data.get("pelvic_tilt", [])],
+                "asymmetry": [float(x) for x in telemetry_data.get("asymmetry", [])],
+                "stride_m": [float(x) for x in telemetry_data.get("stride_m", [])],
+                "com_x": [float(x) for x in telemetry_data.get("com_x", [])],
+                "shoulder_abd_r": [float(x) for x in telemetry_data.get("shoulder_abd_r", [])],
+                "lumbar_flex": [float(x) for x in telemetry_data.get("lumbar_flex", [])],
+                "ankle_inv": [float(x) for x in telemetry_data.get("ankle_inv", [])],
+            }
+            # Copy input directly to destination so there is a valid raw file to serve
+            try:
+                shutil.copy(temp_input_path, output_video_path)
+            except Exception:
+                pass
+        except Exception as e:
+            print("Failed to parse client telemetry:", str(e))
+            proc_result = None
+
+    if proc_result is None:
+        is_render = "RENDER" in os.environ or "onrender.com" in os.environ.get("BACKEND_URL", "")
+        if is_render:
+            print("RUNNING ON RENDER - BYPASSING MEDIAPIPE TO PREVENT SIGKILL OOM")
+            try:
+                shutil.copy(temp_input_path, output_video_path)
+            except Exception:
+                pass
             proc_result = {
                 "fps": 25.0,
                 "width": 640,
@@ -344,6 +353,32 @@ async def upload_video(
                 "lumbar_flex": [],
                 "ankle_inv": []
             }
+        else:
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    proc_result = await loop.run_in_executor(pool, _process_video_sync)
+            except Exception as exc:
+                import traceback
+                print("VIDEO PIPELINE CRASH - GRACEFUL FALLBACK TRIGGERED:")
+                traceback.print_exc()
+                proc_result = {
+                    "fps": 25.0,
+                    "width": 640,
+                    "height": 480,
+                    "frame_count": 0,
+                    "valgus_r": [],
+                    "valgus_l": [],
+                    "knee_flex_r": [],
+                    "knee_flex_l": [],
+                    "trunk_lean": [],
+                    "pelvic_tilt": [],
+                    "asymmetry": [],
+                    "stride_m": [],
+                    "com_x": [],
+                    "shoulder_abd_r": [],
+                    "lumbar_flex": [],
+                    "ankle_inv": []
+                }
 
     # Clean up original input video
     if os.path.exists(temp_input_path):
