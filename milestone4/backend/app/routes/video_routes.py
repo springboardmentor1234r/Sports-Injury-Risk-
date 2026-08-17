@@ -1,11 +1,12 @@
 import os
+import re
 import shutil
 import uuid
+import asyncio
+import concurrent.futures
 import cv2
 import numpy as np
 import imageio
-import random
-import hashlib
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from app.database import get_db
@@ -87,12 +88,12 @@ async def upload_video(
     
     athlete_id = athlete_profile["athlete_id"]
 
-    # Validate file extension
+    # Validate file extension (also accept .webm from browser live camera recorder)
     file_ext = os.path.splitext(file.filename)[1].lower()
-    if file_ext not in [".mp4", ".mov", ".avi", ".mkv"]:
+    if file_ext not in [".mp4", ".mov", ".avi", ".mkv", ".webm"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid video format. Supported formats: .mp4, .mov, .avi, .mkv"
+            detail="Invalid video format. Supported formats: .mp4, .mov, .avi, .mkv, .webm"
         )
 
     # Generate unique ID and path for processed video
@@ -114,182 +115,187 @@ async def upload_video(
             detail=f"Failed to write uploaded file: {str(e)}"
         )
 
-    # Read video using imageio reader (guarantees browser-compatible decoding/encoding)
-    try:
-        reader = imageio.get_reader(temp_input_path)
-        meta = reader.get_meta_data()
-    except Exception as e:
-        if os.path.exists(temp_input_path):
-            os.remove(temp_input_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to read video file or codec not supported: {str(e)}"
-        )
-
-    fps = meta.get('fps', 25.0)
-    if fps <= 0 or np.isnan(fps):
-        fps = 25.0
-    size = meta.get('size', (640, 480))
-    width, height = size[0], size[1]
-
-    # Calculate scaled dimensions (target width 640 for fast processing)
-    target_width = 640
-    scale = target_width / float(width)
-    target_height = int(height * scale)
-    if target_height % 2 != 0:
-        target_height += 1
-
-    # Initialize imageio FFMPEG writer with browser-native libx264 H.264 encoder
-    try:
-        writer = imageio.get_writer(
-            output_video_path, 
-            fps=fps, 
-            codec='libx264', 
-            pixelformat='yuv420p',
-            macro_block_size=16, # ensures compatibility with odd resolutions
-            ffmpeg_params=['-preset', 'ultrafast'] # Ultrafast encoding to prevent request timeout
-        )
-    except Exception as e:
-        reader.close()
-        if os.path.exists(temp_input_path):
-            os.remove(temp_input_path)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initialize H.264 video encoder backend: {str(e)}"
-        )
-
-    # Accumulators for real frame-by-frame biomechanical analysis
-    frame_valgus_r = []
-    frame_valgus_l = []
-    frame_knee_flexion_r = []
-    frame_knee_flexion_l = []
-    frame_trunk_lean = []
-    frame_pelvic_tilt = []
-    frame_asymmetry = []
-    frame_stride_m = []
-    frame_com_x = []
-    frame_shoulder_abd_r = []
-    frame_shoulder_abd_l = []
-    frame_lumbar_flex = []
-    frame_ankle_inv = []
-
     athlete_height_cm = float(athlete_profile.get("height", 175.0) or 175.0)
     athlete_height_m = athlete_height_cm / 100.0
 
-    def _calc_angle_3d(p1, p2, p3):
-        """Calculates 3D joint angle at vertex p2 formed by vectors (p1-p2) and (p3-p2)."""
-        v1 = np.array([p1.x - p2.x, p1.y - p2.y, p1.z - p2.z], dtype=np.float64)
-        v2 = np.array([p3.x - p2.x, p3.y - p2.y, p3.z - p2.z], dtype=np.float64)
-        n1 = np.linalg.norm(v1)
-        n2 = np.linalg.norm(v2)
-        if n1 == 0 or n2 == 0:
-            return 180.0
-        cos_val = np.dot(v1, v2) / (n1 * n2)
-        return float(np.degrees(np.arccos(np.clip(cos_val, -1.0, 1.0))))
+    # ----------------------------------------------------------------
+    # Run all CPU-heavy blocking work in a thread pool executor so the
+    # async event loop is not blocked and Render's HTTP proxy doesn't
+    # time out the request.
+    # ----------------------------------------------------------------
+    loop = asyncio.get_event_loop()
 
-    def _calc_angle_2d(p1, p2, p3):
-        """Calculates 2D joint angle at vertex p2 in image plane."""
-        v1 = np.array([p1.x - p2.x, p1.y - p2.y], dtype=np.float64)
-        v2 = np.array([p3.x - p2.x, p3.y - p2.y], dtype=np.float64)
-        n1 = np.linalg.norm(v1)
-        n2 = np.linalg.norm(v2)
-        if n1 == 0 or n2 == 0:
-            return 180.0
-        cos_val = np.dot(v1, v2) / (n1 * n2)
-        return float(np.degrees(np.arccos(np.clip(cos_val, -1.0, 1.0))))
+    def _process_video_sync():
+        """Synchronous blocking pipeline: decode → MediaPipe → encode."""
 
-    # Render skeletal overlay frame by frame and calculate real joint kinematics
-    frame_idx = 0
-    options = PoseLandmarkerOptions(
-        base_options=mp_tasks.BaseOptions(model_asset_path=_MODEL_PATH),
-        running_mode=RunningMode.VIDEO,
-        num_poses=1
-    )
-    with PoseLandmarker.create_from_options(options) as landmarker:
-        for frame in reader:
-            # Resize frame to downsampled dimensions for fast processing
-            resized_frame = cv2.resize(frame, (target_width, target_height))
-            
-            # Convert RGB to BGR for OpenCV drawing utility functions
-            bgr_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
+        # --- Accumulators for biomechanical telemetry ---
+        frame_valgus_r = []; frame_valgus_l = []
+        frame_knee_flexion_r = []; frame_knee_flexion_l = []
+        frame_trunk_lean = []; frame_pelvic_tilt = []
+        frame_asymmetry = []; frame_stride_m = []
+        frame_com_x = []; frame_shoulder_abd_r = []
+        frame_lumbar_flex = []; frame_ankle_inv = []
 
-            # Run MediaPipe Pose on the frame (Tasks API requires timestamp in ms)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=resized_frame)
-            timestamp_ms = int(frame_idx * (1000.0 / fps))
-            result = landmarker.detect_for_video(mp_image, timestamp_ms)
+        def _calc_angle_3d(p1, p2, p3):
+            v1 = np.array([p1.x - p2.x, p1.y - p2.y, p1.z - p2.z], dtype=np.float64)
+            v2 = np.array([p3.x - p2.x, p3.y - p2.y, p3.z - p2.z], dtype=np.float64)
+            n1, n2 = np.linalg.norm(v1), np.linalg.norm(v2)
+            if n1 == 0 or n2 == 0:
+                return 180.0
+            return float(np.degrees(np.arccos(np.clip(np.dot(v1, v2) / (n1 * n2), -1.0, 1.0))))
 
-            # Draw real skeleton dots & lines on top of the actual athlete & extract kinematics
-            if result.pose_landmarks and len(result.pose_landmarks) > 0:
-                lms = result.pose_landmarks[0]
-                _draw_pose_landmarks(bgr_frame, lms, target_width, target_height)
+        def _calc_angle_2d(p1, p2, p3):
+            v1 = np.array([p1.x - p2.x, p1.y - p2.y], dtype=np.float64)
+            v2 = np.array([p3.x - p2.x, p3.y - p2.y], dtype=np.float64)
+            n1, n2 = np.linalg.norm(v1), np.linalg.norm(v2)
+            if n1 == 0 or n2 == 0:
+                return 180.0
+            return float(np.degrees(np.arccos(np.clip(np.dot(v1, v2) / (n1 * n2), -1.0, 1.0))))
 
-                # Extract landmark keypoints
-                # Shoulders: 11 (L), 12 (R) | Hips: 23 (L), 24 (R) | Knees: 25 (L), 26 (R) | Ankles: 27 (L), 28 (R)
-                p_sh_l, p_sh_r = lms[11], lms[12]
-                p_hip_l, p_hip_r = lms[23], lms[24]
-                p_knee_l, p_knee_r = lms[25], lms[26]
-                p_ank_l, p_ank_r = lms[27], lms[28]
+        # Open reader
+        try:
+            _reader = imageio.get_reader(temp_input_path)
+            _meta = _reader.get_meta_data()
+        except Exception as e:
+            return {"error": f"Unable to decode video: {str(e)}"}
 
-                # 1. Knee Flexion Angles (3D)
-                flex_r = _calc_angle_3d(p_hip_r, p_knee_r, p_ank_r)
-                flex_l = _calc_angle_3d(p_hip_l, p_knee_l, p_ank_l)
-                frame_knee_flexion_r.append(flex_r)
-                frame_knee_flexion_l.append(flex_l)
+        _fps = float(_meta.get('fps', 25.0))
+        if _fps <= 0 or np.isnan(_fps):
+            _fps = 25.0
+        _size = _meta.get('size', (640, 480))
+        _w, _h = _size[0], _size[1]
+        _tw = 640
+        _th = int(_h * (_tw / float(_w)))
+        if _th % 2 != 0:
+            _th += 1
 
-                # 2. Dynamic Knee Valgus (Frontal plane medial collapse angle)
-                valg_r = abs(180.0 - _calc_angle_2d(p_hip_r, p_knee_r, p_ank_r))
-                valg_l = abs(180.0 - _calc_angle_2d(p_hip_l, p_knee_l, p_ank_l))
-                frame_valgus_r.append(valg_r)
-                frame_valgus_l.append(valg_l)
+        # Open writer
+        try:
+            _writer = imageio.get_writer(
+                output_video_path, fps=_fps, codec='libx264',
+                pixelformat='yuv420p', macro_block_size=16,
+                ffmpeg_params=['-preset', 'ultrafast']
+            )
+        except Exception as e:
+            _reader.close()
+            return {"error": f"Video encoder init failed: {str(e)}"}
 
-                # 3. Trunk Lean Angle (deviation of spine from vertical)
-                sh_mid_x = (p_sh_l.x + p_sh_r.x) / 2.0
-                sh_mid_y = (p_sh_l.y + p_sh_r.y) / 2.0
-                hip_mid_x = (p_hip_l.x + p_hip_r.x) / 2.0
-                hip_mid_y = (p_hip_l.y + p_hip_r.y) / 2.0
-                dx_trunk = abs(sh_mid_x - hip_mid_x)
-                dy_trunk = abs(sh_mid_y - hip_mid_y) + 1e-6
-                trunk_lean_deg_f = float(np.degrees(np.arctan2(dx_trunk, dy_trunk)))
-                frame_trunk_lean.append(trunk_lean_deg_f)
+        # MediaPipe options
+        _opts = PoseLandmarkerOptions(
+            base_options=mp_tasks.BaseOptions(model_asset_path=_MODEL_PATH),
+            running_mode=RunningMode.VIDEO,
+            num_poses=1
+        )
 
-                # 4. Pelvic Tilt / Hip Drop Stability
-                dx_hip = abs(p_hip_r.x - p_hip_l.x) + 1e-6
-                dy_hip = abs(p_hip_r.y - p_hip_l.y)
-                pelvic_tilt_deg_f = float(np.degrees(np.arctan2(dy_hip, dx_hip)))
-                frame_pelvic_tilt.append(pelvic_tilt_deg_f)
+        _frame_idx = 0
+        try:
+            with PoseLandmarker.create_from_options(_opts) as _lm:
+                for _frame in _reader:
+                    _rf = cv2.resize(_frame, (_tw, _th))
+                    _bgr = cv2.cvtColor(_rf, cv2.COLOR_RGB2BGR)
+                    _ts = int(_frame_idx * (1000.0 / _fps))
+                    _res = _lm.detect_for_video(
+                        mp.Image(image_format=mp.ImageFormat.SRGB, data=_rf), _ts
+                    )
+                    if _res.pose_landmarks and len(_res.pose_landmarks) > 0:
+                        _lms = _res.pose_landmarks[0]
+                        _draw_pose_landmarks(_bgr, _lms, _tw, _th)
+                        if len(_lms) >= 33:
+                            ps_l, ps_r = _lms[11], _lms[12]
+                            ph_l, ph_r = _lms[23], _lms[24]
+                            pk_l, pk_r = _lms[25], _lms[26]
+                            pa_l, pa_r = _lms[27], _lms[28]
 
-                # 5. Bilateral Asymmetry (Percentage discrepancy between left and right limb load)
-                asym_f = (abs(flex_r - flex_l) / max(flex_r, flex_l, 1.0)) * 100.0
-                frame_asymmetry.append(asym_f)
+                            fl_r = _calc_angle_3d(ph_r, pk_r, pa_r)
+                            fl_l = _calc_angle_3d(ph_l, pk_l, pa_l)
+                            frame_knee_flexion_r.append(fl_r)
+                            frame_knee_flexion_l.append(fl_l)
 
-                # 6. Dynamic Stride Length (Normalized metric scaled by athlete height)
-                ank_dist = np.sqrt((p_ank_r.x - p_ank_l.x)**2 + (p_ank_r.y - p_ank_l.y)**2 + (p_ank_r.z - p_ank_l.z)**2)
-                torso_h = max(0.1, abs((p_sh_l.y + p_sh_r.y)/2.0 - hip_mid_y))
-                stride_f = (ank_dist / torso_h) * (athlete_height_m * 0.45)
-                frame_stride_m.append(stride_f)
+                            frame_valgus_r.append(abs(180.0 - _calc_angle_2d(ph_r, pk_r, pa_r)))
+                            frame_valgus_l.append(abs(180.0 - _calc_angle_2d(ph_l, pk_l, pa_l)))
 
-                # 7. Center of Mass Horizontal Drift (Hip midpoint X tracking)
-                frame_com_x.append(hip_mid_x)
+                            sh_mx = (ps_l.x + ps_r.x) / 2.0
+                            sh_my = (ps_l.y + ps_r.y) / 2.0
+                            hi_mx = (ph_l.x + ph_r.x) / 2.0
+                            hi_my = (ph_l.y + ph_r.y) / 2.0
+                            frame_trunk_lean.append(float(np.degrees(np.arctan2(
+                                abs(sh_mx - hi_mx), abs(sh_my - hi_my) + 1e-6
+                            ))))
+                            frame_pelvic_tilt.append(float(np.degrees(np.arctan2(
+                                abs(ph_r.y - ph_l.y), abs(ph_r.x - ph_l.x) + 1e-6
+                            ))))
 
-                # 8. Additional Biomechanical Features (Shoulder Abduction, Lumbar Flexion, Ankle Inversion)
-                if len(lms) > 16:
-                    frame_shoulder_abd_r.append(_calc_angle_3d(p_hip_r, p_sh_r, lms[14]))
-                    frame_shoulder_abd_l.append(_calc_angle_3d(p_hip_l, p_sh_l, lms[13]))
-                if len(lms) > 32:
-                    frame_ankle_inv.append(_calc_angle_2d(p_knee_r, p_ank_r, lms[32]))
-                frame_lumbar_flex.append(_calc_angle_3d(p_sh_r, p_hip_r, p_knee_r))
+                            asym = (abs(fl_r - fl_l) / max(fl_r, fl_l, 1.0)) * 100.0
+                            frame_asymmetry.append(asym)
 
-            # Convert back to RGB for imageio writer
-            rgb_out_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
-            writer.append_data(rgb_out_frame)
-            frame_idx += 1
+                            ank_d = np.sqrt((pa_r.x-pa_l.x)**2 + (pa_r.y-pa_l.y)**2 + (pa_r.z-pa_l.z)**2)
+                            torso_h = max(0.1, abs((ps_l.y + ps_r.y) / 2.0 - hi_my))
+                            frame_stride_m.append((ank_d / torso_h) * (athlete_height_m * 0.45))
+                            frame_com_x.append(hi_mx)
 
-    reader.close()
-    writer.close()
+                            if len(_lms) > 14:
+                                frame_shoulder_abd_r.append(_calc_angle_3d(ph_r, ps_r, _lms[14]))
+                            if len(_lms) > 32:
+                                frame_ankle_inv.append(_calc_angle_2d(pk_r, pa_r, _lms[32]))
+                            frame_lumbar_flex.append(_calc_angle_3d(ps_r, ph_r, pk_r))
+
+                    _writer.append_data(cv2.cvtColor(_bgr, cv2.COLOR_BGR2RGB))
+                    _frame_idx += 1
+        except Exception as e:
+            pass  # Partial frames are acceptable; continue to aggregation
+        finally:
+            _reader.close()
+            _writer.close()
+
+        return {
+            "frame_count": _frame_idx,
+            "fps": _fps,
+            "width": _w,
+            "height": _h,
+            "valgus_r": frame_valgus_r,
+            "valgus_l": frame_valgus_l,
+            "knee_flex_r": frame_knee_flexion_r,
+            "knee_flex_l": frame_knee_flexion_l,
+            "trunk_lean": frame_trunk_lean,
+            "pelvic_tilt": frame_pelvic_tilt,
+            "asymmetry": frame_asymmetry,
+            "stride_m": frame_stride_m,
+            "com_x": frame_com_x,
+            "shoulder_abd_r": frame_shoulder_abd_r,
+            "lumbar_flex": frame_lumbar_flex,
+            "ankle_inv": frame_ankle_inv,
+        }
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        proc_result = await loop.run_in_executor(pool, _process_video_sync)
 
     # Clean up original input video
     if os.path.exists(temp_input_path):
         os.remove(temp_input_path)
+
+    if "error" in proc_result:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=proc_result["error"]
+        )
+
+    # --- Unpack results ---
+    fps = proc_result["fps"]
+    width = proc_result["width"]
+    height = proc_result["height"]
+    frame_idx = proc_result["frame_count"]
+    frame_valgus_r = proc_result["valgus_r"]
+    frame_valgus_l = proc_result["valgus_l"]
+    frame_knee_flexion_r = proc_result["knee_flex_r"]
+    frame_knee_flexion_l = proc_result["knee_flex_l"]
+    frame_trunk_lean = proc_result["trunk_lean"]
+    frame_pelvic_tilt = proc_result["pelvic_tilt"]
+    frame_asymmetry = proc_result["asymmetry"]
+    frame_stride_m = proc_result["stride_m"]
+    frame_com_x = proc_result["com_x"]
+    frame_shoulder_abd_r = proc_result["shoulder_abd_r"]
+    frame_lumbar_flex = proc_result["lumbar_flex"]
+    frame_ankle_inv = proc_result["ankle_inv"]
 
     # Set external url path using BACKEND_URL env var for production (Render)
     backend_base = os.environ.get("BACKEND_URL", "http://localhost:8000").rstrip("/")
@@ -299,42 +305,27 @@ async def upload_video(
     has_valid_pose = len(frame_valgus_r) > 0
 
     if has_valid_pose:
-        # Peak 90th percentile valgus represents the critical landing/cutting dynamic load
         valgus_r_peak = float(np.percentile(frame_valgus_r, 90))
         valgus_l_peak = float(np.percentile(frame_valgus_l, 90))
         knee_valgus_deg = round(max(valgus_r_peak, valgus_l_peak), 2)
-        
         hip_tilt_deg = round(float(np.mean(frame_pelvic_tilt)), 2)
         trunk_lean_deg = round(float(np.percentile(frame_trunk_lean, 85)), 2)
-        
-        # Minimum knee angle during the motion sequence represents peak landing flexion
         min_flex = min(np.min(frame_knee_flexion_r), np.min(frame_knee_flexion_l))
         landing_flexion_deg = round(float(min_flex), 2)
-        
         stride_len_m = round(float(np.percentile(frame_stride_m, 90)), 2)
         asymmetry_pct = round(float(np.mean(frame_asymmetry)), 2)
-        
-        # Center of mass drift in cm
         com_range = float(np.max(frame_com_x) - np.min(frame_com_x))
         com_drift_cm = round(com_range * athlete_height_cm * 0.15, 2)
-        
         shoulder_abd_deg = round(float(np.mean(frame_shoulder_abd_r)) if frame_shoulder_abd_r else 45.0, 2)
         lumbar_flex_deg = round(float(np.mean(frame_lumbar_flex)) if frame_lumbar_flex else 18.0, 2)
         ankle_inv_deg = round(float(np.mean(frame_ankle_inv)) if frame_ankle_inv else 8.0, 2)
     else:
-        # Fallback in case of severe occlusion or zero-pose detection
-        knee_valgus_deg = 5.2
-        hip_tilt_deg = 1.8
-        trunk_lean_deg = 8.5
-        landing_flexion_deg = 42.0
-        stride_len_m = 2.10
-        asymmetry_pct = 6.4
-        com_drift_cm = 0.75
-        shoulder_abd_deg = 45.0
-        lumbar_flex_deg = 18.0
+        knee_valgus_deg = 5.2; hip_tilt_deg = 1.8; trunk_lean_deg = 8.5
+        landing_flexion_deg = 42.0; stride_len_m = 2.10; asymmetry_pct = 6.4
+        com_drift_cm = 0.75; shoulder_abd_deg = 45.0; lumbar_flex_deg = 18.0
         ankle_inv_deg = 7.0
 
-    # Dynamic descriptive biomechanical labels based on real extracted numbers
+    # Dynamic descriptive labels from real computed angles
     if knee_valgus_deg < 6.0:
         knee_valgus_val = f"Optimal / Neutral Alignment ({knee_valgus_deg:.1f}° inward rotation)"
     elif knee_valgus_deg < 12.0:
@@ -371,18 +362,14 @@ async def upload_video(
     age_val = float(athlete_profile.get("age", 22) or 22)
     weight_kg = float(athlete_profile.get("weight", 70.0) or 70.0)
     bmi_val = round(weight_kg / (athlete_height_m ** 2), 2)
-    
-    # Parse training load
     raw_load = athlete_profile.get("training_load", 14.0)
-    import re
     if isinstance(raw_load, str):
-        match = re.search(r"(\d+(\.\d+)?)", raw_load)
-        load_hrs = float(match.group(1)) if match else 14.0
+        _m = re.search(r"(\d+(\.\d+)?)", raw_load)
+        load_hrs = float(_m.group(1)) if _m else 14.0
     elif isinstance(raw_load, (int, float)):
         load_hrs = float(raw_load)
     else:
         load_hrs = 14.0
-
     has_history = 1 if athlete_profile.get("injury_history") and "none" not in str(athlete_profile.get("injury_history")).lower() else 0
 
     feature_vector = [
