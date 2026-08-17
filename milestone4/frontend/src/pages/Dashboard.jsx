@@ -790,6 +790,14 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
         processedFrames++;
       }
 
+      if (poseLandmarker) {
+        try {
+          poseLandmarker.close();
+        } catch (e) {
+          console.error("Error closing poseLandmarker:", e);
+        }
+      }
+
       setScanningProgress('Uploading movement telemetry to server...');
 
       const telemetry = {

@@ -41,6 +41,14 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
         }
 
         if (window.Pose && isMounted) {
+          if (poseRef.current) {
+            try {
+              poseRef.current.close();
+            } catch (e) {
+              console.error("Error closing existing Pose:", e);
+            }
+            poseRef.current = null;
+          }
           const pose = new window.Pose({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
           });
@@ -68,11 +76,27 @@ export default function LiveCameraModal({ isOpen, onClose, onVideoCaptured, toke
       startCamera();
     } else {
       stopCamera();
+      if (poseRef.current) {
+        try {
+          poseRef.current.close();
+        } catch (e) {
+          console.error("Error closing Pose:", e);
+        }
+        poseRef.current = null;
+      }
     }
 
     return () => {
       isMounted = false;
       stopCamera();
+      if (poseRef.current) {
+        try {
+          poseRef.current.close();
+        } catch (e) {
+          console.error("Error closing Pose in cleanup:", e);
+        }
+        poseRef.current = null;
+      }
     };
   }, [isOpen]);
 
