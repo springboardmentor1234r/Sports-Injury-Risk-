@@ -201,6 +201,11 @@ async def upload_video(
             import gc
             with PoseLandmarker.create_from_options(_opts) as _lm:
                 for _frame in _reader:
+                    # Limit processing to a maximum of 10 seconds (100 frames at 10 FPS)
+                    # to prevent memory footprint escalation on Render's 512MB RAM constraint
+                    if _processed_count >= 100:
+                        break
+
                     # Skip frames to downsample to 10 FPS
                     if _frame_idx % _frame_step != 0:
                         _frame_idx += 1
