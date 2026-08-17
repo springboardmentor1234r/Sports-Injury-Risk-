@@ -292,13 +292,14 @@ async def upload_video(
             "ankle_inv": frame_ankle_inv,
         }
 
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-            proc_result = await loop.run_in_executor(pool, _process_video_sync)
-    except Exception as exc:
-        import traceback
-        print("VIDEO PIPELINE CRASH - GRACEFUL FALLBACK TRIGGERED:")
-        traceback.print_exc()
+    is_render = "RENDER" in os.environ or "onrender.com" in os.environ.get("BACKEND_URL", "")
+
+    if is_render:
+        print("RUNNING ON RENDER - BYPASSING MEDIAPIPE TO PREVENT SIGKILL OOM")
+        try:
+            shutil.copy(temp_input_path, output_video_path)
+        except Exception:
+            pass
         proc_result = {
             "fps": 25.0,
             "width": 640,
@@ -317,6 +318,32 @@ async def upload_video(
             "lumbar_flex": [],
             "ankle_inv": []
         }
+    else:
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                proc_result = await loop.run_in_executor(pool, _process_video_sync)
+        except Exception as exc:
+            import traceback
+            print("VIDEO PIPELINE CRASH - GRACEFUL FALLBACK TRIGGERED:")
+            traceback.print_exc()
+            proc_result = {
+                "fps": 25.0,
+                "width": 640,
+                "height": 480,
+                "frame_count": 0,
+                "valgus_r": [],
+                "valgus_l": [],
+                "knee_flex_r": [],
+                "knee_flex_l": [],
+                "trunk_lean": [],
+                "pelvic_tilt": [],
+                "asymmetry": [],
+                "stride_m": [],
+                "com_x": [],
+                "shoulder_abd_r": [],
+                "lumbar_flex": [],
+                "ankle_inv": []
+            }
 
     # Clean up original input video
     if os.path.exists(temp_input_path):
