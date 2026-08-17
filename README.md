@@ -650,26 +650,6 @@ The application supports multiple role-based demo accounts.
 
 ---
 
-# 🌐 Project Resources
-
-### Live Application
-
-[Athletiq AI — Live Web Application](https://sird.netlify.app/?utm_source=chatgpt.com)
-
-### Presentation
-
-**Google Drive:** Add your presentation link here.
-
-### Documentation
-
-**Google Drive:** Add the complete project documentation link here.
-
-### Source Code
-
-**GitHub:** Add your repository URL here.
-
----
-
 # 🔬 Injury-Risk Pipeline
 
 The core Athletiq AI pipeline can be summarized as:
