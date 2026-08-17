@@ -662,16 +662,16 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
     setScanningProgress('Initializing MediaPipe Pose Engine...');
 
     try {
-      if (!window.FilesetResolver || !window.PoseLandmarker) {
-        throw new Error("MediaPipe Tasks Vision library failed to load from CDN. Check your network.");
-      }
+      setScanningProgress('Loading MediaPipe WebAssembly vision bundle...');
+      const visionModule = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/vision_bundle.mjs");
+      const { FilesetResolver, PoseLandmarker } = visionModule;
 
-      const vision = await window.FilesetResolver.forVisionTasks(
+      const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/wasm"
       );
 
       setScanningProgress('Loading Pose Estimation Model (3MB)...');
-      const poseLandmarker = await window.PoseLandmarker.createFromOptions(vision, {
+      const poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
           delegate: "GPU"
@@ -824,14 +824,17 @@ export default function Dashboard({ user, token, logout, theme, toggleTheme }) {
       setSuccessMsg(`Motion video "${file.name}" analyzed & uploaded successfully!`);
       setTimeout(() => setSuccessMsg(''), 5000);
 
-      if (athleteProfile) {
+      if (user.role === 'Athlete') {
         fetchPredictionReport("me");
         fetchPredictionHistory("me");
         fetchRecommendations("me");
-        fetchVideoHistory();
-      }
-
-      if (user.role === 'Coach' || user.role === 'Physiotherapist') {
+        fetchVideoHistory("me");
+      } else if ((user.role === 'Coach' || user.role === 'Physiotherapist') && selectedAthleteId) {
+        fetchLatestAnalysis(selectedAthleteId);
+        fetchPredictionReport(selectedAthleteId);
+        fetchPredictionHistory(selectedAthleteId);
+        fetchRecommendations(selectedAthleteId);
+        fetchVideoHistory(selectedAthleteId);
         fetchAssignedAthletes();
       }
     } catch (err) {

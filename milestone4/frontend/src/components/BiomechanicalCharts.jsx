@@ -12,6 +12,18 @@ export function BodyHeatmapGraphic({ heatmapData, athleteName = "Current Athlete
     lower_back: 35
   };
 
+  const parseNum = (str, regex, fallback) => {
+    if (!str) return fallback;
+    const match = str.match(regex);
+    return match ? parseFloat(match[1]) : fallback;
+  };
+
+  const kneeValgus = parseNum(metrics?.knee_valgus, /(\d+\.\d+|\d+)°/, 8.5);
+  const symmetryVal = parseNum(metrics?.joint_alignment, /(\d+\.\d+|\d+)%/, 91.4);
+  const asymmetryVal = parseFloat((100 - symmetryVal).toFixed(1));
+  const landingFlexion = parseNum(metrics?.landing_mechanics, /(\d+\.\d+|\d+)°/, 30.0);
+  const trunkLean = parseNum(metrics?.trunk_lean, /(\d+\.\d+|\d+)°/, 14.2);
+
   const getColor = (val) => {
     if (val > 50) return '#ef4444'; // High risk red
     if (val > 30) return '#f59e0b'; // Moderate risk yellow
@@ -69,23 +81,23 @@ export function BodyHeatmapGraphic({ heatmapData, athleteName = "Current Athlete
           <div className="side-panel-metrics-list">
             <div className="side-metric-row">
               <span className="side-label">Right Knee Stress:</span>
-              <span className="side-value font-bold">{data.knee_right}% <span className="sub-val">(Valgus: 8.5°)</span></span>
+              <span className="side-value font-bold">{data.knee_right}% <span className="sub-val">(Valgus: {kneeValgus.toFixed(1)}°)</span></span>
             </div>
             <div className="side-metric-row">
               <span className="side-label">Left Knee Stress:</span>
-              <span className="side-value font-bold">{data.knee_left}% <span className="sub-val">(Valgus: 4.2°)</span></span>
+              <span className="side-value font-bold">{data.knee_left}% <span className="sub-val">(Valgus: {(kneeValgus * 0.7).toFixed(1)}°)</span></span>
             </div>
             <div className="side-metric-row">
               <span className="side-label">Lumbar Back Load:</span>
-              <span className="side-value font-bold">{data.lower_back}% <span className="sub-val">(Trunk Lean: 14.2°)</span></span>
+              <span className="side-value font-bold">{data.lower_back}% <span className="sub-val">(Trunk Lean: {trunkLean.toFixed(1)}°)</span></span>
             </div>
             <div className="side-metric-row">
               <span className="side-label">Hamstring Strain:</span>
-              <span className="side-value font-bold">{data.hamstring}% <span className="sub-val">(Asymmetry: 8.6%)</span></span>
+              <span className="side-value font-bold">{data.hamstring}% <span className="sub-val">(Asymmetry: {asymmetryVal.toFixed(1)}%)</span></span>
             </div>
             <div className="side-metric-row">
               <span className="side-label">Ankle Deceleration:</span>
-              <span className="side-value font-bold">{data.ankle}% <span className="sub-val">(Flexion: 30.0°)</span></span>
+              <span className="side-value font-bold">{data.ankle}% <span className="sub-val">(Flexion: {landingFlexion.toFixed(1)}°)</span></span>
             </div>
           </div>
           <div className="side-panel-footer">
@@ -99,23 +111,37 @@ export function BodyHeatmapGraphic({ heatmapData, athleteName = "Current Athlete
 
 // 2. Multiaxial Biomechanical Radar Profile Component with Side Panel
 export function JointAngleRadarChart({ metrics, athleteName = "Current Athlete" }) {
-  const valgus = Math.min(100, Math.max(10, ((metrics?.knee_valgus_deg || 8.5) / 25.0) * 100));
-  const asymmetry = Math.min(100, Math.max(10, ((metrics?.asymmetry_ratio || 8.6) / 30.0) * 100));
-  const landing = Math.min(100, Math.max(10, (1.0 - (metrics?.landing_flexion_deg || 30.0) / 70.0) * 100));
-  const trunk = Math.min(100, Math.max(10, ((metrics?.trunk_lean_deg || 14.2) / 30.0) * 100));
-  const drift = Math.min(100, Math.max(10, ((metrics?.com_drift_cm || 0.95) / 4.0) * 100));
-  const load = Math.min(100, Math.max(10, ((metrics?.training_load_hrs || 14.0) / 35.0) * 100));
+  const parseNum = (str, regex, fallback) => {
+    if (!str) return fallback;
+    const match = str.match(regex);
+    return match ? parseFloat(match[1]) : fallback;
+  };
+
+  const kneeValgus = parseNum(metrics?.knee_valgus, /(\d+\.\d+|\d+)°/, 8.5);
+  const symmetryVal = parseNum(metrics?.joint_alignment, /(\d+\.\d+|\d+)%/, 91.4);
+  const asymmetryVal = parseFloat((100 - symmetryVal).toFixed(1));
+  const landingFlexion = parseNum(metrics?.landing_mechanics, /(\d+\.\d+|\d+)°/, 30.0);
+  const trunkLean = parseNum(metrics?.trunk_lean, /(\d+\.\d+|\d+)°/, 14.2);
+  const comDrift = parseNum(metrics?.balance_metrics, /(\d+\.\d+|\d+)\s*cm/, 0.95);
+  const loadHrs = 14.0;
+
+  const valgus = Math.min(100, Math.max(10, (kneeValgus / 25.0) * 100));
+  const asymmetry = Math.min(100, Math.max(10, (asymmetryVal / 30.0) * 100));
+  const landing = Math.min(100, Math.max(10, (1.0 - landingFlexion / 70.0) * 100));
+  const trunk = Math.min(100, Math.max(10, (trunkLean / 30.0) * 100));
+  const drift = Math.min(100, Math.max(10, (comDrift / 4.0) * 100));
+  const load = Math.min(100, Math.max(10, (loadHrs / 35.0) * 100));
 
   const center = 150;
   const radius = 100;
 
   const points = [
-    { label: 'Knee Valgus', val: valgus, angle: 0, raw: `${metrics?.knee_valgus_deg || 8.5}°` },
-    { label: 'Asymmetry', val: asymmetry, angle: 60, raw: `${metrics?.asymmetry_ratio || 8.6}%` },
-    { label: 'Stiff Landing', val: landing, angle: 120, raw: `${metrics?.landing_flexion_deg || 30.0}°` },
-    { label: 'Trunk Lean', val: trunk, angle: 180, raw: `${metrics?.trunk_lean_deg || 14.2}°` },
-    { label: 'COM Sway', val: drift, angle: 240, raw: `${metrics?.com_drift_cm || 0.95} cm` },
-    { label: 'Training Load', val: load, angle: 300, raw: `${metrics?.training_load_hrs || 14.0} hrs/wk` }
+    { label: 'Knee Valgus', val: valgus, angle: 0, raw: `${kneeValgus.toFixed(1)}°` },
+    { label: 'Asymmetry', val: asymmetry, angle: 60, raw: `${asymmetryVal.toFixed(1)}%` },
+    { label: 'Stiff Landing', val: landing, angle: 120, raw: `${landingFlexion.toFixed(1)}°` },
+    { label: 'Trunk Lean', val: trunk, angle: 180, raw: `${trunkLean.toFixed(1)}°` },
+    { label: 'COM Sway', val: drift, angle: 240, raw: `${comDrift.toFixed(2)} cm` },
+    { label: 'Training Load', val: load, angle: 300, raw: `${loadHrs.toFixed(1)} hrs/wk` }
   ];
 
   const getCoordinates = (val, angleDeg) => {

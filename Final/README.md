@@ -14,7 +14,8 @@ By processing video files or live camera feeds, the platform extracts 33 3D body
 
 ## Project Resources & Deliverables
 
-* **Presentation Deck (PPT)**: [Insert Google Drive PPT Link Here](https://drive.google.com/your-ppt-link-here)
+* **Presentation Deck (PPT/Google Slides)**: [Google Slides Presentation](https://docs.google.com/presentation/d/1Vdl5OxlwBjciJFDXsEp4jr8VneLUIKoq/edit?usp=sharing&ouid=115952871947388189662&rtpof=true&sd=true)
+* **Live Web Application (Production)**: [sird.netlify.app](https://sird.netlify.app/)
 * **Full Project Documentation (PDF)**: [Insert Google Drive Documentation Link Here](https://drive.google.com/your-pdf-link-here)
 
 ---
