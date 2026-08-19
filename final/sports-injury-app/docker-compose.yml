@@ -1,0 +1,73 @@
+# Brings up the entire application with one command: PostgreSQL, the FastAPI
+# backend, and the React frontend (served by nginx), all networked together.
+#
+# Usage:
+#   docker compose up --build
+# Then open http://localhost:5173
+#
+# This is a LOCAL / development-style compose file -- good for running the
+# whole stack on one machine, or as the basis for a single-server deployment.
+# It is NOT a multi-server production topology (no load balancing, no
+# managed database, no secrets manager) -- see the Render deployment guide
+# for how the pieces map onto an actual managed cloud deployment instead of
+# this local Postgres container.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sports_user
+      POSTGRES_PASSWORD: sports_pass
+      POSTGRES_DB: sports_injury_db
+    volumes:
+      # Named volume so database data survives `docker compose down` --
+      # without this, every restart would start from a completely empty
+      # database, which is almost never what you want.
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sports_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://sports_user:sports_pass@db:5432/sports_injury_db
+      # Change this to a real secret before deploying anywhere real --
+      # this default is fine for local docker-compose use only.
+      SECRET_KEY: change-this-to-a-long-random-string-before-deploying
+    volumes:
+      # Uploaded videos live outside the container's own filesystem, so
+      # they survive `docker compose down` / container recreation. This is
+      # still local disk, though -- see the Milestone 2 notes on why S3 is
+      # the real production answer once this runs on more than one server.
+      - video_storage:/app/storage/videos
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # The browser (not the frontend container) talks to the backend, so
+        # this must be a URL the browser can reach -- localhost:8000, since
+        # the backend port is published to the host above. It CANNOT be
+        # "http://backend:8000" (the internal Docker network name) because
+        # the browser has no idea that hostname exists.
+        VITE_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:
+  video_storage:
