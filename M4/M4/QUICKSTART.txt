@@ -1,0 +1,25 @@
+HOW TO RUN THIS — 3 STEPS, NOTHING ELSE
+
+1. Move this whole folder to a simple location, like directly onto your
+   Desktop or C:\kinetiq. Do NOT put it inside another folder that also
+   has a copy of this project.
+
+2. Double-click START.bat inside this folder.
+   A black window will open and do everything automatically. The first
+   time will take a few minutes — just wait.
+
+3. When it says something like "Local: http://localhost:8080", open
+   your browser and go to that address.
+
+To stop the app later: click into the black window and press Ctrl+C.
+To run it again another day: just double-click START.bat again.
+
+
+IMPORTANT — only ever use THIS folder from now on.
+Delete any other copies of this project you have elsewhere (old
+Downloads folders, Milestone folders, etc.) so you never accidentally
+run an old version again.
+
+
+If START.bat shows an error, take a screenshot of the black window
+and send it over — don't try to fix it by opening other old folders.
