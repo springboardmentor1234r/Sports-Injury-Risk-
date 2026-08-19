@@ -1,0 +1,37 @@
+# Envi# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Cache / build
+dist/
+build/
+.cache/
+
+# Python
+venv/
+__pycache__/
+*.pycronment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Cache
+.cache/
+*.log
+
+# Build
+dist/
+build/
+
+# Python cache
+__pycache__/
+*.pyc
