@@ -928,15 +928,3 @@ The system's:
 should not be interpreted as medical diagnosis, treatment, or guaranteed prediction of injury.
 
 Professional medical or physiotherapy assessment should always be used for clinical decisions.
-
----
-
-# 👨‍💻 Project
-
-## Athlete Performance Hub
-
-**BCA Academic Project**
-
-**Technologies:** React • Vite • FastAPI • Python • MediaPipe • OpenCV • SQLAlchemy • SQLite/PostgreSQL
-
-**Focus:** Sports Performance • Computer Vision • Biomechanical Analysis • Athlete Intelligence
