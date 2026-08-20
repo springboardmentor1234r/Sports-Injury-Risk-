@@ -34,8 +34,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Mount storage static files
-app.mount("/storage", StaticFiles(directory="storage"), name="storage")
+class CORSStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+# Mount storage static files with CORS headers
+app.mount("/storage", CORSStaticFiles(directory="storage"), name="storage")
 
 # CORS configuration
 app.add_middleware(
