@@ -1,5 +1,0 @@
-uploads/*
-!uploads/.gitkeep
-
-.DS_Store
-**/.DS_Store
