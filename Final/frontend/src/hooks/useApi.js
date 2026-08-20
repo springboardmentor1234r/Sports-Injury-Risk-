@@ -2,7 +2,7 @@
  * useApi.js — shared data-fetching utilities for the SIRD Dashboard.
  *
  * Imports @mediapipe/tasks-vision directly from npm.
- * Uses a DOM-attached offscreen video element + canvas frame decoding
+ * Uses a DOM-attached offscreen video element + canvas bitmap decoding
  * to guarantee non-empty 33 3D pose landmark extractions for any uploaded video.
  */
 
@@ -146,7 +146,11 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
     video.onerror = () => reject(new Error('Unable to decode video metadata.'));
   });
 
-  video.pause();
+  // Decoder warmup pass
+  try {
+    await video.play();
+    video.pause();
+  } catch (_) { /* ignore autoplay restrictions */ }
 
   const fps = 10.0;
   const step = 1.0 / fps;
