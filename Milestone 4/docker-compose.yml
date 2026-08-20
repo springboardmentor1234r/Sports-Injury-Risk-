@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: athletiq_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: athletiq_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=Athletiq AI
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=athletiq_ai_db
+      - SECRET_KEY=athletiq_ai_super_secret_jwt_key_2026_sports_injury
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: athletiq_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
