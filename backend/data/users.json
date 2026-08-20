@@ -1,12 +1,54 @@
 [
     {
-        "name": "Sejal",
-        "email": "sejal@example.com",
-        "password": "$2b$12$jIh49sz86P0PhrD7npUBFu9uN7zuUQmAZN.QhElQjsh8SNwJIxjXe"
+        "name": "Sejal Chintala",
+        "email": "sejal123@example.com",
+        "password": "$2b$12$lwpybdMO.vLITwwt52rXY.rK9gFnH.1rjKyh/mU.2RG1ICFUGs2Zy",
+        "role": "athlete"
+    },
+    {
+        "name": "snehal ",
+        "email": "snehal123@example.com",
+        "password": "$2b$12$iwn7PgH2VzFCo5PCA2XUSupstP8wGH7OHlKSWGZlnKtc6y.RWmoEq",
+        "role": "coach",
+        "sport": "",
+        "age": 0,
+        "gender": "",
+        "height": "",
+        "weight": "",
+        "dominantLeg": "",
+        "previousInjury": ""
     },
     {
         "name": "Sejal Chintala",
-        "email": "sejal2@example.com",
-        "password": "$2b$12$Mw8ou1XgF/4vilQyTC6whOtSn8UTKL7XXNTbKijN2JXEcunwuuk/W"
+        "email": "sejalchintala11@gmail.com",
+        "password": "",
+        "role": "admin",
+        "sport": "",
+        "age": 0,
+        "gender": "",
+        "height": "",
+        "weight": "",
+        "dominantLeg": "",
+        "previousInjury": "",
+        "google_login": true
+    },
+    {
+        "name": "Sejal Chintala",
+        "email": "sejal.ch999@gmail.com",
+        "password": "",
+        "role": "athlete",
+        "sport": "",
+        "age": 0,
+        "gender": "",
+        "height": "",
+        "weight": "",
+        "dominantLeg": "",
+        "previousInjury": "",
+        "google_login": true
+    },
+    {
+        "name": "Virat Kohli",
+        "email": "viratkohli@athlete.com",
+        "role": "athlete"
     }
 ]

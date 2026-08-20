@@ -38,7 +38,7 @@
 }
 
 .admin-card{
-    background:#1b1b1b;
+    background:#181818;
     border:1px solid #2d2d2d;
     border-radius:18px;
     padding:22px;
@@ -47,7 +47,7 @@
 
 .admin-card:hover{
     transform:translateY(-4px);
-    border-color:#7CFC00;
+    border-color:#00FF88;
 }
 
 .admin-card h3{
@@ -58,7 +58,7 @@
 }
 
 .admin-card h2{
-    color:#7CFC00;
+    color:#00FF88;
     font-size:32px;
     font-weight:700;
 }
@@ -84,7 +84,7 @@
 }
 
 .search-user input:focus{
-    border-color:#7CFC00;
+    border-color:#00FF88;
 }
 
 /* ===========================
@@ -92,7 +92,7 @@
 =========================== */
 
 .users-table{
-    background:#1b1b1b;
+    background:#181818;
     border-radius:18px;
     border:1px solid #2d2d2d;
     overflow:hidden;
@@ -126,7 +126,7 @@
 =========================== */
 
 .edit-btn{
-    background:#7CFC00;
+    background:#00FF88;
     color:#000000;
     border:none;
     padding:8px 16px;
@@ -210,7 +210,7 @@
 
     width:420px;
 
-    background:#1b1b1b;
+    background:#181818;
 
     border-radius:18px;
 

@@ -10,7 +10,7 @@
 
 .settings-header h1 {
     font-size: 34px;
-    color: #7CFC00;
+    color: #00FF88;
     margin-bottom: 8px;
     font-weight: 700;
 }
@@ -21,7 +21,7 @@
 }
 
 .settings-card {
-    background: #151515;
+    background: #181818;
     border: 1px solid #2b2b2b;
     border-radius: 16px;
     padding: 24px;
@@ -32,11 +32,11 @@
 
 .settings-card:hover {
     transform: translateY(-4px);
-    border-color: #7CFC00;
+    border-color: #00FF88;
 }
 
 .settings-card h2 {
-    color: #7CFC00;
+    color: #00FF88;
     margin-bottom: 20px;
     font-size: 22px;
 }
@@ -79,7 +79,7 @@
     padding: 14px;
     border: none;
     border-radius: 10px;
-    background: #7CFC00;
+    background: #00FF88;
     color: #111;
     font-size: 16px;
     font-weight: 700;
@@ -88,7 +88,7 @@
 }
 
 .settings-btn:hover {
-    background: #95ff33;
+    background: #39FFA8;
     transform: translateY(-2px);
 }
 

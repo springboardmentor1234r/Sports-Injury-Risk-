@@ -9,6 +9,7 @@ from routes.athlete_routes import router as athlete_router
 from routes.auth_routes import router as auth_router
 from routes.video_routes import router as video_router
 from routes.dashboard_routes import router as dashboard_router
+from routes.admin_routes import router as admin_router
 
 # Get backend directory
 BASE_DIR = Path(__file__).resolve().parent
@@ -41,6 +42,7 @@ app.include_router(athlete_router)
 app.include_router(auth_router)
 app.include_router(video_router)
 app.include_router(dashboard_router)
+app.include_router(admin_router)
 
 
 @app.get("/")

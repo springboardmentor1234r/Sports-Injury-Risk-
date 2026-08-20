@@ -1,28 +1,25 @@
-import AthleteDashboard from "./AthleteDashboard";
-import CoachDashboard from "./CoachDashboard";
-import AdminDashboard from "./AdminDashboard";
+import { Navigate } from "react-router-dom";
 
 function RoleDashboard() {
-
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
-        return <AthleteDashboard />;
+        return <Navigate to="/login" replace />;
     }
 
     switch (user.role) {
-
         case "admin":
-            return <AdminDashboard />;
+            return <Navigate to="/dashboard/admin" replace />;
 
         case "coach":
-            return <CoachDashboard />;
+            return <Navigate to="/dashboard/coach" replace />;
+
+        case "athlete":
+            return <Navigate to="/dashboard/athlete" replace />;
 
         default:
-            return <AthleteDashboard />;
-
+            return <Navigate to="/login" replace />;
     }
-
 }
 
 export default RoleDashboard;

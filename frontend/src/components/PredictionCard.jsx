@@ -16,41 +16,64 @@ function PredictionCard({ prediction }) {
     }
   };
 
+  const getIcon = (label) => {
+    switch (label) {
+      case "ACL Injury":
+        return "🦵";
+      case "Hamstring":
+        return "🏃";
+      case "Ankle Sprain":
+        return "🦶";
+      case "Shoulder":
+        return "💪";
+      case "Lower Back":
+        return "🧍";
+      default:
+        return "⚕️";
+    }
+  };
+
+  const getDescription = (risk) => {
+    switch (risk?.toLowerCase()) {
+      case "high":
+        return "Immediate attention recommended";
+      case "medium":
+      case "moderate":
+        return "Monitor movement pattern";
+      default:
+        return "Movement appears stable";
+    }
+  };
+
   const predictions = [
     {
       label: "ACL Injury",
-      value: prediction.acl_risk
+      value: prediction.acl_risk,
     },
     {
       label: "Hamstring",
-      value: prediction.hamstring_risk
+      value: prediction.hamstring_risk,
     },
     {
       label: "Ankle Sprain",
-      value: prediction.ankle_sprain_risk
+      value: prediction.ankle_sprain_risk,
     },
     {
       label: "Shoulder",
-      value: prediction.shoulder_risk
+      value: prediction.shoulder_risk,
     },
     {
       label: "Lower Back",
-      value: prediction.lower_back_risk
+      value: prediction.lower_back_risk,
     },
   ];
 
   return (
-
     <div className="card prediction-card">
 
       <div className="card-header">
 
-        <span className="card-icon">
-        </span>
-
-        <h3>
-          AI Injury Prediction
-        </h3>
+        <h3>AI Injury Prediction</h3>
 
       </div>
 
@@ -59,27 +82,43 @@ function PredictionCard({ prediction }) {
         {predictions.map((item) => (
 
           <div
-            className="prediction-row"
             key={item.label}
+            className="prediction-row"
           >
 
-            <div className="prediction-info">
+            <div className="prediction-left">
 
-              <span className="prediction-icon">
-                {item.icon}
-              </span>
+              <div className="prediction-icon">
 
-              <span className="prediction-name">
-                {item.label}
-              </span>
+                {getIcon(item.label)}
+
+              </div>
+
+              <div>
+
+                <div className="prediction-name">
+
+                  {item.label}
+
+                </div>
+
+                <div className="prediction-description">
+
+                  {getDescription(item.value)}
+
+                </div>
+
+              </div>
 
             </div>
 
-            <span
+            <div
               className={`prediction-badge ${getRiskClass(item.value)}`}
             >
+
               {item.value}
-            </span>
+
+            </div>
 
           </div>
 
@@ -87,10 +126,21 @@ function PredictionCard({ prediction }) {
 
       </div>
 
+      <div className="prediction-summary">
+
+        <h4>💡 Overall Assessment</h4>
+
+        <p>
+
+          AI analyzed your movement pattern and identified the injury risks shown above.
+          Continue following the recommended preventive measures.
+
+        </p>
+
+      </div>
+
     </div>
-
   );
-
 }
 
 export default PredictionCard;

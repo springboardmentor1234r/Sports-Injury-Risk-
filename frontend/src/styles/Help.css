@@ -9,7 +9,7 @@
 }
 
 .help-header h1 {
-    color: #7CFC00;
+    color: #00FF88;
     font-size: 34px;
     margin-bottom: 10px;
     font-weight: 700;
@@ -22,7 +22,7 @@
 }
 
 .help-card {
-    background: #151515;
+    background: #181818;
     border: 1px solid #2b2b2b;
     border-radius: 16px;
     padding: 25px;
@@ -33,11 +33,11 @@
 
 .help-card:hover {
     transform: translateY(-4px);
-    border-color: #7CFC00;
+    border-color: #00FF88;
 }
 
 .help-card h2 {
-    color: #7CFC00;
+    color: #00FF88;
     margin-bottom: 18px;
     font-size: 22px;
 }
@@ -84,7 +84,7 @@
 }
 
 .tech-item:hover {
-    background: #7CFC00;
+    background: #00FF88;
     color: #111;
     transform: scale(1.05);
 }

@@ -1,0 +1,840 @@
+[
+    {
+        "date": "2026-07-28 18:36",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-07-28 22:13",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "person_walking.mp4",
+        "video_info": {
+            "width": 768,
+            "height": 432,
+            "fps": 23.98,
+            "total_frames": 164,
+            "duration_seconds": 6.84
+        },
+        "joint_angles": {
+            "left_elbow": 166.74,
+            "left_knee": 168.58,
+            "left_hip": 172.74
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Low",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Overall",
+                "severity": "None",
+                "issue": "No significant movement anomalies detected",
+                "recommendation": "Maintain current movement pattern."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 100,
+            "risk_level": "Low"
+        },
+        "recommendations": [
+            "Excellent movement pattern. Continue your current training routine and maintain proper warm-up and stretching."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/person_walking_report.pdf"
+    },
+    {
+        "date": "2026-07-29 10:05",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-07-29 20:31",
+        "athlete_name": "string",
+        "athlete_email": "string",
+        "video": "person_walking.mp4",
+        "video_info": {
+            "width": 768,
+            "height": 432,
+            "fps": 23.98,
+            "total_frames": 164,
+            "duration_seconds": 6.84
+        },
+        "joint_angles": {
+            "left_elbow": 166.74,
+            "left_knee": 168.58,
+            "left_hip": 172.74
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Low",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Overall",
+                "severity": "None",
+                "issue": "No significant movement anomalies detected",
+                "recommendation": "Maintain current movement pattern."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 100,
+            "risk_level": "Low"
+        },
+        "recommendations": [
+            "Excellent movement pattern. Continue your current training routine and maintain proper warm-up and stretching."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/person_walking_report.pdf"
+    },
+    {
+        "date": "2026-08-05 12:26",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-08 18:28",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-14 23:50",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "person_walking.mp4",
+        "video_info": {
+            "width": 768,
+            "height": 432,
+            "fps": 23.98,
+            "total_frames": 164,
+            "duration_seconds": 6.84
+        },
+        "joint_angles": {
+            "left_elbow": 166.74,
+            "left_knee": 168.58,
+            "left_hip": 172.74
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Low",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Overall",
+                "severity": "None",
+                "issue": "No significant movement anomalies detected",
+                "recommendation": "Maintain current movement pattern."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 100,
+            "risk_level": "Low"
+        },
+        "recommendations": [
+            "Excellent movement pattern. Continue your current training routine and maintain proper warm-up and stretching."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/person_walking_report.pdf"
+    },
+    {
+        "date": "2026-08-15 00:05",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal123@example.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-15 14:27",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "person_walking.mp4",
+        "video_info": {
+            "width": 768,
+            "height": 432,
+            "fps": 23.98,
+            "total_frames": 164,
+            "duration_seconds": 6.84
+        },
+        "joint_angles": {
+            "left_elbow": 166.74,
+            "left_knee": 168.58,
+            "left_hip": 172.74
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Low",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Overall",
+                "severity": "None",
+                "issue": "No significant movement anomalies detected",
+                "recommendation": "Maintain current movement pattern."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 100,
+            "risk_level": "Low"
+        },
+        "recommendations": [
+            "Excellent movement pattern. Continue your current training routine and maintain proper warm-up and stretching."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/person_walking_report.pdf"
+    },
+    {
+        "date": "2026-08-15 16:38",
+        "athlete_name": "Virat Kohli",
+        "athlete_email": "viratkohli@athlete.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-17 20:10",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-17 21:59",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "mom.mp4",
+        "video_info": {
+            "width": 576,
+            "height": 1024,
+            "fps": 29.9,
+            "total_frames": 294,
+            "duration_seconds": 9.83
+        },
+        "joint_angles": {
+            "left_elbow": 95.77,
+            "left_knee": 172.05,
+            "left_hip": 143.97
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Medium"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 30,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Strengthen the core and maintain a neutral spine posture.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/mom_report.pdf"
+    },
+    {
+        "date": "2026-08-17 22:01",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "WhatsApp Video 2026-08-17 at 9.57.22 PM.mp4",
+        "video_info": {
+            "width": 576,
+            "height": 1024,
+            "fps": 29.88,
+            "total_frames": 248,
+            "duration_seconds": 8.3
+        },
+        "joint_angles": {
+            "left_elbow": 163.68,
+            "left_knee": 165.69,
+            "left_hip": 128.69
+        },
+        "movement_analysis": "Needs Improvement",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "High",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "Medium"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "High",
+                "issue": "Hip instability",
+                "recommendation": "Strengthen hip stabilizer muscles."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 50,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Strengthen the core and maintain a neutral spine posture.",
+            "Strengthen hip stabilizer muscles."
+        ],
+        "injury_risk": "Medium",
+        "report": "uploads/WhatsApp Video 2026-08-17 at 9.57.22 PM_report.pdf"
+    },
+    {
+        "date": "2026-08-17 22:02",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "nicky.mp4",
+        "video_info": {
+            "width": 464,
+            "height": 832,
+            "fps": 59.97,
+            "total_frames": 425,
+            "duration_seconds": 7.09
+        },
+        "joint_angles": {
+            "left_elbow": 172.83,
+            "left_knee": 117.03,
+            "left_hip": 113.42
+        },
+        "movement_analysis": "Needs Improvement",
+        "injury_prediction": {
+            "acl_risk": "High",
+            "hamstring_risk": "High",
+            "ankle_sprain_risk": "High",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "High"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Knee",
+                "severity": "High",
+                "issue": "Excessive knee flexion",
+                "recommendation": "Reduce knee bending during movement."
+            },
+            {
+                "joint": "Left Hip",
+                "severity": "High",
+                "issue": "Hip instability",
+                "recommendation": "Strengthen hip stabilizer muscles."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 0,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Perform ACL injury prevention exercises and strengthen the quadriceps and hamstrings.",
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Practice ankle stability and balance training.",
+            "Strengthen the core and maintain a neutral spine posture.",
+            "Reduce knee bending during movement.",
+            "Strengthen hip stabilizer muscles."
+        ],
+        "injury_risk": "Medium",
+        "report": "uploads/nicky_report.pdf"
+    },
+    {
+        "date": "2026-08-17 22:03",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "nickyufootball.mp4",
+        "video_info": {
+            "width": 464,
+            "height": 832,
+            "fps": 42.35,
+            "total_frames": 447,
+            "duration_seconds": 10.55
+        },
+        "joint_angles": {
+            "left_elbow": 149.13,
+            "left_knee": 164.11,
+            "left_hip": 161.67
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Low",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "Medium",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Elbow",
+                "severity": "Low",
+                "issue": "Slight elbow flexion",
+                "recommendation": "Relax arm movement."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 85,
+            "risk_level": "Low"
+        },
+        "recommendations": [
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Relax arm movement."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/nickyufootball_report.pdf"
+    },
+    {
+        "date": "2026-08-17 22:04",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "nicky.mp4",
+        "video_info": {
+            "width": 464,
+            "height": 832,
+            "fps": 59.97,
+            "total_frames": 425,
+            "duration_seconds": 7.09
+        },
+        "joint_angles": {
+            "left_elbow": 172.83,
+            "left_knee": 117.03,
+            "left_hip": 113.42
+        },
+        "movement_analysis": "Needs Improvement",
+        "injury_prediction": {
+            "acl_risk": "High",
+            "hamstring_risk": "High",
+            "ankle_sprain_risk": "High",
+            "shoulder_risk": "Low",
+            "lower_back_risk": "High"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Knee",
+                "severity": "High",
+                "issue": "Excessive knee flexion",
+                "recommendation": "Reduce knee bending during movement."
+            },
+            {
+                "joint": "Left Hip",
+                "severity": "High",
+                "issue": "Hip instability",
+                "recommendation": "Strengthen hip stabilizer muscles."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 0,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Perform ACL injury prevention exercises and strengthen the quadriceps and hamstrings.",
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Practice ankle stability and balance training.",
+            "Strengthen the core and maintain a neutral spine posture.",
+            "Reduce knee bending during movement.",
+            "Strengthen hip stabilizer muscles."
+        ],
+        "injury_risk": "Medium",
+        "report": "uploads/nicky_report.pdf"
+    },
+    {
+        "date": "2026-08-18 20:11",
+        "athlete_name": "Sejal Chintala",
+        "athlete_email": "sejal.ch999@gmail.com",
+        "video": "WhatsApp Video 2026-07-24 at 7.56.56 PM.mp4",
+        "video_info": {
+            "width": 478,
+            "height": 850,
+            "fps": 29.15,
+            "total_frames": 182,
+            "duration_seconds": 6.24
+        },
+        "joint_angles": {
+            "left_elbow": 90.29,
+            "left_knee": 152.75,
+            "left_hip": 152.54
+        },
+        "movement_analysis": "Good",
+        "injury_prediction": {
+            "acl_risk": "Low",
+            "hamstring_risk": "Medium",
+            "ankle_sprain_risk": "Low",
+            "shoulder_risk": "High",
+            "lower_back_risk": "Low"
+        },
+        "movement_anomalies": [
+            {
+                "joint": "Left Hip",
+                "severity": "Medium",
+                "issue": "Reduced hip extension",
+                "recommendation": "Improve hip mobility and flexibility."
+            },
+            {
+                "joint": "Left Elbow",
+                "severity": "High",
+                "issue": "Excessive elbow flexion",
+                "recommendation": "Maintain proper arm posture."
+            }
+        ],
+        "risk_score": {
+            "overall_score": 40,
+            "risk_level": "High"
+        },
+        "recommendations": [
+            "Include hamstring stretching and eccentric strengthening exercises.",
+            "Improve shoulder mobility and rotator cuff strength.",
+            "Improve hip mobility and flexibility.",
+            "Maintain proper arm posture."
+        ],
+        "injury_risk": "Low",
+        "report": "uploads/WhatsApp Video 2026-07-24 at 7.56.56 PM_report.pdf"
+    }
+]

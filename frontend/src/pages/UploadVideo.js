@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import api from "../services/api";
 import "../styles/Forms.css";
 
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalysisContext } from "../context/AnalysisContext";
 
@@ -11,6 +10,7 @@ function UploadVideo() {
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState("");
   const [analysisData, setAnalysisData] = useState(null);
+
   const [athletes, setAthletes] = useState([]);
   const [selectedAthlete, setSelectedAthlete] = useState("");
 
@@ -18,32 +18,49 @@ function UploadVideo() {
   const [loadingText, setLoadingText] = useState("");
 
   const { saveAnalysis } = useContext(AnalysisContext);
-
   const navigate = useNavigate();
 
-    useEffect(() => {
+  // ==========================================================
+  // Get logged-in user
+  // ==========================================================
+
+  const currentUser = JSON.parse(
+    localStorage.getItem("user") || "{}"
+  );
+
+  const isAthlete = currentUser.role === "athlete";
+
+  // ==========================================================
+  // Load athletes only for Admin / Coach
+  // ==========================================================
+
+  useEffect(() => {
+    if (isAthlete) {
+      // Athlete automatically selects their own account
+      setSelectedAthlete(currentUser.email);
+    } else {
+      // Admin / Coach can select an athlete
       fetchAthletes();
+    }
   }, []);
 
   const fetchAthletes = async () => {
+    try {
+      const response = await api.get("/users");
 
-      try {
+      const athleteUsers = response.data.filter(
+        (user) => user.role === "athlete"
+      );
 
-          const response = await api.get("/users");
-
-          const athleteUsers = response.data.filter(
-              (user) => user.role === "athlete"
-          );
-
-          setAthletes(athleteUsers);
-
-      } catch (error) {
-
-          console.error(error);
-
-      }
-
+      setAthletes(athleteUsers);
+    } catch (error) {
+      console.error("Unable to fetch athletes:", error);
+    }
   };
+
+  // ==========================================================
+  // File selection
+  // ==========================================================
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -55,19 +72,26 @@ function UploadVideo() {
     }
   };
 
+  // ==========================================================
+  // Delay helper
+  // ==========================================================
+
   const sleep = (ms) =>
     new Promise((resolve) => setTimeout(resolve, ms));
+
+  // ==========================================================
+  // Upload Video
+  // ==========================================================
 
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    // Athlete's email is automatically selected.
+    // Admin / Coach must select an athlete.
     if (!selectedAthlete) {
-
       alert("Please select an athlete.");
-
       return;
-
-   }
+    }
 
     if (!file) {
       alert("Please select a video first.");
@@ -75,11 +99,12 @@ function UploadVideo() {
     }
 
     const formData = new FormData();
+
     formData.append("file", file);
 
     formData.append(
-        "athlete_email",
-        selectedAthlete
+      "athlete_email",
+      selectedAthlete
     );
 
     try {
@@ -100,8 +125,12 @@ function UploadVideo() {
           },
         }
       );
-      console.log("========== BACKEND RESPONSE ==========");
-console.log(response.data);
+
+      console.log(
+        "========== BACKEND RESPONSE =========="
+      );
+
+      console.log(response.data);
 
       setLoadingText("Analyzing Joint Angles...");
       await sleep(600);
@@ -120,20 +149,23 @@ console.log(response.data);
       // Save backend response globally
       saveAnalysis(response.data);
 
-      // Optional: keep local state if you want
+      // Keep local state
       setAnalysisData(response.data);
 
-      setMessage("Analysis Completed Successfully!");
+      setMessage(
+        "Analysis Completed Successfully!"
+      );
 
       setLoading(false);
 
       setFile(null);
       setFileName("");
 
-      // Give user a brief success message, then navigate
+      // Navigate to Analysis page
       setTimeout(() => {
-          navigate("/dashboard/analysis");
+        navigate("/dashboard/analysis");
       }, 1000);
+
     } catch (error) {
       console.error(error);
 
@@ -142,6 +174,10 @@ console.log(response.data);
       setMessage("Upload Failed.");
     }
   };
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   return (
     <div className="page-container">
@@ -162,35 +198,67 @@ console.log(response.data);
           onSubmit={handleUpload}
         >
 
-          <div className="input-group">
+          {/* ==================================================
+              ATHLETE
+              No dropdown - automatically use logged-in user
+          ================================================== */}
 
-    <label>Select Athlete</label>
+          {isAthlete ? (
 
-    <select
-        value={selectedAthlete}
-        onChange={(e) =>
-            setSelectedAthlete(e.target.value)
-        }
-    >
+            <div className="input-group">
 
-        <option value="">
-            Choose Athlete
-        </option>
+              <label>Uploading For</label>
 
-        {athletes.map((athlete) => (
+              <input
+                type="text"
+                value={currentUser.name || currentUser.email}
+                disabled
+              />
 
-            <option
-                key={athlete.email}
-                value={athlete.email}
-            >
-                {athlete.name}
-            </option>
+            </div>
 
-        ))}
+          ) : (
 
-    </select>
+            /* ==================================================
+               ADMIN / COACH
+               Show athlete selection
+            ================================================== */
 
-</div>
+            <div className="input-group">
+
+              <label>Select Athlete</label>
+
+              <select
+                value={selectedAthlete}
+                onChange={(e) =>
+                  setSelectedAthlete(e.target.value)
+                }
+              >
+
+                <option value="">
+                  Choose Athlete
+                </option>
+
+                {athletes.map((athlete) => (
+
+                  <option
+                    key={athlete.email}
+                    value={athlete.email}
+                  >
+                    {athlete.name}
+                  </option>
+
+                ))}
+
+              </select>
+
+            </div>
+
+          )}
+
+          {/* ==================================================
+              VIDEO UPLOAD
+          ================================================== */}
 
           <label
             htmlFor="video-upload"
@@ -201,9 +269,13 @@ console.log(response.data);
               🎥
             </div>
 
-            <h2>Drag & Drop Video</h2>
+            <h2>
+              Drag & Drop Video
+            </h2>
 
-            <p>or click here to browse</p>
+            <p>
+              or click here to browse
+            </p>
 
             <input
               id="video-upload"
@@ -215,37 +287,63 @@ console.log(response.data);
 
           </label>
 
+          {/* ==================================================
+              SELECTED FILE
+          ================================================== */}
+
           {fileName && (
 
             <div className="selected-file">
 
-              <h3>Selected File</h3>
+              <h3>
+                Selected File
+              </h3>
 
-              <p>{fileName}</p>
+              <p>
+                {fileName}
+              </p>
 
             </div>
 
           )}
+
+          {/* ==================================================
+              ANALYZE BUTTON
+          ================================================== */}
 
           <button
             className="upload-btn"
             type="submit"
             disabled={loading}
           >
+
             {loading
               ? "Analyzing..."
               : "Analyze Video"}
+
           </button>
 
         </form>
 
+        {/* ==================================================
+            SUCCESS / ERROR MESSAGE
+        ================================================== */}
+
         {message && (
+
           <div className="upload-message">
+
             {message}
+
           </div>
+
         )}
 
       </div>
+
+      {/* ======================================================
+          LOADING CARD
+      ====================================================== */}
 
       {loading && (
 
@@ -253,7 +351,9 @@ console.log(response.data);
 
           <div className="loader"></div>
 
-          <h2>{loadingText}</h2>
+          <h2>
+            {loadingText}
+          </h2>
 
           <p>
             Our AI is processing your athlete

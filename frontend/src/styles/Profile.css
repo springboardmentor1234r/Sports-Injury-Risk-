@@ -13,7 +13,7 @@
     width:90px;
     height:90px;
     border-radius:50%;
-    background:#7CFC00;
+    background:#00FF88;
     color:#111;
     display:flex;
     justify-content:center;
@@ -32,7 +32,7 @@
 }
 
 .profile-card{
-    background:#1b1b1b;
+    background:#181818;
     border-radius:18px;
     border:1px solid #2d2d2d;
     padding:30px;
@@ -74,7 +74,7 @@
 
 .save-profile-btn{
     margin-top:30px;
-    background:#7CFC00;
+    background:#00FF88;
     color:#111;
     padding:12px 25px;
     border:none;

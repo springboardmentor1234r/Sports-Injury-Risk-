@@ -1,0 +1,608 @@
+/* ==========================================================
+   ATHLETE PAGE
+========================================================== */
+
+.athlete-page {
+  width: 100%;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.athlete-header {
+  background: #171717;
+  border: 1px solid #292929;
+  border-left: 4px solid #00ff88;
+  border-radius: 20px;
+
+  padding: 28px 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 28px;
+}
+
+.section-label {
+  color: #00ff88;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.athlete-header h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #ffffff;
+}
+
+.athlete-header p {
+  margin: 8px 0 0;
+  color: #999;
+  font-size: 15px;
+}
+
+.header-icon {
+  font-size: 40px;
+}
+
+
+/* ==========================================================
+   STATISTICS
+========================================================== */
+
+.athlete-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: #171717;
+  border: 1px solid #292929;
+  border-radius: 18px;
+
+  padding: 22px;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 255, 136, 0.10);
+
+  font-size: 22px;
+}
+
+.stat-card span {
+  display: block;
+
+  color: #999;
+  font-size: 13px;
+
+  margin-bottom: 4px;
+}
+
+.stat-card strong {
+  display: block;
+
+  color: #00ff88;
+
+  font-size: 30px;
+  line-height: 1.1;
+
+  margin-bottom: 4px;
+}
+
+.stat-card small {
+  color: #666;
+  font-size: 12px;
+}
+
+
+/* ==========================================================
+   MESSAGES
+========================================================== */
+
+.success-message {
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+
+  color: #00ff88;
+
+  padding: 14px 18px;
+
+  border-radius: 10px;
+
+  margin-bottom: 20px;
+}
+
+.error-message {
+  background: rgba(255, 70, 70, 0.08);
+  border: 1px solid rgba(255, 70, 70, 0.3);
+
+  color: #ff6666;
+
+  padding: 14px 18px;
+
+  border-radius: 10px;
+
+  margin-bottom: 20px;
+}
+
+
+/* ==========================================================
+   MAIN CONTENT
+========================================================== */
+
+.athlete-content {
+  display: grid;
+
+  grid-template-columns:
+    320px minmax(0, 1fr);
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+
+/* ==========================================================
+   REGISTER CARD
+========================================================== */
+
+.register-card,
+.database-card {
+  background: #171717;
+
+  border: 1px solid #292929;
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  box-sizing: border-box;
+}
+
+.register-card h2,
+.database-card h2 {
+  color: #ffffff;
+
+  font-size: 23px;
+
+  margin: 0 0 7px;
+}
+
+.register-card p,
+.database-card p {
+  color: #888;
+
+  font-size: 13px;
+
+  margin: 0;
+}
+
+
+/* ==========================================================
+   FORM
+========================================================== */
+
+.athlete-form {
+  margin-top: 25px;
+}
+
+.form-field {
+  margin-bottom: 17px;
+}
+
+.form-field label {
+  display: block;
+
+  color: #ddd;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  margin-bottom: 8px;
+}
+
+.form-field input {
+  width: 100%;
+
+  height: 44px;
+
+  box-sizing: border-box;
+
+  background: #101010;
+
+  border: 1px solid #303030;
+
+  border-radius: 9px;
+
+  padding: 0 13px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+.form-field input:focus {
+  border-color: #00ff88;
+}
+
+.form-field input::placeholder {
+  color: #666;
+}
+
+.form-row {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+}
+
+
+/* ==========================================================
+   REGISTER BUTTON
+========================================================== */
+
+.register-btn {
+  width: 100%;
+
+  height: 48px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #00f58a;
+
+  color: #07140d;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  margin-top: 5px;
+}
+
+.register-btn:hover {
+  background: #00ff98;
+}
+
+.register-btn:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   DATABASE
+========================================================== */
+
+.database-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+}
+
+.athlete-count {
+  min-width: 40px;
+  height: 40px;
+
+  border-radius: 12px;
+
+  background: rgba(0, 255, 136, 0.10);
+
+  color: #00ff88;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 800;
+}
+
+
+/* ==========================================================
+   SEARCH
+========================================================== */
+
+.search-box {
+  margin-top: 20px;
+
+  height: 44px;
+
+  background: #101010;
+
+  border: 1px solid #292929;
+
+  border-radius: 9px;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 0 13px;
+
+  gap: 10px;
+}
+
+.search-box span {
+  font-size: 14px;
+}
+
+.search-box input {
+  width: 100%;
+
+  height: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #fff;
+
+  font-size: 13px;
+}
+
+.search-box input::placeholder {
+  color: #666;
+}
+
+
+/* ==========================================================
+   TABLE
+========================================================== */
+
+.table-container {
+  margin-top: 18px;
+
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+thead {
+  background: #202020;
+}
+
+th {
+  text-align: left;
+
+  color: #777;
+
+  font-size: 10px;
+
+  letter-spacing: 0.7px;
+
+  padding: 14px 10px;
+
+  white-space: nowrap;
+}
+
+td {
+  color: #ddd;
+
+  font-size: 13px;
+
+  padding: 15px 10px;
+
+  border-top: 1px solid #242424;
+
+  white-space: nowrap;
+}
+
+
+/* ==========================================================
+   ATHLETE NAME
+========================================================== */
+
+.athlete-name {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+
+  background: rgba(0, 255, 136, 0.10);
+
+  color: #00ff88;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 800;
+}
+
+.athlete-name strong {
+  display: block;
+
+  color: #fff;
+
+  font-size: 13px;
+}
+
+.athlete-name small {
+  display: block;
+
+  color: #777;
+
+  font-size: 10px;
+
+  margin-top: 2px;
+}
+
+
+/* ==========================================================
+   SPORT
+========================================================== */
+
+.sport-badge {
+  display: inline-block;
+
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  background: #252525;
+
+  color: #ddd;
+
+  font-size: 11px;
+}
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+.status {
+  color: #00ff88;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+/* ==========================================================
+   VIEW PROFILE
+========================================================== */
+
+.profile-btn {
+  background: transparent;
+
+  border: 1px solid rgba(0, 255, 136, 0.35);
+
+  color: #00ff88;
+
+  border-radius: 7px;
+
+  padding: 7px 11px;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+.profile-btn:hover {
+  background: rgba(0, 255, 136, 0.08);
+}
+
+
+/* ==========================================================
+   NO ATHLETES
+========================================================== */
+
+.no-athletes {
+  text-align: center;
+
+  padding: 55px 20px;
+}
+
+.no-athletes-icon {
+  font-size: 38px;
+
+  margin-bottom: 10px;
+}
+
+.no-athletes h3 {
+  color: #ddd;
+
+  margin: 0 0 5px;
+}
+
+.no-athletes p {
+  color: #666;
+
+  margin: 0;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 1100px) {
+
+  .athlete-stats {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .athlete-content {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .athlete-page {
+    padding: 15px;
+  }
+
+  .athlete-stats {
+    grid-template-columns:
+      1fr;
+  }
+
+  .form-row {
+    grid-template-columns:
+      1fr;
+  }
+
+  .athlete-header {
+    padding: 20px;
+  }
+
+}

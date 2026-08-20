@@ -25,7 +25,7 @@
 }
 
 .search-box:hover{
-    border-color:#7CFC00;
+    border-color:#00FF88;
 }
 
 .search-box input{
@@ -42,7 +42,7 @@
 }
 
 .search-box svg{
-    color:#7CFC00;
+    color:#00FF88;
     font-size:16px;
 }
 
@@ -54,13 +54,13 @@
     border:none;
     border-radius:12px;
     background:#181818;
-    color:#7CFC00;
+    color:#00FF88;
     cursor:pointer;
     transition:.3s;
 }
 
 .icon-btn:hover{
-    background:#7CFC00;
+    background:#00FF88;
     color:#111;
 }
 
@@ -79,11 +79,11 @@
 
 .profile-btn svg{
     font-size:24px;
-    color:#7CFC00;
+    color:#00FF88;
 }
 
 .profile-btn:hover{
-    border:1px solid #7CFC00;
+    border:1px solid #00FF88;
 }
 
 @media(max-width:768px){
@@ -111,7 +111,7 @@
 }
 
 .profile-role{
-    color:#7CFC00;
+    color:#00FF88;
     font-size:12px;
     margin-top:2px;
 }

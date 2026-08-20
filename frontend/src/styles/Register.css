@@ -3,7 +3,7 @@
 ================================ */
 
 body{
-    background:#0f1117;
+    background:#0B0B0B;
 }
 
 .form-container{
@@ -12,7 +12,7 @@ body{
     justify-content:center;
     align-items:center;
     padding:40px 20px;
-    background:#0f1117;
+    background:#0B0B0B;
 }
 
 .form-card{
@@ -26,7 +26,7 @@ body{
 }
 
 .auth-title{
-    color:#7CFC00;
+    color:#00FF88;
     text-align:center;
     font-size:30px;
     margin-bottom:10px;
@@ -68,7 +68,7 @@ body{
 
 .form-card input:focus,
 .form-card select:focus{
-    border-color:#7CFC00;
+    border-color:#00FF88;
     box-shadow:0 0 10px rgba(124,252,0,.15);
 }
 
@@ -78,7 +78,7 @@ body{
     margin-top:8px;
     border:none;
     border-radius:12px;
-    background:#7CFC00;
+    background:#00FF88;
     color:#000;
     font-size:16px;
     font-weight:700;
@@ -99,7 +99,7 @@ body{
 }
 
 .auth-link{
-    color:#7CFC00;
+    color:#00FF88;
     font-weight:600;
     cursor:pointer;
     margin-left:6px;

@@ -1,0 +1,74 @@
+/* ===========================
+   LEVEL TEXT (below the gauge number)
+=========================== */
+ 
+.risk-level-text{
+    text-align:center;
+    margin-top:-10px;
+    font-size:20px;
+    font-weight:700;
+}
+ 
+/* ===========================
+   WARNING BANNER (High risk only)
+=========================== */
+ 
+.risk-warning{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:16px;
+    padding:12px 16px;
+    background:#2a1f1f;
+    border:1px solid #4a2a2a;
+    border-radius:12px;
+    color:#f87171;
+    font-size:14px;
+    font-weight:500;
+}
+ 
+.risk-warning-icon{
+    font-size:16px;
+}
+ 
+/* ===========================
+   STATUS ROW
+=========================== */
+ 
+.risk-status{
+    display:flex;
+    justify-content:space-around;
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid #2b2b2b;
+}
+ 
+.risk-status div{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+}
+ 
+.risk-status span{
+    font-size:13px;
+    color:#9ca3af;
+}
+ 
+.risk-status strong{
+    font-size:17px;
+    font-weight:700;
+    color:white;
+}
+
+.risk-gauge-card {
+    min-height: 0;
+    height: auto;
+    box-sizing: border-box;
+}
+
+.risk-gauge-card .card-title {
+    margin-bottom: 0;
+}
+ 

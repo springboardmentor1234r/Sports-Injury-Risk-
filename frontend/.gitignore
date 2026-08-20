@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Runtime / generated project files
+backend/__pycache__/
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# macOS
+.DS_Store
+**/.DS_Store

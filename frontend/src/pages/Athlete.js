@@ -1,160 +1,468 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
-import "../styles/Forms.css";
+import "../styles/Athlete.css";
 
 function Athlete() {
-
-  const [athlete, setAthlete] = useState({
-    name: "",
-    age: "",
-    sport: "",
-    experience: "",
-  });
-
   const [athletes, setAthletes] = useState([]);
+
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [sport, setSport] = useState("");
+  const [experience, setExperience] = useState("");
+
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // Handle form input changes
-  const handleChange = (e) => {
-    setAthlete({
-      ...athlete,
-      [e.target.name]: e.target.value,
-    });
-  };
+  // ==========================================================
+  // FETCH ATHLETES
+  // ==========================================================
 
-  // Fetch athletes
   const fetchAthletes = async () => {
     try {
       const response = await api.get("/athletes");
-      setAthletes(response.data);
-    } catch (error) {
-      console.error("Error fetching athletes:", error);
+
+      console.log("ATHLETES:", response.data);
+
+      setAthletes(
+        Array.isArray(response.data)
+          ? response.data
+          : []
+      );
+
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Unable to load athletes from backend."
+      );
     }
   };
+
+  // ==========================================================
+  // LOAD WHEN PAGE OPENS
+  // ==========================================================
 
   useEffect(() => {
     fetchAthletes();
   }, []);
 
-  // Submit athlete
-  const handleSubmit = async (e) => {
+  // ==========================================================
+  // REGISTER ATHLETE
+  // ==========================================================
+
+  const handleRegister = async (e) => {
     e.preventDefault();
 
+    setMessage("");
+    setError("");
+
+    if (!name.trim()) {
+      setError("Please enter athlete name.");
+      return;
+    }
+
+    if (!age || Number(age) <= 0) {
+      setError("Please enter a valid age.");
+      return;
+    }
+
+    if (!sport.trim()) {
+      setError("Please enter sport.");
+      return;
+    }
+
+    if (!experience.trim()) {
+      setError("Please enter experience.");
+      return;
+    }
+
+    const athleteData = {
+      name: name.trim(),
+      age: Number(age),
+      sport: sport.trim(),
+      experience: experience.trim()
+    };
+
+    console.log(
+      "SENDING ATHLETE:",
+      athleteData
+    );
+
     try {
+      setLoading(true);
 
-      const response = await api.post("/athlete", athlete);
+      const response = await api.post(
+        "/athlete",
+        athleteData
+      );
 
-      console.log(response.data);
+      console.log(
+        "CREATE RESPONSE:",
+        response.data
+      );
 
-      alert("Athlete added successfully!");
+      setName("");
+      setAge("");
+      setSport("");
+      setExperience("");
 
-      fetchAthletes();
+      setMessage(
+        "Athlete profile created successfully!"
+      );
 
-      setAthlete({
-        name: "",
-        age: "",
-        sport: "",
-        experience: "",
-      });
+      await fetchAthletes();
 
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
 
-      console.error(error);
+      setError(
+        err.response?.data?.detail ||
+        "Unable to register athlete."
+      );
 
-      if (error.response) {
-        alert(error.response.data.detail || "Failed to add athlete.");
-      } else {
-        alert("Cannot connect to backend.");
-      }
-
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Search
-  const filteredAthletes = athletes.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()) ||
-    item.sport.toLowerCase().includes(search.toLowerCase())
-  );
+  // ==========================================================
+  // SEARCH
+  // ==========================================================
+
+  const filteredAthletes =
+    athletes.filter((athlete) => {
+
+      const searchText =
+        search.toLowerCase();
+
+      return (
+        String(athlete.name || "")
+          .toLowerCase()
+          .includes(searchText) ||
+
+        String(athlete.sport || "")
+          .toLowerCase()
+          .includes(searchText)
+      );
+    });
+
+  // ==========================================================
+  // STATISTICS
+  // ==========================================================
+
+  const totalAthletes =
+    athletes.length;
+
+  const uniqueSports =
+    new Set(
+      athletes
+        .map((athlete) => athlete.sport)
+        .filter(
+          (sport) =>
+            sport &&
+            String(sport).trim() !== ""
+        )
+    );
+
+  const totalSports =
+    uniqueSports.size;
+
+  const validAges =
+    athletes
+      .map((athlete) =>
+        Number(athlete.age)
+      )
+      .filter(
+        (age) =>
+          age > 0 &&
+          Number.isFinite(age)
+      );
+
+  const averageAge =
+    validAges.length > 0
+      ? Math.round(
+          validAges.reduce(
+            (sum, age) =>
+              sum + age,
+            0
+          ) / validAges.length
+        )
+      : "—";
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   return (
-
     <div className="athlete-page">
 
-      {/* Header */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
 
       <div className="athlete-header">
 
-        <h1>Athlete Management</h1>
+        <div>
 
-        <p>Register athletes and manage their profiles.</p>
+          <div className="section-label">
+            ATHLETE MANAGEMENT
+          </div>
 
-      </div>
+          <h1>
+            Manage Athletes
+          </h1>
 
-      {/* Summary */}
+          <p>
+            Register athletes, view their profiles,
+            and monitor their sports information.
+          </p>
 
-      <div className="summary-card">
+        </div>
 
-        <h3>Total Registered Athletes</h3>
-
-        <div className="summary-number">
-          {athletes.length}
+        <div className="header-icon">
+          🏃
         </div>
 
       </div>
 
-      {/* Form + Table */}
+
+      {/* ======================================================
+          STATS
+      ====================================================== */}
+
+      <div className="athlete-stats">
+
+        <div className="stat-card">
+
+          <div className="stat-icon">
+            👥
+          </div>
+
+          <div>
+            <span>
+              Total Athletes
+            </span>
+
+            <strong>
+              {totalAthletes}
+            </strong>
+
+            <small>
+              Registered athletes
+            </small>
+          </div>
+
+        </div>
+
+
+        <div className="stat-card">
+
+          <div className="stat-icon">
+            🏆
+          </div>
+
+          <div>
+            <span>
+              Sports
+            </span>
+
+            <strong>
+              {totalSports}
+            </strong>
+
+            <small>
+              Different sports
+            </small>
+          </div>
+
+        </div>
+
+
+        <div className="stat-card">
+
+          <div className="stat-icon">
+            🎯
+          </div>
+
+          <div>
+            <span>
+              Average Age
+            </span>
+
+            <strong>
+              {averageAge}
+            </strong>
+
+            <small>
+              Years
+            </small>
+          </div>
+
+        </div>
+
+
+        <div className="stat-card">
+
+          <div className="stat-icon">
+            🛡️
+          </div>
+
+          <div>
+            <span>
+              Monitoring
+            </span>
+
+            <strong>
+              Active
+            </strong>
+
+            <small>
+              AI injury monitoring
+            </small>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* ======================================================
+          MESSAGES
+      ====================================================== */}
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+
+      {/* ======================================================
+          MAIN CONTENT
+      ====================================================== */}
 
       <div className="athlete-content">
 
-        {/* Registration */}
 
-        <div className="form-card">
+        {/* ====================================================
+            REGISTER
+        ==================================================== */}
 
-          <h2>Athlete Registration</h2>
+        <div className="register-card">
 
-          <p>Add athlete details for analysis.</p>
+          <div className="section-label">
+            NEW ATHLETE
+          </div>
 
-          <form onSubmit={handleSubmit}>
+          <h2>
+            Register Athlete
+          </h2>
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Athlete Name"
-              value={athlete.name}
-              onChange={handleChange}
-              required
-            />
+          <p>
+            Add an athlete to the monitoring
+            system.
+          </p>
 
-            <input
-              type="number"
-              name="age"
-              placeholder="Age"
-              value={athlete.age}
-              onChange={handleChange}
-              required
-            />
 
-            <input
-              type="text"
-              name="sport"
-              placeholder="Sport"
-              value={athlete.sport}
-              onChange={handleChange}
-              required
-            />
+          <form
+            onSubmit={handleRegister}
+            className="athlete-form"
+          >
 
-            <input
-              type="text"
-              name="experience"
-              placeholder="Experience"
-              value={athlete.experience}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
 
-            <button type="submit">
+              <label>
+                Athlete Name
+              </label>
 
-              Add Athlete
+              <input
+                type="text"
+                placeholder="Enter athlete name"
+                value={name}
+                onChange={(e) =>
+                  setName(e.target.value)
+                }
+              />
+
+            </div>
+
+
+            <div className="form-row">
+
+              <div className="form-field">
+
+                <label>
+                  Age
+                </label>
+
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Age"
+                  value={age}
+                  onChange={(e) =>
+                    setAge(e.target.value)
+                  }
+                />
+
+              </div>
+
+
+              <div className="form-field">
+
+                <label>
+                  Sport
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="e.g. Cricket"
+                  value={sport}
+                  onChange={(e) =>
+                    setSport(e.target.value)
+                  }
+                />
+
+              </div>
+
+            </div>
+
+
+            <div className="form-field">
+
+              <label>
+                Experience
+              </label>
+
+              <input
+                type="text"
+                placeholder="e.g. 3 years"
+                value={experience}
+                onChange={(e) =>
+                  setExperience(e.target.value)
+                }
+              />
+
+            </div>
+
+
+            <button
+              type="submit"
+              className="register-btn"
+              disabled={loading}
+            >
+
+              {loading
+                ? "Registering..."
+                : "Register Athlete"}
 
             </button>
 
@@ -162,82 +470,234 @@ function Athlete() {
 
         </div>
 
-        {/* Athlete Table */}
 
-        <div className="athlete-table">
+        {/* ====================================================
+            ATHLETE DATABASE
+        ==================================================== */}
 
-          <div className="table-header">
+        <div className="database-card">
 
-            <h2>Registered Athletes</h2>
+          <div className="database-header">
+
+            <div>
+
+              <div className="section-label">
+                ATHLETE DATABASE
+              </div>
+
+              <h2>
+                Registered Athletes
+              </h2>
+
+              <p>
+                View and manage registered athlete
+                profiles.
+              </p>
+
+            </div>
+
+            <div className="athlete-count">
+              {totalAthletes}
+            </div>
+
+          </div>
+
+
+          {/* SEARCH */}
+
+          <div className="search-box">
+
+            <span>
+              🔍
+            </span>
 
             <input
               type="text"
-              className="search-input"
-              placeholder="Search athlete..."
+              placeholder="Search by athlete name or sport..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
             />
 
           </div>
 
-          <table>
 
-            <thead>
+          {/* TABLE */}
 
-              <tr>
+          <div className="table-container">
 
-                <th>Name</th>
-                <th>Age</th>
-                <th>Sport</th>
-                <th>Experience</th>
+            {filteredAthletes.length === 0 ? (
 
-              </tr>
+              <div className="no-athletes">
 
-            </thead>
+                <div className="no-athletes-icon">
+                  👥
+                </div>
 
-            <tbody>
+                <h3>
+                  No athletes found
+                </h3>
 
-              {filteredAthletes.length > 0 ? (
+                <p>
+                  Register your first athlete
+                  to get started.
+                </p>
 
-                filteredAthletes.map((item, index) => (
+              </div>
 
-                  <tr key={index}>
+            ) : (
 
-                    <td>{item.name}</td>
-                    <td>{item.age}</td>
-                    <td>{item.sport}</td>
-                    <td>{item.experience}</td>
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      ATHLETE
+                    </th>
+
+                    <th>
+                      AGE
+                    </th>
+
+                    <th>
+                      SPORT
+                    </th>
+
+                    <th>
+                      EXPERIENCE
+                    </th>
+
+                    <th>
+                      STATUS
+                    </th>
+
+                    <th>
+                      ACTION
+                    </th>
 
                   </tr>
 
-                ))
+                </thead>
 
-              ) : (
+                <tbody>
 
-                <tr>
+                  {filteredAthletes.map(
+                    (athlete, index) => (
 
-                  <td colSpan="4">
+                      <tr
+                        key={
+                          athlete.email ||
+                          athlete.id ||
+                          index
+                        }
+                      >
 
-                    No athletes registered yet.
+                        <td>
 
-                  </td>
+                          <div className="athlete-name">
 
-                </tr>
+                            <div className="avatar">
+                              {String(
+                                athlete.name ||
+                                "A"
+                              )
+                                .charAt(0)
+                                .toUpperCase()}
+                            </div>
 
-              )}
+                            <div>
 
-            </tbody>
+                              <strong>
+                                {athlete.name}
+                              </strong>
 
-          </table>
+                              <small>
+                                Athlete
+                              </small>
+
+                            </div>
+
+                          </div>
+
+                        </td>
+
+
+                        <td>
+
+                          {athlete.age &&
+                          Number(athlete.age) > 0
+                            ? athlete.age
+                            : "—"}
+
+                        </td>
+
+
+                        <td>
+
+                          <span className="sport-badge">
+
+                            {athlete.sport ||
+                              "—"}
+
+                          </span>
+
+                        </td>
+
+
+                        <td>
+
+                          {athlete.experience ||
+                            "—"}
+
+                        </td>
+
+
+                        <td>
+
+                          <span className="status">
+                            ● Active
+                          </span>
+
+                        </td>
+
+
+                        <td>
+
+                          <button
+                            className="profile-btn"
+                            onClick={() =>
+                              alert(
+                                `Athlete: ${athlete.name}\nAge: ${athlete.age}\nSport: ${athlete.sport}\nExperience: ${athlete.experience}`
+                              )
+                            }
+                          >
+                            👁 View Profile
+                          </button>
+
+                        </td>
+
+                      </tr>
+
+                    )
+                  )}
+
+                </tbody>
+
+              </table>
+
+            )}
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
-
   );
-
 }
 
 export default Athlete;

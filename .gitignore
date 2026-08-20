@@ -220,3 +220,33 @@ __marimo__/
 uploads/*
 !uploads/.gitkeep.DS_Store
 **/.DS_Store
+
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Backup files
+src-backup/
+**/src-backup/
+
+# ZIP/archive files
+*.zip
+
+# macOS files
+.DS_Store
+**/.DS_Store
+
+# Milestone folders
+milestone-1/
+milestone-2/
+milestone-3/
+milestone-4/
+Milestone-1/
+Milestone-2/
+Milestone-3/
+Milestone-4/

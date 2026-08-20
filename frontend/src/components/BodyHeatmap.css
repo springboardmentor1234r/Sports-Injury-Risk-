@@ -1,0 +1,378 @@
+/* ===========================
+   BODY HEATMAP CARD
+=========================== */
+
+.heatmap-card{
+    margin-top:20px;
+}
+
+.heatmap-card h2{
+    color:#fff;
+    text-align:center;
+    font-size:28px;
+    margin-bottom:30px;
+}
+
+/* ===========================
+   MAIN LAYOUT
+=========================== */
+
+.heatmap-body{
+    display:flex;
+    align-items:center;
+    gap:50px;
+    position:relative; /* coordinate space for the connector SVG */
+}
+
+/* SVG sits behind everything, stretched to the exact pixel size of
+   .heatmap-body. We set line coordinates in JS using real pixels, so
+   there's no viewBox scaling/distortion. */
+.connector-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:0;
+    overflow:visible;
+}
+
+/* ===========================
+   BODY IMAGE + DOTS
+=========================== */
+
+.body-image-wrap{
+    position:relative;
+    flex:0 0 auto;
+    width:280px;
+    max-width:45%;
+    z-index:1;
+}
+
+.human-body{
+    width:100%;
+    display:block;
+    user-select:none;
+    filter:brightness(1.12) contrast(1.08);
+}
+
+.body-dot{
+    position:absolute;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 10px currentColor;
+    animation:pulse 2.4s infinite;
+}
+
+@keyframes pulse{
+    0%{ box-shadow:0 0 6px currentColor; opacity:1; }
+    50%{ box-shadow:0 0 14px currentColor; opacity:.75; }
+    100%{ box-shadow:0 0 6px currentColor; opacity:1; }
+}
+
+/* ===========================
+   RIGHT: LABEL ROWS
+   Normal flex column — rows space
+   themselves out naturally and can
+   never overlap, no matter how close
+   together the dots on the body are.
+=========================== */
+
+.risk-rows{
+    position:relative;
+    z-index:1;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.risk-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.risk-icon{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    flex-shrink:0;
+    box-shadow:0 0 12px currentColor;
+}
+
+.risk-text h3{
+    margin:0;
+    color:#fff;
+    font-size:17px;
+    line-height:1.25;
+}
+
+.risk-text p{
+    margin:4px 0 0;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* ===========================
+   LEGEND
+=========================== */
+
+.legend{
+    margin-top:35px;
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+}
+
+.legend-color{
+    width:15px;
+    height:15px;
+    border-radius:50%;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:700px){
+
+    .heatmap-body{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .body-image-wrap{
+        width:220px;
+        max-width:100%;
+        margin:0 auto;
+    }
+
+    .risk-rows{
+        margin-top:20px;
+        width:100%;
+    }/* ===========================
+   BODY HEATMAP CARD
+=========================== */
+
+/* Spacing between cards is handled by the grid's `gap`, not by
+   margin on individual cards — a margin-top here would push just
+   this card's box down inside its grid cell while its siblings
+   (Overall Risk Score, AI Recommendations) stay flush at the top,
+   throwing off the alignment across the row. */
+
+.heatmap-card h2{
+    color:#fff;
+    text-align:center;
+    font-size:28px;
+    margin-bottom:30px;
+}
+
+/* ===========================
+   MAIN LAYOUT
+=========================== */
+
+.heatmap-body{
+    display:flex;
+    align-items:center;
+    gap:50px;
+    position:relative; /* coordinate space for the connector SVG */
+}
+
+/* SVG sits behind everything, stretched to the exact pixel size of
+   .heatmap-body. We set line coordinates in JS using real pixels, so
+   there's no viewBox scaling/distortion. */
+.connector-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:0;
+    overflow:visible;
+}
+
+/* ===========================
+   BODY IMAGE + DOTS
+=========================== */
+
+.body-image-wrap{
+    position:relative;
+    flex:0 0 auto;
+    width:280px;
+    max-width:45%;
+    z-index:1;
+}
+
+.human-body{
+    width:100%;
+    display:block;
+    user-select:none;
+    filter:brightness(1.12) contrast(1.08);
+}
+
+.body-dot{
+    position:absolute;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 10px currentColor;
+    animation:pulse 2.4s infinite;
+}
+
+@keyframes pulse{
+    0%{ box-shadow:0 0 6px currentColor; opacity:1; }
+    50%{ box-shadow:0 0 14px currentColor; opacity:.75; }
+    100%{ box-shadow:0 0 6px currentColor; opacity:1; }
+}
+
+/* ===========================
+   RIGHT: LABEL ROWS
+   Normal flex column — rows space
+   themselves out naturally and can
+   never overlap, no matter how close
+   together the dots on the body are.
+=========================== */
+
+.risk-rows{
+    position:relative;
+    z-index:1;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.risk-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.risk-icon{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    flex-shrink:0;
+    box-shadow:0 0 12px currentColor;
+}
+
+.risk-text h3{
+    margin:0;
+    color:#fff;
+    font-size:17px;
+    line-height:1.25;
+}
+
+.risk-text p{
+    margin:4px 0 0;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* ===========================
+   LEGEND
+=========================== */
+
+.legend{
+    margin-top:35px;
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+}
+
+.legend-color{
+    width:15px;
+    height:15px;
+    border-radius:50%;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:700px){
+
+    .heatmap-body{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .body-image-wrap{
+        width:220px;
+        max-width:100%;
+        margin:0 auto;
+    }
+
+    .risk-rows{
+        margin-top:20px;
+        width:100%;
+    }
+
+    /* Diagonal lines across a stacked layout look wrong — hide them here */
+    .connector-svg{
+        display:none;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .heatmap-card{
+        padding:20px;
+    }
+
+    .heatmap-card h2{
+        font-size:22px;
+    }
+
+    .legend{
+        flex-direction:column;
+        gap:15px;
+        align-items:center;
+    }
+
+}
+
+
+    /* Diagonal lines across a stacked layout look wrong — hide them here */
+    .connector-svg{
+        display:none;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .heatmap-card{
+        padding:20px;
+    }
+
+    .heatmap-card h2{
+        font-size:22px;
+    }
+
+    .legend{
+        flex-direction:column;
+        gap:15px;
+        align-items:center;
+    }
+
+}

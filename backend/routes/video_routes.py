@@ -1,7 +1,9 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 import shutil
 import os
 import cv2
+import json
+from datetime import datetime
 
 from services.pose_service import process_video
 from services.risk_service import assess_risk
@@ -14,16 +16,25 @@ from services.pdf_service import generate_pdf_report
 router = APIRouter()
 
 UPLOAD_FOLDER = "uploads"
+DATA_FILE = "data/users.json"
+HISTORY_FILE = "data/history.json"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @router.post("/upload-video")
-async def upload_video(file: UploadFile = File(...)):
+async def upload_video(
+    athlete_email: str = Form(...),
+    file: UploadFile = File(...)
+):
 
     # -----------------------------
     # Save uploaded video
     # -----------------------------
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file_path = os.path.join(
+        UPLOAD_FOLDER,
+        file.filename
+    )
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -71,69 +82,215 @@ async def upload_video(file: UploadFile = File(...)):
         }
 
     fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    duration = frame_count / fps if fps > 0 else 0
+    width = int(
+        cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    )
+
+    height = int(
+        cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    )
+
+    frame_count = int(
+        cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    )
+
+    duration = (
+        frame_count / fps
+        if fps > 0
+        else 0
+    )
 
     # -----------------------------
     # Create Thumbnail
     # -----------------------------
-    # Capture a frame around 25% into the video
-    thumbnail_frame = max(1, frame_count // 4)
+    thumbnail_frame = max(
+        1,
+        frame_count // 4
+    )
 
-    cap.set(cv2.CAP_PROP_POS_FRAMES, thumbnail_frame)
+    cap.set(
+        cv2.CAP_PROP_POS_FRAMES,
+        thumbnail_frame
+    )
 
     success, frame = cap.read()
 
     thumbnail_path = None
 
     if success:
-        thumbnail_name = file.filename.rsplit(".", 1)[0] + "_thumbnail.jpg"
-        thumbnail_path = os.path.join(UPLOAD_FOLDER, thumbnail_name)
-        cv2.imwrite(thumbnail_path, frame)
+
+        thumbnail_name = (
+            file.filename.rsplit(".", 1)[0]
+            + "_thumbnail.jpg"
+        )
+
+        thumbnail_path = os.path.join(
+            UPLOAD_FOLDER,
+            thumbnail_name
+        )
+
+        cv2.imwrite(
+            thumbnail_path,
+            frame
+        )
 
     cap.release()
 
     video_info = {
+
         "width": width,
+
         "height": height,
+
         "fps": round(fps, 2),
+
         "total_frames": frame_count,
-        "duration_seconds": round(duration, 2),
+
+        "duration_seconds": round(duration, 2)
+
     }
 
     # -----------------------------
     # Generate PDF Report
     # -----------------------------
     pdf_path = generate_pdf_report(
+
         filename=file.filename,
+
         thumbnail_path=thumbnail_path,
+
         video_info=video_info,
+
         joint_angles=joint_angles,
-        movement_analysis=risk_report["movement_quality"],
-        injury_risk=risk_report["injury_risk"],
+
+        movement_analysis=risk_report[
+            "movement_quality"
+        ],
+
+        injury_risk=risk_report[
+            "injury_risk"
+        ],
+
         injury_prediction=prediction,
+
         movement_anomalies=anomalies,
+
         risk_score=risk_score,
-        recommendations=recommendations,
+
+        recommendations=recommendations
+
     )
+
+    # -----------------------------
+    # Find Athlete Name
+    # -----------------------------
+    athlete_name = athlete_email
+
+    if os.path.exists(DATA_FILE):
+
+        with open(DATA_FILE, "r") as f:
+
+            users = json.load(f)
+
+        for user in users:
+
+            if user["email"] == athlete_email:
+
+                athlete_name = user["name"]
+
+                break
+
+    # -----------------------------
+    # Save Analysis History
+    # -----------------------------
+    history = []
+
+    if os.path.exists(HISTORY_FILE):
+
+        with open(HISTORY_FILE, "r") as f:
+
+            history = json.load(f)
+
+    history.append({
+
+        "date": datetime.now().strftime(
+            "%Y-%m-%d %H:%M"
+        ),
+
+        "athlete_name": athlete_name,
+
+        "athlete_email": athlete_email,
+
+        "video": file.filename,
+
+        "video_info": video_info,
+
+        "joint_angles": joint_angles,
+
+        "movement_analysis": risk_report[
+            "movement_quality"
+        ],
+
+        "injury_prediction": prediction,
+
+        "movement_anomalies": anomalies,
+
+        "risk_score": risk_score,
+
+        "recommendations": recommendations,
+
+        "injury_risk": risk_report[
+            "injury_risk"
+        ],
+
+        "report": pdf_path
+
+    })
+
+    with open(HISTORY_FILE, "w") as f:
+
+        json.dump(
+            history,
+            f,
+            indent=4
+        )
 
     # -----------------------------
     # API Response
     # -----------------------------
     return {
+
         "message": "Video uploaded successfully",
+
+        "athlete_name": athlete_name,
+
+        "athlete_email": athlete_email,
+
         "filename": file.filename,
+
         "processed_video": output_path,
+
         "video_info": video_info,
+
         "joint_angles": joint_angles,
-        "movement_analysis": risk_report["movement_quality"],
+
+        "movement_analysis": risk_report[
+            "movement_quality"
+        ],
+
         "injury_prediction": prediction,
+
         "movement_anomalies": anomalies,
+
         "risk_score": risk_score,
+
         "recommendations": recommendations,
-        "injury_risk": risk_report["injury_risk"],
+
+        "injury_risk": risk_report[
+            "injury_risk"
+        ],
+
         "report": pdf_path
+
     }

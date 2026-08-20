@@ -5,24 +5,22 @@ function RecommendationCard({ recommendations }) {
   if (!recommendations || recommendations.length === 0) return null;
 
   return (
-
     <div className="card recommendation-card">
 
       <div className="card-header">
-        <span className="card-icon"></span>
-        <h3>AI Recommendations</h3>
+        <h3>💡 AI Recommendations</h3>
       </div>
 
       <div className="recommendation-list">
 
-        {recommendations.map((item,index)=>(
+        {recommendations.map((item, index) => (
 
           <div
             key={index}
-            className="recommendation-box"
+            className="recommendation-item"
           >
 
-            <div className="recommendation-check">
+            <div className="recommendation-icon">
               ✓
             </div>
 
@@ -37,7 +35,6 @@ function RecommendationCard({ recommendations }) {
       </div>
 
     </div>
-
   );
 
 }

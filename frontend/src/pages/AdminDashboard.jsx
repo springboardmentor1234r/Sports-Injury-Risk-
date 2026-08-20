@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import {
+    FaUsers,
+    FaUserShield,
+    FaUserTie,
+    FaRunning
+} from "react-icons/fa";
+
 import api from "../services/api";
+
+import DashboardHeader from "../components/dashboard/DashboardHeader";
+import StatsCard from "../components/dashboard/StatsCard";
+import RecentActivity from "../components/dashboard/RecentActivity";
+import MotivationCard from "../components/dashboard/MotivationCard";
+
 import "../styles/AdminDashboard.css";
 
 function AdminDashboard() {
@@ -10,7 +24,9 @@ function AdminDashboard() {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
+
         fetchUsers();
+
     }, []);
 
     const fetchUsers = async () => {
@@ -21,9 +37,11 @@ function AdminDashboard() {
 
             setUsers(response.data);
 
-        } catch (error) {
+        }
 
-            console.error("Error fetching users:", error);
+        catch (error) {
+
+            console.error(error);
 
         }
 
@@ -32,69 +50,64 @@ function AdminDashboard() {
     const totalUsers = users.length;
 
     const totalAdmins = users.filter(
-        (user) => user.role === "admin"
+        user => user.role === "admin"
     ).length;
 
     const totalCoaches = users.filter(
-        (user) => user.role === "coach"
+        user => user.role === "coach"
     ).length;
 
     const totalAthletes = users.filter(
-        (user) => user.role === "athlete"
+        user => user.role === "athlete"
     ).length;
 
     return (
 
         <div className="admin-dashboard">
 
-            {/* Header */}
-
-            <div className="admin-header">
-
-                <h1>Admin Dashboard</h1>
-
-                <p>
-                    Welcome back. Manage users, monitor platform activity,
-                    and oversee the Sports Injury Risk Detection System.
-                </p>
-
-            </div>
+            <DashboardHeader />
 
             {/* Statistics */}
 
             <div className="overview-grid">
 
-                <div className="overview-card">
+                <StatsCard
+                    title="Total Users"
+                    value={totalUsers}
+                    icon={<FaUsers />}
+                    subtitle="Registered Users"
+                />
 
-                    <h3>Total Users</h3>
+                <StatsCard
+                    title="Admins"
+                    value={totalAdmins}
+                    icon={<FaUserShield />}
+                    subtitle="System Administrators"
+                />
 
-                    <h1>{totalUsers}</h1>
+                <StatsCard
+                    title="Coaches"
+                    value={totalCoaches}
+                    icon={<FaUserTie />}
+                    subtitle="Registered Coaches"
+                />
 
-                </div>
+                <StatsCard
+                    title="Athletes"
+                    value={totalAthletes}
+                    icon={<FaRunning />}
+                    subtitle="Registered Athletes"
+                />
 
-                <div className="overview-card">
+            </div>
 
-                    <h3>Admins</h3>
+            {/* Dashboard Widgets */}
 
-                    <h1>{totalAdmins}</h1>
+            <div className="dashboard-widgets">
 
-                </div>
+                <RecentActivity />
 
-                <div className="overview-card">
-
-                    <h3>Coaches</h3>
-
-                    <h1>{totalCoaches}</h1>
-
-                </div>
-
-                <div className="overview-card">
-
-                    <h3>Athletes</h3>
-
-                    <h1>{totalAthletes}</h1>
-
-                </div>
+                <MotivationCard />
 
             </div>
 
@@ -111,9 +124,7 @@ function AdminDashboard() {
                         <tr>
 
                             <th>Name</th>
-
                             <th>Email</th>
-
                             <th>Role</th>
 
                         </tr>
@@ -122,42 +133,62 @@ function AdminDashboard() {
 
                     <tbody>
 
-                        {users.length === 0 ? (
+                        {
 
-                            <tr>
+                            users.length === 0 ?
 
-                                <td
-                                    colSpan="3"
-                                    style={{
-                                        textAlign: "center",
-                                        padding: "20px"
-                                    }}
-                                >
-                                    No users available.
-                                </td>
+                                (
 
-                            </tr>
+                                    <tr>
 
-                        ) : (
+                                        <td
+                                            colSpan="3"
+                                            style={{
+                                                textAlign: "center",
+                                                padding: "20px"
+                                            }}
+                                        >
 
-                            users.slice(-5).reverse().map((user, index) => (
+                                            No users available.
 
-                                <tr key={index}>
+                                        </td>
 
-                                    <td>{user.name}</td>
+                                    </tr>
 
-                                    <td>{user.email}</td>
+                                )
 
-                                    <td>
-                                        {user.role.charAt(0).toUpperCase() +
-                                            user.role.slice(1)}
-                                    </td>
+                                :
 
-                                </tr>
+                                users
+                                    .slice(-5)
+                                    .reverse()
+                                    .map((user, index) => (
 
-                            ))
+                                        <tr key={index}>
 
-                        )}
+                                            <td>{user.name}</td>
+
+                                            <td>{user.email}</td>
+
+                                            <td>
+
+                                                {
+
+                                                    user.role.charAt(0).toUpperCase()
+
+                                                    +
+
+                                                    user.role.slice(1)
+
+                                                }
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                        }
 
                     </tbody>
 
@@ -177,7 +208,9 @@ function AdminDashboard() {
 
                 <div
                     className="action-card"
-                    onClick={() => navigate("/dashboard/admin")}
+                    onClick={() =>
+                        navigate("/dashboard/admin")
+                    }
                 >
 
                     <h3>User Management</h3>
@@ -190,33 +223,39 @@ function AdminDashboard() {
 
                 <div
                     className="action-card"
-                    onClick={() => navigate("/dashboard/reports")}
+                    onClick={() =>
+                        navigate("/dashboard/reports")
+                    }
                 >
 
                     <h3>Reports</h3>
 
                     <p>
-                        View generated injury reports.
+                        View AI generated reports.
                     </p>
 
                 </div>
 
                 <div
                     className="action-card"
-                    onClick={() => navigate("/dashboard/history")}
+                    onClick={() =>
+                        navigate("/dashboard/history")
+                    }
                 >
 
                     <h3>History</h3>
 
                     <p>
-                        View platform activity history.
+                        View previous analyses.
                     </p>
 
                 </div>
 
                 <div
                     className="action-card"
-                    onClick={() => navigate("/dashboard/settings")}
+                    onClick={() =>
+                        navigate("/dashboard/settings")
+                    }
                 >
 
                     <h3>Settings</h3>

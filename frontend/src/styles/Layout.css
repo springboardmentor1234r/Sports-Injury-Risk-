@@ -1,51 +1,109 @@
-.app-layout{
-    display:flex;
-    min-height:100vh;
-    background:#0B0B0B;
+/* =========================================
+   MAIN APPLICATION LAYOUT
+========================================= */
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: #0b0b0b;
 }
 
-.main-layout{
-    flex:1;
-    margin-left:250px;
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-    transition:margin-left .3s ease;
+
+/* =========================================
+   MAIN CONTENT
+========================================= */
+
+.main-layout {
+    flex: 1;
+    margin-left: 250px;
+    min-width: 0;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #0b0b0b;
+
+    transition: margin-left 0.3s ease;
 }
 
-/* Main Content */
 
-.content-area{
-    flex:1;
-    padding:12px 40px 35px;
-    overflow-y:auto;
-    background:#0B0B0B;
+/* =========================================
+   CONTENT AREA
+========================================= */
+
+.content-area {
+    flex: 1;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 35px 40px 50px;
+
+    background:
+        radial-gradient(
+            circle at 85% 10%,
+            rgba(0, 255, 136, 0.035),
+            transparent 30%
+        ),
+        #0b0b0b;
+
+    overflow-y: auto;
 }
 
-/* Tablet */
 
-@media(max-width:992px){
+/* =========================================
+   SCROLLBAR
+========================================= */
 
-    .main-layout{
-        margin-left:85px;
+.content-area::-webkit-scrollbar {
+    width: 7px;
+}
+
+.content-area::-webkit-scrollbar-track {
+    background: #0b0b0b;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+    background: #26352d;
+    border-radius: 10px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+    background: #00e87a;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 992px) {
+
+    .main-layout {
+        margin-left: 85px;
     }
 
-    .content-area{
-        padding:30px;
+    .content-area {
+        padding: 30px;
     }
 
 }
 
-/* Mobile */
 
-@media(max-width:768px){
+/* =========================================
+   MOBILE
+========================================= */
 
-    .main-layout{
-        margin-left:0;
+@media (max-width: 768px) {
+
+    .main-layout {
+        margin-left: 0;
     }
 
-    .content-area{
-    padding:20px 40px 35px;
-}
+    .content-area {
+        padding: 25px 20px 40px;
+    }
 
 }
