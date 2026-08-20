@@ -216,3 +216,28 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Uploaded video files (large binary files, not for version control)
+backend/uploads/
+uploads/
+*.mp4
+*.avi
+*.mov
+
+# Node modules & builds
+node_modules/
+**/node_modules/
+**/dist/
+**/.vite/
+
+# Python Virtual Environments & Caches
+venv/
+**/venv/
+**/__pycache__/
+*.pyc
+
+# Local helper scripts & sensitive files
+organize_milestones.py
+.env
+.env.*
+.DS_Store
