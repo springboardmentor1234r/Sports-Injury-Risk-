@@ -14,6 +14,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
   const landmarkerRef = useRef(null);
   const isMountedRef = useRef(true);
 
+  const [blobSrc, setBlobSrc] = useState(null);
   const [poseReady, setPoseReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
@@ -28,6 +29,42 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
     [24, 26], [26, 28], [28, 30], [28, 32]
   ];
 
+  // Fetch video as a local same-origin Blob URL to prevent CORS canvas security errors
+  useEffect(() => {
+    let active = true;
+    let urlToRevoke = null;
+
+    if (!src) return;
+
+    if (src.startsWith('blob:') || src.startsWith('data:')) {
+      setBlobSrc(src);
+      return;
+    }
+
+    fetch(src)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (active) {
+          const objectUrl = URL.createObjectURL(blob);
+          urlToRevoke = objectUrl;
+          setBlobSrc(objectUrl);
+        }
+      })
+      .catch((err) => {
+        console.warn('PoseOverlayVideo blob fetch failed, using original src:', err);
+        if (active) setBlobSrc(src);
+      });
+
+    return () => {
+      active = false;
+      if (urlToRevoke) URL.revokeObjectURL(urlToRevoke);
+    };
+  }, [src]);
+
+  // Load MediaPipe PoseLandmarker
   useEffect(() => {
     isMountedRef.current = true;
 
@@ -135,7 +172,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
         const getY = (lm) => rect.top + lm.y * rect.height;
 
         // Draw yellow/gold skeleton bone lines
-        ctx.lineWidth = Math.max(3, Math.round(rect.width / 140));
+        ctx.lineWidth = Math.max(3.5, Math.round(rect.width / 130));
         ctx.strokeStyle = '#facc15';
         ctx.shadowColor = '#fef08a';
         ctx.shadowBlur = 8;
@@ -158,7 +195,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
         // Draw bright red joint nodes
         ctx.shadowColor = '#ef4444';
         ctx.shadowBlur = 10;
-        const radius = Math.max(4.5, Math.round(rect.width / 110));
+        const radius = Math.max(5, Math.round(rect.width / 100));
 
         lms.forEach((lm) => {
           if (lm && (lm.visibility === undefined || lm.visibility > 0.2)) {
@@ -206,7 +243,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
   if (loadError) {
     return (
       <video
-        src={src}
+        src={blobSrc || src}
         controls
         crossOrigin="anonymous"
         style={{
@@ -239,7 +276,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
     >
       <video
         ref={videoRef}
-        src={src}
+        src={blobSrc || src}
         controls
         crossOrigin="anonymous"
         onPlay={startLoop}

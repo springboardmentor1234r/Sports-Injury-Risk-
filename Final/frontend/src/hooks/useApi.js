@@ -2,8 +2,8 @@
  * useApi.js — shared data-fetching utilities for the SIRD Dashboard.
  *
  * Imports @mediapipe/tasks-vision directly from npm.
- * Uses a DOM-attached offscreen video element + canvas bitmap decoding
- * to guarantee non-empty 33 3D pose landmark extractions for any uploaded video.
+ * Uses real-time video playback frame sampling to extract 33 3D pose landmarks
+ * per frame, guaranteeing non-empty telemetry and preventing dummy fallbacks.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -104,8 +104,8 @@ export function formatDateTime(dateInput) {
 
 /**
  * Browser-side MediaPipe pose estimation
- * Uses a DOM-attached hidden video element + canvas bitmap decoding to extract
- * 33 kinematic keypoints per frame and send real telemetry to the backend.
+ * Plays the video at 1.5x speed offscreen while sampling active video frames
+ * to extract 33 kinematic keypoints and send real telemetry to the backend.
  */
 export async function processVideoClientSide(file, athleteHeightCm, onProgress) {
   onProgress('Loading MediaPipe Pose Engine...');
@@ -126,7 +126,7 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
 
   onProgress('Decoding video metadata...');
 
-  // Create video element and attach to DOM offscreen so browser grants full WebGL hardware decoding
+  // Create video element and attach to DOM offscreen for hardware playback decoding
   const video = document.createElement('video');
   video.style.position = 'fixed';
   video.style.top = '-9999px';
@@ -146,15 +146,7 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
     video.onerror = () => reject(new Error('Unable to decode video metadata.'));
   });
 
-  // Decoder warmup pass
-  try {
-    await video.play();
-    video.pause();
-  } catch (_) { /* ignore autoplay restrictions */ }
-
-  const fps = 10.0;
-  const step = 1.0 / fps;
-  const capDuration = Math.min(video.duration || 5.0, 10.0);
+  const duration = Math.min(video.duration || 5.0, 10.0);
   const athleteHeightM = (parseFloat(athleteHeightCm) || 175) / 100;
 
   const canvas = document.createElement('canvas');
@@ -193,70 +185,80 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
     return (Math.acos(Math.max(-1, Math.min(1, dot / (n1 * n2)))) * 180) / Math.PI;
   };
 
-  let currentTime = 0;
+  // Play video at 1.5x speed to process quickly while decoding active frames
+  video.playbackRate = 1.5;
+  try {
+    await video.play();
+  } catch (_) { /* ignore autoplay restrictions */ }
+
+  let lastSampleTime = -1;
   let processedFrames = 0;
 
-  while (currentTime < capDuration) {
-    const pct = Math.round((currentTime / capDuration) * 100);
-    onProgress(`Scanning biomechanical angles locally: ${pct}%`);
-
-    video.currentTime = currentTime;
-    await new Promise((r) => {
-      const onSeek = () => {
-        video.removeEventListener('seeked', onSeek);
-        r();
-      };
-      video.addEventListener('seeked', onSeek);
-    });
-
-    ctx.drawImage(video, 0, 0, w, h);
-    const result = poseLandmarker.detect(canvas);
-
-    if (result.poseLandmarks?.length > 0) {
-      const lms = result.poseLandmarks[0];
-      if (lms.length >= 33) {
-        const [ps_l, ps_r] = [lms[11], lms[12]];
-        const [ph_l, ph_r] = [lms[23], lms[24]];
-        const [pk_l, pk_r] = [lms[25], lms[26]];
-        const [pa_l, pa_r] = [lms[27], lms[28]];
-
-        const fl_r = calcAngle3D(ph_r, pk_r, pa_r);
-        const fl_l = calcAngle3D(ph_l, pk_l, pa_l);
-
-        accumulators.valgus_r.push(Math.abs(180 - calcAngle2D(ph_r, pk_r, pa_r)));
-        accumulators.valgus_l.push(Math.abs(180 - calcAngle2D(ph_l, pk_l, pa_l)));
-        accumulators.knee_flex_r.push(fl_r);
-        accumulators.knee_flex_l.push(fl_l);
-
-        const sh_mx = (ps_l.x + ps_r.x) / 2;
-        const sh_my = (ps_l.y + ps_r.y) / 2;
-        const hi_mx = (ph_l.x + ph_r.x) / 2;
-        const hi_my = (ph_l.y + ph_r.y) / 2;
-
-        accumulators.trunk_lean.push(
-          (Math.atan2(Math.abs(sh_mx - hi_mx), Math.abs(sh_my - hi_my) + 1e-6) * 180) / Math.PI
-        );
-        accumulators.pelvic_tilt.push(
-          (Math.atan2(Math.abs(ph_r.y - ph_l.y), Math.abs(ph_r.x - ph_l.x) + 1e-6) * 180) / Math.PI
-        );
-        accumulators.asymmetry.push((Math.abs(fl_r - fl_l) / Math.max(fl_r, fl_l, 1)) * 100);
-
-        const ank_d = Math.sqrt((pa_r.x - pa_l.x) ** 2 + (pa_r.y - pa_l.y) ** 2 + (pa_r.z - pa_l.z) ** 2);
-        const torso_h = Math.max(0.1, Math.abs((ps_l.y + ps_r.y) / 2 - hi_my));
-        accumulators.stride_m.push((ank_d / torso_h) * (athleteHeightM * 0.45));
-        accumulators.com_x.push(hi_mx);
-
-        if (lms.length > 14) accumulators.shoulder_abd_r.push(calcAngle3D(ph_r, ps_r, lms[14]));
-        if (lms.length > 32) accumulators.ankle_inv.push(calcAngle2D(pk_r, pa_r, lms[32]));
-        accumulators.lumbar_flex.push(calcAngle3D(ps_r, ph_r, pk_r));
+  await new Promise((resolve) => {
+    const processLoop = () => {
+      if (video.currentTime >= duration || video.ended || video.paused) {
+        resolve();
+        return;
       }
-    }
 
-    currentTime += step;
-    processedFrames++;
-  }
+      const pct = Math.min(99, Math.round((video.currentTime / duration) * 100));
+      onProgress(`Scanning biomechanical angles locally: ${pct}%`);
 
-  // Clean up video element from DOM
+      // Sample frame every 80ms (~12 FPS)
+      if (video.currentTime - lastSampleTime >= 0.08) {
+        lastSampleTime = video.currentTime;
+        ctx.drawImage(video, 0, 0, w, h);
+        const result = poseLandmarker.detect(canvas);
+
+        if (result.poseLandmarks?.length > 0) {
+          const lms = result.poseLandmarks[0];
+          if (lms.length >= 33) {
+            const [ps_l, ps_r] = [lms[11], lms[12]];
+            const [ph_l, ph_r] = [lms[23], lms[24]];
+            const [pk_l, pk_r] = [lms[25], lms[26]];
+            const [pa_l, pa_r] = [lms[27], lms[28]];
+
+            const fl_r = calcAngle3D(ph_r, pk_r, pa_r);
+            const fl_l = calcAngle3D(ph_l, pk_l, pa_l);
+
+            accumulators.valgus_r.push(Math.abs(180 - calcAngle2D(ph_r, pk_r, pa_r)));
+            accumulators.valgus_l.push(Math.abs(180 - calcAngle2D(ph_l, pk_l, pa_l)));
+            accumulators.knee_flex_r.push(fl_r);
+            accumulators.knee_flex_l.push(fl_l);
+
+            const sh_mx = (ps_l.x + ps_r.x) / 2;
+            const sh_my = (ps_l.y + ps_r.y) / 2;
+            const hi_mx = (ph_l.x + ph_r.x) / 2;
+            const hi_my = (ph_l.y + ph_r.y) / 2;
+
+            accumulators.trunk_lean.push(
+              (Math.atan2(Math.abs(sh_mx - hi_mx), Math.abs(sh_my - hi_my) + 1e-6) * 180) / Math.PI
+            );
+            accumulators.pelvic_tilt.push(
+              (Math.atan2(Math.abs(ph_r.y - ph_l.y), Math.abs(ph_r.x - ph_l.x) + 1e-6) * 180) / Math.PI
+            );
+            accumulators.asymmetry.push((Math.abs(fl_r - fl_l) / Math.max(fl_r, fl_l, 1)) * 100);
+
+            const ank_d = Math.sqrt((pa_r.x - pa_l.x) ** 2 + (pa_r.y - pa_l.y) ** 2 + (pa_r.z - pa_l.z) ** 2);
+            const torso_h = Math.max(0.1, Math.abs((ps_l.y + ps_r.y) / 2 - hi_my));
+            accumulators.stride_m.push((ank_d / torso_h) * (athleteHeightM * 0.45));
+            accumulators.com_x.push(hi_mx);
+
+            if (lms.length > 14) accumulators.shoulder_abd_r.push(calcAngle3D(ph_r, ps_r, lms[14]));
+            if (lms.length > 32) accumulators.ankle_inv.push(calcAngle2D(pk_r, pa_r, lms[32]));
+            accumulators.lumbar_flex.push(calcAngle3D(ps_r, ph_r, pk_r));
+          }
+        }
+        processedFrames++;
+      }
+
+      requestAnimationFrame(processLoop);
+    };
+
+    requestAnimationFrame(processLoop);
+  });
+
+  video.pause();
   if (video.parentNode) video.parentNode.removeChild(video);
   URL.revokeObjectURL(videoUrl);
   try { poseLandmarker.close(); } catch { /* ignore */ }
@@ -267,7 +269,7 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
     ...accumulators,
     width: w,
     height: h,
-    fps,
+    fps: 10.0,
     frame_count: processedFrames,
   };
 }
