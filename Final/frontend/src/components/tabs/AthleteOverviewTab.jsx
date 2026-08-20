@@ -9,7 +9,7 @@ import {
   FileDown, FileSpreadsheet, UploadCloud, Camera, Circle, Square,
 } from 'lucide-react';
 import { Video, ShieldAlert } from 'lucide-react';
-import { API_BASE, processVideoClientSide, invalidateCache } from '../../hooks/useApi';
+import { API_BASE, processVideoClientSide, invalidateCache, formatDateTime } from '../../hooks/useApi';
 
 export default function AthleteOverviewTab({
   user, token, athleteProfile, latestAnalysis, setLatestAnalysis,
@@ -247,6 +247,9 @@ export default function AthleteOverviewTab({
               <span className="summary-title-label">Latest Assessment Result</span>
               <h4>{latestAnalysis.filename}</h4>
               <div className="analysis-id-badge">ID: {latestAnalysis.analysis_id}</div>
+              <div className="analysis-time-badge" style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                📅 Processed: {formatDateTime(latestAnalysis.upload_date || latestAnalysis.created_at || new Date())}
+              </div>
             </div>
             <div className="outcome-metrics-grid">
               <div className="outcome-metric-box">

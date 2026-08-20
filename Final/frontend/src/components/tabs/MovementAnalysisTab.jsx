@@ -6,7 +6,7 @@
 import React from 'react';
 import { Video, AlertTriangle } from 'lucide-react';
 import PoseOverlayVideo from '../PoseOverlayVideo';
-import { getVideoSource } from '../../hooks/useApi';
+import { getVideoSource, formatDateTime } from '../../hooks/useApi';
 
 export default function MovementAnalysisTab({ latestAnalysis, predictionReport, athleteName }) {
   if (!latestAnalysis) {
@@ -26,13 +26,53 @@ export default function MovementAnalysisTab({ latestAnalysis, predictionReport, 
 
   const metrics = latestAnalysis.metrics || {};
 
+  // Extract numerical values to calculate dynamic bar widths and colors
+  const parseVal = (str, fallback) => {
+    if (!str) return fallback;
+    const match = String(str).match(/([\d.]+)/);
+    return match ? parseFloat(match[1]) : fallback;
+  };
+
+  const valgusDeg = parseVal(metrics.knee_valgus, 5.2);
+  const hipDeg = parseVal(metrics.hip_stability, 1.8);
+  const trunkDeg = parseVal(metrics.trunk_lean, 8.5);
+  const flexDeg = parseVal(metrics.landing_mechanics, 42.0);
+  const alignPct = parseVal(metrics.joint_alignment, 93.6);
+
   const angleItems = [
-    { label: 'Knee Valgus', value: metrics.knee_valgus, width: '82%', cls: 'optimal' },
-    { label: 'Hip Stability', value: metrics.hip_stability, width: '75%', cls: 'optimal' },
-    { label: 'Trunk Lean', value: metrics.trunk_lean, width: '80%', cls: 'optimal' },
-    { label: 'Landing Mechanics', value: metrics.landing_mechanics, width: '65%', cls: 'optimal' },
-    { label: 'Joint Alignment', value: metrics.joint_alignment, width: '72%', cls: 'optimal' },
+    {
+      label: 'Knee Valgus',
+      value: metrics.knee_valgus,
+      width: `${Math.min(100, Math.max(25, (valgusDeg / 25) * 100))}%`,
+      cls: valgusDeg > 12 ? 'warning' : 'optimal',
+    },
+    {
+      label: 'Hip Stability',
+      value: metrics.hip_stability,
+      width: `${Math.min(100, Math.max(30, (hipDeg / 15) * 100))}%`,
+      cls: hipDeg > 6 ? 'warning' : 'optimal',
+    },
+    {
+      label: 'Trunk Lean',
+      value: metrics.trunk_lean,
+      width: `${Math.min(100, Math.max(30, (trunkDeg / 25) * 100))}%`,
+      cls: trunkDeg > 15 ? 'warning' : 'optimal',
+    },
+    {
+      label: 'Landing Mechanics',
+      value: metrics.landing_mechanics,
+      width: `${Math.min(100, Math.max(30, (flexDeg / 90) * 100))}%`,
+      cls: flexDeg < 35 ? 'warning' : 'optimal',
+    },
+    {
+      label: 'Joint Alignment',
+      value: metrics.joint_alignment,
+      width: `${Math.min(100, Math.max(40, alignPct))}%`,
+      cls: alignPct < 85 ? 'warning' : 'optimal',
+    },
   ];
+
+  const processedDateStr = formatDateTime(latestAnalysis.upload_date || latestAnalysis.created_at);
 
   return (
     <div className="content-hero-card animate-fade-in">
@@ -46,7 +86,14 @@ export default function MovementAnalysisTab({ latestAnalysis, predictionReport, 
         {/* Pose overlay video */}
         {latestAnalysis.video_url && (
           <div className="video-player-card" style={{ marginBottom: 20, backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: 24 }}>
-            <h3 style={{ marginBottom: 16, fontSize: '1.15rem', fontWeight: 800 }}>Biomechanical Pose Tracking Video</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Biomechanical Pose Tracking Video</h3>
+              {processedDateStr && (
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  📅 Processed: {processedDateStr}
+                </span>
+              )}
+            </div>
             <PoseOverlayVideo
               key={latestAnalysis.video_url || latestAnalysis.analysis_id}
               src={getVideoSource(latestAnalysis.video_url)}
@@ -80,7 +127,14 @@ export default function MovementAnalysisTab({ latestAnalysis, predictionReport, 
 
         {/* Kinematic angle bars */}
         <div className="joint-angles-card">
-          <h3>Pose Estimation Kinematic Angles ({latestAnalysis.filename})</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+            <h3 style={{ margin: 0 }}>Pose Estimation Kinematic Angles ({latestAnalysis.filename})</h3>
+            {processedDateStr && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                📅 {processedDateStr}
+              </span>
+            )}
+          </div>
           <div className="angles-list">
             {angleItems.map(({ label, value, width, cls }) => value ? (
               <div key={label} className="angle-item">

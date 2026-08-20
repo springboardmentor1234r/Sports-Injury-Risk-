@@ -1,27 +1,19 @@
 /**
  * useApi.js — shared data-fetching utilities for the SIRD Dashboard.
  *
- * All API calls now live here so each tab component doesn't have to
+ * All API calls live here so each tab component doesn't have to
  * carry its own fetch + loading + error boilerplate.
  *
  * Also contains processVideoClientSide() — the browser-side MediaPipe
- * pose estimation that was previously baked into Dashboard.jsx.
- * Sending the computed telemetry to the server means the backend never
- * needs to run MediaPipe itself, fixing the Render production bypass.
+ * pose estimation that extracts 33 kinematic landmarks per frame.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-// ---------------------------------------------------------------------------
-// Simple in-memory cache so navigating between tabs doesn't re-fetch
-// ---------------------------------------------------------------------------
 const _cache = new Map();
 
 export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// ---------------------------------------------------------------------------
-// Generic fetch helper
-// ---------------------------------------------------------------------------
 export async function apiFetch(path, token, options = {}) {
   const url = `${API_BASE}${path}`;
   const res = await fetch(url, {
@@ -38,10 +30,6 @@ export async function apiFetch(path, token, options = {}) {
   return res.json();
 }
 
-// ---------------------------------------------------------------------------
-// useQuery — lightweight replacement for useEffect+fetch pattern.
-// Caches results for the lifetime of the page session.
-// ---------------------------------------------------------------------------
 export function useQuery(cacheKey, fetcher, deps = []) {
   const [data, setData] = useState(() => _cache.get(cacheKey) ?? null);
   const [loading, setLoading] = useState(!_cache.has(cacheKey));
@@ -70,16 +58,10 @@ export function useQuery(cacheKey, fetcher, deps = []) {
   return { data, loading, error, refetch };
 }
 
-// ---------------------------------------------------------------------------
-// Invalidate a cache key (call after mutations / uploads)
-// ---------------------------------------------------------------------------
 export function invalidateCache(...keys) {
   keys.forEach((k) => _cache.delete(k));
 }
 
-// ---------------------------------------------------------------------------
-// Utility helpers
-// ---------------------------------------------------------------------------
 export function getVideoSource(url) {
   if (!url) return '';
   if (url.startsWith('http://localhost:8000')) {
@@ -95,26 +77,37 @@ export function formatDateTime(dateInput) {
   if (!dateInput) return '';
   try {
     let d = dateInput;
-    if (typeof dateInput === 'string' && !dateInput.endsWith('Z') && !dateInput.includes('+')) {
-      d = dateInput + 'Z';
+    if (typeof dateInput === 'object' && dateInput !== null) {
+      if (dateInput.$date) d = dateInput.$date;
     }
-    const parsed = new Date(d);
-    if (isNaN(parsed.getTime())) return String(dateInput);
-    return parsed.toLocaleString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric',
-      hour: 'numeric', minute: '2-digit', hour12: true,
+    if (typeof d === 'number') {
+      d = new Date(d);
+    } else if (typeof d === 'string') {
+      if (!d.endsWith('Z') && !d.includes('+') && !d.includes('GMT')) {
+        d = d + 'Z';
+      }
+      d = new Date(d);
+    }
+    if (isNaN(d.getTime())) return String(dateInput);
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
     });
   } catch {
     return String(dateInput);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Browser-side MediaPipe pose estimation
-// FIX: This runs entirely in the browser and sends computed telemetry to the
-// backend, so the server never needs MediaPipe at all — removing the Render
-// bypass issue entirely.
-// ---------------------------------------------------------------------------
+/**
+ * Browser-side MediaPipe pose estimation
+ * Uses an offscreen Canvas + Video element to guarantee video frame decoding.
+ * Extracts 33 joint keypoints per frame to send real telemetry to the backend.
+ */
 export async function processVideoClientSide(file, athleteHeightCm, onProgress) {
   onProgress('Loading MediaPipe WebAssembly vision bundle...');
   const visionModule = await import(
@@ -153,6 +146,14 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
   const capDuration = Math.min(video.duration || 5.0, 10.0);
   const athleteHeightM = (parseFloat(athleteHeightCm) || 175) / 100;
 
+  // Offscreen canvas for frame extraction
+  const canvas = document.createElement('canvas');
+  const w = video.videoWidth || 640;
+  const h = video.videoHeight || 480;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
   const accumulators = {
     valgus_r: [], valgus_l: [],
     knee_flex_r: [], knee_flex_l: [],
@@ -185,14 +186,25 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
   let currentTime = 0;
   let processedFrames = 0;
 
+  // Start video playback to ensure browser decodes frame buffers
+  try {
+    await video.play();
+  } catch (_) {
+    /* ignore autoplay restrictions on muted offscreen element */
+  }
+
   while (currentTime < capDuration) {
     const pct = Math.round((currentTime / capDuration) * 100);
-    onProgress(`Scanning biomechanical angles locally: ${pct}%`);
+    onProgress(`Scanning biomechanical angles locally: ${pct}% (${processedFrames} frames)`);
 
     video.currentTime = currentTime;
-    await new Promise((r) => { video.onseeked = r; });
+    await new Promise((r) => { video.onseeked = r; setTimeout(r, 40); });
 
-    const result = poseLandmarker.detectForVideo(video, Math.round(currentTime * 1000));
+    // Draw frame onto canvas to guarantee pixel data
+    ctx.drawImage(video, 0, 0, w, h);
+
+    const timestampMs = Math.round(currentTime * 1000);
+    const result = poseLandmarker.detectForVideo(canvas, timestampMs);
 
     if (result.poseLandmarks?.length > 0) {
       const lms = result.poseLandmarks[0];
@@ -238,14 +250,16 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
     processedFrames++;
   }
 
+  video.pause();
+  URL.revokeObjectURL(video.src);
   try { poseLandmarker.close(); } catch { /* ignore */ }
 
   onProgress('Uploading movement telemetry to server...');
 
   return {
     ...accumulators,
-    width: video.videoWidth || 640,
-    height: video.videoHeight || 480,
+    width: w,
+    height: h,
     fps,
     frame_count: processedFrames,
   };

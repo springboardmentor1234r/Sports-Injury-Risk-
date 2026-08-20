@@ -3,16 +3,15 @@ import React, { useRef, useEffect, useState } from 'react';
 /**
  * PoseOverlayVideo
  * Plays a video and renders a real-time MediaPipe Pose skeleton overlay
- * (yellow bone connections + red joint nodes) on a canvas on top of it.
+ * (yellow bone connections + red joint nodes) on a transparent canvas on top of it.
  */
 export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
-  const poseRef = useRef(null);
-  const latestLandmarksRef = useRef(null);
-  const lastPoseSendTimeRef = useRef(0);
+  const landmarkerRef = useRef(null);
   const isMountedRef = useRef(true);
+  const lastTimeRef = useRef(0);
 
   const [poseReady, setPoseReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -28,53 +27,41 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
     [24, 26], [26, 28], [28, 30], [28, 32]
   ];
 
-  // Load MediaPipe Pose from CDN once
   useEffect(() => {
     isMountedRef.current = true;
 
     const initPose = async () => {
       try {
-        if (!window.Pose) {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js';
-            s.crossOrigin = 'anonymous';
-            s.onload = resolve;
-            s.onerror = reject;
-            document.body.appendChild(s);
-          });
-        }
+        const visionModule = await import(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/vision_bundle.mjs'
+        );
+        const { FilesetResolver, PoseLandmarker } = visionModule;
+
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/wasm'
+        );
 
         if (!isMountedRef.current) return;
 
-        // Close any existing pose instance to avoid WASM conflicts
-        if (poseRef.current) {
-          try { poseRef.current.close(); } catch (_) {}
-          poseRef.current = null;
+        const landmarker = await PoseLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+            delegate: 'GPU',
+          },
+          runningMode: 'VIDEO',
+          numPoses: 1,
+        });
+
+        if (!isMountedRef.current) {
+          try { landmarker.close(); } catch (_) {}
+          return;
         }
 
-        const pose = new window.Pose({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-        });
-
-        pose.setOptions({
-          modelComplexity: 1,
-          smoothLandmarks: true,
-          enableSegmentation: false,
-          minDetectionConfidence: 0.45,
-          minTrackingConfidence: 0.45
-        });
-
-        pose.onResults((results) => {
-          if (isMountedRef.current) {
-            latestLandmarksRef.current = results.poseLandmarks || null;
-          }
-        });
-
-        poseRef.current = pose;
-        if (isMountedRef.current) setPoseReady(true);
+        landmarkerRef.current = landmarker;
+        setPoseReady(true);
       } catch (err) {
-        console.error('PoseOverlayVideo: MediaPipe load error:', err);
+        console.error('PoseOverlayVideo: Error loading PoseLandmarker:', err);
         setLoadError(true);
       }
     };
@@ -84,85 +71,92 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
     return () => {
       isMountedRef.current = false;
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      if (poseRef.current) {
-        try { poseRef.current.close(); } catch (_) {}
-        poseRef.current = null;
+      if (landmarkerRef.current) {
+        try { landmarkerRef.current.close(); } catch (_) {}
+        landmarkerRef.current = null;
       }
     };
   }, []);
 
-  // Draw loop: runs when video plays, syncing canvas to video frames
-  const drawLoop = async () => {
+  const drawLoop = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !isMountedRef.current) return;
 
     const ctx = canvas.getContext('2d');
+    const vw = video.videoWidth || 640;
+    const vh = video.videoHeight || 480;
 
-    // Keep canvas size in sync with video
-    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+    if (canvas.width !== vw || canvas.height !== vh) {
+      canvas.width = vw;
+      canvas.height = vh;
     }
 
-    const w = canvas.width;
-    const h = canvas.height;
+    ctx.clearRect(0, 0, vw, vh);
 
-    // Clear canvas (transparent - video element shows underneath)
-    ctx.clearRect(0, 0, w, h);
-
-    // Send frame to MediaPipe at ~20 FPS (every 50ms) to avoid overload
     const now = Date.now();
-    if (poseRef.current && !video.paused && !video.ended && now - lastPoseSendTimeRef.current > 50) {
-      lastPoseSendTimeRef.current = now;
+    if (
+      landmarkerRef.current &&
+      !video.paused &&
+      !video.ended &&
+      now - lastTimeRef.current > 40
+    ) {
+      lastTimeRef.current = now;
       try {
-        await poseRef.current.send({ image: video });
-      } catch (_) { /* ignore transient errors */ }
+        const timestampMs = Math.round(video.currentTime * 1000);
+        const result = landmarkerRef.current.detectForVideo(video, timestampMs);
+
+        if (result.poseLandmarks?.length > 0) {
+          const lms = result.poseLandmarks[0];
+
+          // Draw yellow/gold skeleton lines
+          ctx.lineWidth = Math.max(3, Math.round(vw / 180));
+          ctx.strokeStyle = '#facc15';
+          ctx.shadowColor = '#fef08a';
+          ctx.shadowBlur = 6;
+
+          POSE_CONNECTIONS.forEach(([i, j]) => {
+            const p1 = lms[i];
+            const p2 = lms[j];
+            if (
+              p1 && p2 &&
+              (p1.visibility === undefined || p1.visibility > 0.3) &&
+              (p2.visibility === undefined || p2.visibility > 0.3)
+            ) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x * vw, p1.y * vh);
+              ctx.lineTo(p2.x * vw, p2.y * vh);
+              ctx.stroke();
+            }
+          });
+
+          // Draw bright red joint dots
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 8;
+          const radius = Math.max(4, Math.round(vw / 140));
+
+          lms.forEach((lm) => {
+            if (lm && (lm.visibility === undefined || lm.visibility > 0.3)) {
+              ctx.beginPath();
+              ctx.arc(lm.x * vw, lm.y * vh, radius, 0, 2 * Math.PI);
+              ctx.fillStyle = '#ef4444';
+              ctx.fill();
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = '#ffffff';
+              ctx.stroke();
+            }
+          });
+
+          ctx.shadowBlur = 0;
+        }
+      } catch (_) {
+        /* ignore frame detection error */
+      }
     }
 
-    const landmarks = latestLandmarksRef.current;
-
-    if (landmarks && landmarks.length > 0) {
-      // --- Draw Bone Connections (Yellow glowing lines) ---
-      ctx.lineWidth = 3.5;
-      ctx.strokeStyle = '#eab308';
-      ctx.shadowColor = '#fef08a';
-      ctx.shadowBlur = 8;
-
-      POSE_CONNECTIONS.forEach(([i, j]) => {
-        const p1 = landmarks[i];
-        const p2 = landmarks[j];
-        if (
-          p1 && p2 &&
-          (p1.visibility === undefined || p1.visibility > 0.4) &&
-          (p2.visibility === undefined || p2.visibility > 0.4)
-        ) {
-          ctx.beginPath();
-          ctx.moveTo(p1.x * w, p1.y * h);
-          ctx.lineTo(p2.x * w, p2.y * h);
-          ctx.stroke();
-        }
-      });
-
-      // --- Draw Joint Nodes (Red glowing circles) ---
-      ctx.shadowColor = '#ef4444';
-      ctx.shadowBlur = 10;
-      landmarks.forEach((lm) => {
-        if (lm && (lm.visibility === undefined || lm.visibility > 0.4)) {
-          ctx.beginPath();
-          ctx.arc(lm.x * w, lm.y * h, 5.5, 0, 2 * Math.PI);
-          ctx.fillStyle = '#ef4444';
-          ctx.fill();
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = '#ffffff';
-          ctx.stroke();
-        }
-      });
-
-      ctx.shadowBlur = 0;
+    if (!video.paused && !video.ended) {
+      animFrameRef.current = requestAnimationFrame(drawLoop);
     }
-
-    animFrameRef.current = requestAnimationFrame(drawLoop);
   };
 
   const startLoop = () => {
@@ -175,16 +169,8 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
-    // Clear the canvas when paused/ended
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-    latestLandmarksRef.current = null;
   };
 
-  // If MediaPipe can't load, just render a normal <video>
   if (loadError) {
     return (
       <video
@@ -198,7 +184,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
           border: '1px solid var(--border-color)',
           backgroundColor: '#000',
           display: 'block',
-          ...style
+          ...style,
         }}
         className={className}
       />
@@ -219,7 +205,6 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
       }}
       className={className}
     >
-      {/* Underlying video element — canvas is transparent and drawn on top */}
       <video
         ref={videoRef}
         src={src}
@@ -228,14 +213,10 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
         onPlay={startLoop}
         onPause={stopLoop}
         onEnded={stopLoop}
-        onSeeked={() => {
-          // Re-draw a fresh frame after seek
-          if (videoRef.current && !videoRef.current.paused) startLoop();
-        }}
+        onSeeked={drawLoop}
         style={{ width: '100%', display: 'block' }}
       />
 
-      {/* Canvas overlay — pointer-events none so video controls still work */}
       <canvas
         ref={canvasRef}
         style={{
@@ -243,12 +224,11 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
           top: 0,
           left: 0,
           width: '100%',
-          height: 'calc(100% - 40px)', /* leave space for native video controls bar */
+          height: '100%',
           pointerEvents: 'none',
         }}
       />
 
-      {/* Status badge */}
       {!poseReady && (
         <div style={{
           position: 'absolute',
@@ -262,7 +242,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
           pointerEvents: 'none',
           fontWeight: 600,
         }}>
-          ⏳ Loading pose model…
+          ⏳ Loading pose tracking…
         </div>
       )}
 
@@ -279,7 +259,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
           pointerEvents: 'none',
           fontWeight: 600,
         }}>
-          🟢 Pose tracking active
+          🟢 Pose tracking overlay active
         </div>
       )}
     </div>
