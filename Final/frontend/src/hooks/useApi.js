@@ -1,14 +1,13 @@
 /**
  * useApi.js — shared data-fetching utilities for the SIRD Dashboard.
  *
- * All API calls live here so each tab component doesn't have to
- * carry its own fetch + loading + error boilerplate.
- *
- * Also contains processVideoClientSide() — the browser-side MediaPipe
- * pose estimation that extracts 33 kinematic landmarks per frame.
+ * Imports @mediapipe/tasks-vision from local npm module.
+ * Uses IMAGE mode for frame-by-frame pose landmark detection,
+ * guaranteeing landmark extraction on every uploaded video.
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 
 const _cache = new Map();
 
@@ -105,16 +104,10 @@ export function formatDateTime(dateInput) {
 
 /**
  * Browser-side MediaPipe pose estimation
- * Uses an offscreen Canvas + Video element to guarantee video frame decoding.
- * Extracts 33 joint keypoints per frame to send real telemetry to the backend.
+ * Uses IMAGE mode on canvas frames to extract 33 joint keypoints per frame.
  */
 export async function processVideoClientSide(file, athleteHeightCm, onProgress) {
-  onProgress('Loading MediaPipe WebAssembly vision bundle...');
-  const visionModule = await import(
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/vision_bundle.mjs'
-  );
-  const { FilesetResolver, PoseLandmarker } = visionModule;
-
+  onProgress('Loading MediaPipe Pose Engine...');
   const vision = await FilesetResolver.forVisionTasks(
     'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/wasm'
   );
@@ -126,7 +119,7 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
         'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
       delegate: 'GPU',
     },
-    runningMode: 'VIDEO',
+    runningMode: 'IMAGE',
     numPoses: 1,
   });
 
@@ -146,7 +139,6 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
   const capDuration = Math.min(video.duration || 5.0, 10.0);
   const athleteHeightM = (parseFloat(athleteHeightCm) || 175) / 100;
 
-  // Offscreen canvas for frame extraction
   const canvas = document.createElement('canvas');
   const w = video.videoWidth || 640;
   const h = video.videoHeight || 480;
@@ -186,25 +178,19 @@ export async function processVideoClientSide(file, athleteHeightCm, onProgress) 
   let currentTime = 0;
   let processedFrames = 0;
 
-  // Start video playback to ensure browser decodes frame buffers
   try {
     await video.play();
-  } catch (_) {
-    /* ignore autoplay restrictions on muted offscreen element */
-  }
+  } catch (_) { /* ignore autoplay restrictions */ }
 
   while (currentTime < capDuration) {
     const pct = Math.round((currentTime / capDuration) * 100);
-    onProgress(`Scanning biomechanical angles locally: ${pct}% (${processedFrames} frames)`);
+    onProgress(`Scanning biomechanical angles locally: ${pct}%`);
 
     video.currentTime = currentTime;
-    await new Promise((r) => { video.onseeked = r; setTimeout(r, 40); });
+    await new Promise((r) => { video.onseeked = r; setTimeout(r, 30); });
 
-    // Draw frame onto canvas to guarantee pixel data
     ctx.drawImage(video, 0, 0, w, h);
-
-    const timestampMs = Math.round(currentTime * 1000);
-    const result = poseLandmarker.detectForVideo(canvas, timestampMs);
+    const result = poseLandmarker.detect(canvas);
 
     if (result.poseLandmarks?.length > 0) {
       const lms = result.poseLandmarks[0];

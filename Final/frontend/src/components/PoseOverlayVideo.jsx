@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 
 /**
  * PoseOverlayVideo
@@ -8,10 +9,10 @@ import React, { useRef, useEffect, useState } from 'react';
 export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const offscreenCanvasRef = useRef(null);
   const animFrameRef = useRef(null);
   const landmarkerRef = useRef(null);
   const isMountedRef = useRef(true);
-  const lastTimeRef = useRef(0);
 
   const [poseReady, setPoseReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -32,11 +33,6 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
 
     const initPose = async () => {
       try {
-        const visionModule = await import(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/vision_bundle.mjs'
-        );
-        const { FilesetResolver, PoseLandmarker } = visionModule;
-
         const vision = await FilesetResolver.forVisionTasks(
           'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.11/wasm'
         );
@@ -49,7 +45,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
               'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
             delegate: 'GPU',
           },
-          runningMode: 'VIDEO',
+          runningMode: 'IMAGE',
           numPoses: 1,
         });
 
@@ -78,12 +74,11 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
     };
   }, []);
 
-  const drawLoop = () => {
+  const processFrame = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas || !isMountedRef.current) return;
+    if (!video || !canvas || !isMountedRef.current || !landmarkerRef.current) return;
 
-    const ctx = canvas.getContext('2d');
     const vw = video.videoWidth || 640;
     const vh = video.videoHeight || 480;
 
@@ -92,69 +87,76 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
       canvas.height = vh;
     }
 
-    ctx.clearRect(0, 0, vw, vh);
-
-    const now = Date.now();
-    if (
-      landmarkerRef.current &&
-      !video.paused &&
-      !video.ended &&
-      now - lastTimeRef.current > 40
-    ) {
-      lastTimeRef.current = now;
-      try {
-        const timestampMs = Math.round(video.currentTime * 1000);
-        const result = landmarkerRef.current.detectForVideo(video, timestampMs);
-
-        if (result.poseLandmarks?.length > 0) {
-          const lms = result.poseLandmarks[0];
-
-          // Draw yellow/gold skeleton lines
-          ctx.lineWidth = Math.max(3, Math.round(vw / 180));
-          ctx.strokeStyle = '#facc15';
-          ctx.shadowColor = '#fef08a';
-          ctx.shadowBlur = 6;
-
-          POSE_CONNECTIONS.forEach(([i, j]) => {
-            const p1 = lms[i];
-            const p2 = lms[j];
-            if (
-              p1 && p2 &&
-              (p1.visibility === undefined || p1.visibility > 0.3) &&
-              (p2.visibility === undefined || p2.visibility > 0.3)
-            ) {
-              ctx.beginPath();
-              ctx.moveTo(p1.x * vw, p1.y * vh);
-              ctx.lineTo(p2.x * vw, p2.y * vh);
-              ctx.stroke();
-            }
-          });
-
-          // Draw bright red joint dots
-          ctx.shadowColor = '#ef4444';
-          ctx.shadowBlur = 8;
-          const radius = Math.max(4, Math.round(vw / 140));
-
-          lms.forEach((lm) => {
-            if (lm && (lm.visibility === undefined || lm.visibility > 0.3)) {
-              ctx.beginPath();
-              ctx.arc(lm.x * vw, lm.y * vh, radius, 0, 2 * Math.PI);
-              ctx.fillStyle = '#ef4444';
-              ctx.fill();
-              ctx.lineWidth = 1.5;
-              ctx.strokeStyle = '#ffffff';
-              ctx.stroke();
-            }
-          });
-
-          ctx.shadowBlur = 0;
-        }
-      } catch (_) {
-        /* ignore frame detection error */
-      }
+    if (!offscreenCanvasRef.current) {
+      offscreenCanvasRef.current = document.createElement('canvas');
+    }
+    const offscreen = offscreenCanvasRef.current;
+    if (offscreen.width !== vw || offscreen.height !== vh) {
+      offscreen.width = vw;
+      offscreen.height = vh;
     }
 
-    if (!video.paused && !video.ended) {
+    const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+    offCtx.drawImage(video, 0, 0, vw, vh);
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, vw, vh);
+
+    try {
+      const result = landmarkerRef.current.detect(offscreen);
+
+      if (result.poseLandmarks?.length > 0) {
+        const lms = result.poseLandmarks[0];
+
+        // Draw yellow/gold skeleton lines
+        ctx.lineWidth = Math.max(3, Math.round(vw / 160));
+        ctx.strokeStyle = '#facc15';
+        ctx.shadowColor = '#fef08a';
+        ctx.shadowBlur = 8;
+
+        POSE_CONNECTIONS.forEach(([i, j]) => {
+          const p1 = lms[i];
+          const p2 = lms[j];
+          if (
+            p1 && p2 &&
+            (p1.visibility === undefined || p1.visibility > 0.25) &&
+            (p2.visibility === undefined || p2.visibility > 0.25)
+          ) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x * vw, p1.y * vh);
+            ctx.lineTo(p2.x * vw, p2.y * vh);
+            ctx.stroke();
+          }
+        });
+
+        // Draw bright red joint dots
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 10;
+        const radius = Math.max(4, Math.round(vw / 130));
+
+        lms.forEach((lm) => {
+          if (lm && (lm.visibility === undefined || lm.visibility > 0.25)) {
+            ctx.beginPath();
+            ctx.arc(lm.x * vw, lm.y * vh, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+          }
+        });
+
+        ctx.shadowBlur = 0;
+      }
+    } catch (err) {
+      /* ignore single frame detection error */
+    }
+  };
+
+  const drawLoop = () => {
+    processFrame();
+    const video = videoRef.current;
+    if (video && !video.paused && !video.ended) {
       animFrameRef.current = requestAnimationFrame(drawLoop);
     }
   };
@@ -169,6 +171,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
+    processFrame(); // Render one final frame when paused
   };
 
   if (loadError) {
@@ -213,7 +216,10 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
         onPlay={startLoop}
         onPause={stopLoop}
         onEnded={stopLoop}
-        onSeeked={drawLoop}
+        onSeeked={processFrame}
+        onTimeUpdate={() => {
+          if (videoRef.current && videoRef.current.paused) processFrame();
+        }}
         style={{ width: '100%', display: 'block' }}
       />
 
@@ -259,7 +265,7 @@ export default function PoseOverlayVideo({ src, style = {}, className = '' }) {
           pointerEvents: 'none',
           fontWeight: 600,
         }}>
-          🟢 Pose tracking overlay active
+          🟢 Pose tracking active
         </div>
       )}
     </div>
