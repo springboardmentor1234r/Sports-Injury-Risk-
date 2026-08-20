@@ -8,8 +8,7 @@ import React, { useRef, useState } from 'react';
 import {
   FileDown, FileSpreadsheet, UploadCloud, Camera, Circle, Square,
 } from 'lucide-react';
-import { Video, ShieldAlert } from 'lucide-react';
-import { API_BASE, processVideoClientSide, invalidateCache, formatDateTime } from '../../hooks/useApi';
+import { API_BASE, invalidateCache, formatDateTime } from '../../hooks/useApi';
 
 export default function AthleteOverviewTab({
   user, token, athleteProfile, latestAnalysis, setLatestAnalysis,
@@ -82,22 +81,15 @@ export default function AthleteOverviewTab({
     mediaRecorderRef.current.stop();
   };
 
-  // ── Core upload + client-side pose estimation ───────────────────────────
+  // ── Core video upload + AI pose analysis ──────────────────────────────
   const processFile = async (file) => {
     if (!file) return;
     setUploading(true);
     setErrorMsg('');
-    setProgress('Initializing MediaPipe Pose Engine...');
+    setProgress('Uploading & Processing Video with MediaPipe AI...');
     try {
-      const telemetry = await processVideoClientSide(
-        file,
-        athleteProfile?.height,
-        setProgress,
-      );
-
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('telemetry', JSON.stringify(telemetry));
 
       const res = await fetch(`${API_BASE}/api/videos/upload`, {
         method: 'POST',
@@ -119,7 +111,7 @@ export default function AthleteOverviewTab({
       );
       onUploadSuccess?.();
     } catch (err) {
-      setErrorMsg(err.message || 'Failed to scan and upload video.');
+      setErrorMsg(err.message || 'Failed to process and analyze video.');
     } finally {
       setUploading(false);
       setProgress('');

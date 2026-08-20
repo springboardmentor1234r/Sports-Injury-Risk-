@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { Video, AlertTriangle } from 'lucide-react';
-import PoseOverlayVideo from '../PoseOverlayVideo';
 import { getVideoSource, formatDateTime } from '../../hooks/useApi';
 
 export default function MovementAnalysisTab({ latestAnalysis, predictionReport, athleteName }) {
@@ -94,10 +93,12 @@ export default function MovementAnalysisTab({ latestAnalysis, predictionReport, 
                 </span>
               )}
             </div>
-            <PoseOverlayVideo
+            <video
               key={latestAnalysis.video_url || latestAnalysis.analysis_id}
               src={getVideoSource(latestAnalysis.video_url)}
-              style={{ maxWidth: 720, borderRadius: 8, border: '1px solid var(--border-color)' }}
+              controls
+              playsInline
+              style={{ width: '100%', maxWidth: 720, borderRadius: 8, border: '1px solid var(--border-color)', backgroundColor: '#000', display: 'block' }}
             />
           </div>
         )}
