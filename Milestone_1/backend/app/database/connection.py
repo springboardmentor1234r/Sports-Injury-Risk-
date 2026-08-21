@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from app.database.base import Base
@@ -6,7 +7,9 @@ from app.models.athlete_profile import AthleteProfile
 from app.models.injury_report import InjuryReport
 from app.models.video import Video
 
-DATABASE_URL = "postgresql://postgres:Venkatesh2005@localhost:5432/sports_injury_db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not configured")
 
 engine = create_engine(DATABASE_URL)
 

@@ -1,58 +1,130 @@
-# ===========================
-# Python
-# ===========================
-backend/venv/
-venv/
-env/
+﻿# ============================================================
+# PYTHON
+# ============================================================
+
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 
-# ===========================
-# Environment Variables
-# ===========================
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.venv/
+venv/
+env/
+
+# ============================================================
+# ENVIRONMENT / SECRETS
+# ============================================================
+
 .env
-*.env
+.env.*
+!.env.example
 
-# ===========================
-# Node.js
-# ===========================
-frontend/node_modules/
+# ============================================================
+# NODE / FRONTEND
+# ============================================================
+
 node_modules/
+frontend/node_modules/
 
-# ===========================
-# VS Code
-# ===========================
-.vscode/
+frontend/dist/
+frontend/.vite/
 
-# ===========================
-# OS Files
-# ===========================
-.DS_Store
-Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# ===========================
-# Uploads (Generated Files)
-# ===========================
-backend/uploads/videos/
-backend/uploads/processed/
-backend/uploads/frames/
+# ============================================================
+# UPLOADS / LOGS
+# ============================================================
 
-# ===========================
-# Media Files (Optional)
-# ===========================
-*.jpg
-*.jpeg
-*.png
+uploads/*
+backend/uploads/*
+frontend/uploads/*
 
-# ===========================
-# Logs
-# ===========================
+logs/
 *.log
 
-# ===========================
-# Build
-# ===========================
-dist/
-build/
+# ============================================================
+# DATABASE / LOCAL DATA
+# ============================================================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================================
+# IDE
+# ============================================================
+
+.vscode/
+.idea/
+
+# ============================================================
+# OS
+# ============================================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# TEST / COVERAGE
+# ============================================================
+
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ============================================================
+# DOCKER
+# ============================================================
+
+docker-compose.override.yml
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+
+# ============================================================
+# GENERATED AI / VIDEO ARTIFACTS
+# ============================================================
+
+backend/debug*.jpg
+backend/frame*.jpg
+backend/frames/
+backend/models/
+backend/training/
+backend/checkpoints/
+backend/output/
+backend/results/
+
+# ============================================================
+# GENERATED PROJECT INSPECTION FILES
+# ============================================================
+
+backend_files.txt
+backend_structure.txt
+frontend_files.txt
+frontend_structure.txt
+frontend_source_files.txt
+project_structure.txt
+
+# ============================================================
+# MILESTONE ARCHIVES / GENERATED COPIES
+# ============================================================
+
+Milestone-4/*/backend/models/
+Milestone-4/*/backend/training/*.csv
+
+# If milestone-3 is only an archive:
+milestone-3/
