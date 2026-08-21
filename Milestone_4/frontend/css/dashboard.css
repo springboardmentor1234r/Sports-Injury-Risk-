@@ -1,0 +1,286 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+}
+
+header {
+    background: #1f4e79;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.card {
+    width: 48%;
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+
+    border: 1px solid rgba(255,255,255,0.2);
+
+    border-radius: 18px;
+
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+
+    transition: 0.3s;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+
+.card h2 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.card p {
+    margin: 10px 0;
+    font-size: 18px;
+    color: white;
+}
+
+.buttons {
+    text-align: center;
+    margin: 30px 0;
+}
+
+button {
+    background: linear-gradient(45deg,#00c6ff,#0072ff);
+
+    color:white;
+
+    border:none;
+
+    padding:14px 28px;
+
+    margin:10px;
+
+    border-radius:30px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+
+    box-shadow:0 8px 20px rgba(0,0,0,.3);
+}
+
+progress {
+    width: 100%;
+    height: 25px;
+    margin-top: 15px;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin: 10px 0;
+    font-size: 17px;
+    color: white;
+}
+video{
+    margin-top:15px;
+    border-radius:12px;
+    box-shadow:0px 4px 12px rgba(0,0,0,0.2);
+}
+.risk-circle{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    margin:15px auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:24px;
+    font-weight:bold;
+    color:white;
+    background:#28a745;
+    box-shadow:0 0 20px rgba(0,0,0,.3);
+    transition:0.4s;
+}
+
+.risk-low{
+    background:#28a745;
+}
+
+.risk-medium{
+    background:#ff9800;
+}
+
+.risk-high{
+    background:#dc3545;
+}
+.risk-empty{
+    background:#9e9e9e;
+}
+/* -----------------------------
+   Analysis History Table
+----------------------------- */
+
+#historyTable{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+#historyTable th{
+    background:#1f4e79;
+    color:white;
+    padding:12px;
+    text-align:center;
+}
+
+#historyTable td{
+    padding:10px;
+    text-align:center;
+    border-bottom:1px solid #ddd;
+}
+
+#historyTable tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+#historyTable tr:hover{
+    background:#e3f2fd;
+}
+/* -----------------------------
+   Dark Mode
+----------------------------- */
+
+.dark-mode{
+    background:#121212;
+    color:white;
+}
+
+.dark-mode .card{
+    background:#1e1e1e;
+    color:white;
+}
+
+.dark-mode .card h2{
+    color:#4fc3f7;
+}
+
+.dark-mode header{
+    background:#000;
+}
+
+.dark-mode button{
+    background:#4fc3f7;
+    color:black;
+}
+
+.dark-mode #historyTable th{
+    background:#000;
+}
+
+.dark-mode #historyTable td{
+    color:white;
+}
+/* -----------------------------
+   Mobile Responsive
+----------------------------- */
+
+@media (max-width:768px){
+
+    .container{
+        width:95%;
+    }
+
+    .cards{
+        flex-direction:column;
+    }
+
+    .card{
+        width:100%;
+    }
+
+    button{
+        width:100%;
+        margin:8px 0;
+    }
+
+    .buttons{
+        display:flex;
+        flex-direction:column;
+    }
+
+    .risk-circle{
+        width:90px;
+        height:90px;
+        font-size:20px;
+    }
+
+    h1{
+        font-size:22px;
+    }
+}
+/* -----------------------------
+   Smooth Animations
+----------------------------- */
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeIn 0.7s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+button {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.risk-circle {
+    transition: all 0.5s ease;
+}
