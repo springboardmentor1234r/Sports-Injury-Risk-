@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sports Injury Risk Detection</title>
+
+    <link rel="stylesheet" href="/frontend/css/home.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>🏆 Sports Injury</h2>
+
+    <a href="/frontend/home.html">🏠 Dashboard</a>
+    <a href="/frontend/player.html">👤 Athlete</a>
+    <a href="/frontend/dashboard.html">🎥 Video Analysis</a>
+
+    <a href="/frontend/reports.html">📄 Reports</a>
+    <a href="#">⚙ Settings</a>
+
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <h1>Welcome, <span id="username">Athlete</span> 👋</h1>
+        <p>Sports Injury Risk Detection System</p>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>👤 Athletes</h3>
+            <h2 id="athletes">0</h2>
+            <p>Tracked athletes</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🎥 Videos</h3>
+            <h2 id="videos">0</h2>
+            <p>Uploaded videos</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🤖 Analyses</h3>
+            <h2 id="analyses">0</h2>
+            <p>Analyses completed</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>⚠️ Risk</h3>
+            <h2 id="risk">0</h2>
+            <p>Risk assessments</p>
+        </div>
+
+    </div>
+
+    <div class="welcome-card">
+
+        <h2>Welcome Back! 🎯</h2>
+
+        <p>
+            Monitor athlete performance, analyze videos,
+            and detect potential injury risks.
+        </p>
+
+    </div>
+
+    <h2 class="section-title">Quick Actions</h2>
+
+    <div class="actions">
+
+        <div class="action-card"
+             onclick="window.location='/frontend/player.html'">
+
+            <span>👤</span>
+            <h3>Athlete</h3>
+            <p>Manage athlete information</p>
+
+        </div>
+
+        <div class="action-card"
+             onclick="window.location='/frontend/dashboard.html'">
+
+            <span>🎥</span>
+            <h3>Video Analysis</h3>
+            <p>Upload and analyze a video</p>
+
+        </div>
+
+        <a href="/frontend/reports.html"
+        class="action-card"
+        style="text-decoration: none; color: inherit;">
+
+        <span>📄</span>
+        <h3>Reports</h3>
+        <p>View analysis reports</p>
+
+        </a>
+    </div>
+
+</div>
+
+<script>
+
+const username = localStorage.getItem("username");
+
+if (username) {
+    document.getElementById("username").textContent = username;
+}
+
+
+</script>
+
+</body>
+</html>

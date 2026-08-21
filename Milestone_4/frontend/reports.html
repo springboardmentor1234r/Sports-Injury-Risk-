@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Analysis Reports</title>
+
+    <link rel="stylesheet" href="/frontend/css/home.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>🏆 Sports Injury</h2>
+
+    <a href="/home">🏠 Dashboard</a>
+    <a href="/frontend/player.html">👤 Athlete</a>
+    <a href="/frontend/dashboard.html">🎥 Video Analysis</a>
+    <a href="/frontend/reports.html">📄 Reports</a>
+    <a href="#">⚙ Settings</a>
+
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <h1>📄 Analysis Reports</h1>
+        <p>View your latest sports injury risk analysis</p>
+    </div>
+
+    <div class="welcome-card">
+
+        <h2>Latest Analysis Report</h2>
+
+        <p>
+            Review the results from your most recent video analysis.
+        </p>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>⚠️ Risk Level</h3>
+            <h2 id="risk">--</h2>
+            <p>Current assessment</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>📊 Risk Score</h3>
+            <h2 id="score">--</h2>
+            <p>Out of 100</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🎥 Frames</h3>
+            <h2 id="frames">--</h2>
+            <p>Frames processed</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🕒 Updated</h3>
+            <h2 id="updated">--</h2>
+            <p>Latest analysis</p>
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>📐 Joint Angles</h2>
+
+        <p>Right Knee: <span id="rknee">--</span>°</p>
+        <p>Left Knee: <span id="lknee">--</span>°</p>
+        <p>Right Elbow: <span id="relbow">--</span>°</p>
+        <p>Left Elbow: <span id="lelbow">--</span>°</p>
+        <p>Right Hip: <span id="rhip">--</span>°</p>
+        <p>Left Hip: <span id="lhip">--</span>°</p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>🚨 Detected Issues</h2>
+
+        <ul id="issues">
+            <li>No analysis available</li>
+        </ul>
+
+    </div>
+
+    <div class="card">
+
+        <h2>💪 Recommended Exercises</h2>
+
+        <ul id="exercises">
+            <li>No recommendations available</li>
+        </ul>
+
+    </div>
+
+    <div class="buttons">
+
+        <button onclick="downloadReport()">
+            📥 Download Report
+        </button>
+
+        <button onclick="window.location='/home'">
+            🏠 Back to Dashboard
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+async function loadReport() {
+
+    try {
+
+        const response =
+            await fetch("http://127.0.0.1:8000/dashboard-data");
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+
+            document.getElementById("risk").textContent =
+                data.risk;
+
+            document.getElementById("score").textContent =
+                data.score + "%";
+
+            document.getElementById("rknee").textContent =
+                data.right_knee;
+
+            document.getElementById("lknee").textContent =
+                data.left_knee;
+
+            document.getElementById("relbow").textContent =
+                data.right_elbow;
+
+            document.getElementById("lelbow").textContent =
+                data.left_elbow;
+
+            document.getElementById("rhip").textContent =
+                data.right_hip;
+
+            document.getElementById("lhip").textContent =
+                data.left_hip;
+
+            document.getElementById("frames").textContent =
+                "248";
+
+            document.getElementById("updated").textContent =
+                new Date().toLocaleTimeString();
+
+            const issues =
+                document.getElementById("issues");
+
+            issues.innerHTML = "";
+
+            data.issues.forEach(issue => {
+
+                issues.innerHTML +=
+                    `<li>⚠️ ${issue}</li>`;
+
+            });
+
+            const exercises =
+                document.getElementById("exercises");
+
+            exercises.innerHTML = "";
+
+            data.exercises.forEach(exercise => {
+
+                exercises.innerHTML +=
+                    `<li>🏋️ ${exercise}</li>`;
+
+            });
+
+        }
+
+    } catch (error) {
+
+        console.error("Report loading error:", error);
+
+    }
+
+}
+
+function downloadReport() {
+
+    window.open(
+        "http://127.0.0.1:8000/download-report",
+        "_blank"
+    );
+
+}
+
+loadReport();
+
+</script>
+
+</body>
+</html>

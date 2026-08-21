@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Injury Risk Detection Dashboard</title>
+
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🏃 Sports Injury Risk Detection Dashboard</h1>
+        <button id="themeBtn">🌙 Dark Mode</button>
+    </header>
+
+    <div class="cards">
+
+        <div class="card">
+            <h2>Athlete Information</h2>
+
+            <p><strong>Name:</strong> <span id="name">Athlete</span></p>
+
+            <p><strong>Sport:</strong> <span id="sport">Football</span></p>
+
+            <p><strong>Age:</strong> <span id="age">21</span></p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Joint Angles</h2>
+            <canvas id="angleChart" height="180"></canvas>
+
+            <p>Right Knee : <span id="rknee">--</span></p>
+
+            <p>Left Knee : <span id="lknee">--</span></p>
+
+            <p>Right Elbow : <span id="relbow">--</span></p>
+
+            <p>Left Elbow : <span id="lelbow">--</span></p>
+
+            <p>Right Hip : <span id="rhip">--</span></p>
+
+            <p>Left Hip : <span id="lhip">--</span></p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Risk Prediction</h2>
+            <div class="risk-circle" id="riskCircle">
+                <span id="scoreText">--</span>
+            </div>
+
+            <h3 id="risk">NOT ANALYZED</h3>
+
+            <p>Risk Score</p>
+
+            <progress id="score" value="0" max="100"></progress>
+
+
+        </div>
+
+        <div class="card">
+
+            <h2>Recommendations</h2>
+
+            <ul id="recommendations"></ul>
+
+        </div>
+
+    </div>
+    <div class="buttons">
+
+        <input type="file" id="videoFile" accept="video/*" style="display:none;">
+
+        <button id="uploadBtn">Upload Video</button>
+
+        <button id="analyzeBtn">Analyze Video</button>
+
+        <button id="downloadBtn">Download Report</button>
+
+    </div>
+    <div class="card">
+
+        <h2>📊 Analysis Summary</h2>
+
+        <p><strong>Status :</strong> <span id="status">Waiting...</span></p>
+
+        <p><strong>Risk Level :</strong> <span id="riskLevel">--</span></p>
+
+        <p><strong>Frames Processed :</strong> <span id="frames">0</span></p>
+
+        <p><strong>Last Updated :</strong> <span id="updated">--</span></p>
+
+    </div>
+    <div class="card">
+
+        <h2>⚙ Analysis Progress</h2>
+
+        <h3 id="analysisStatus">Waiting for Video...</h3>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Uploaded Video</h2>
+
+        <video
+            id="videoPreview"
+            width="100%"
+            controls
+            style="display:none;border-radius:10px;">
+        </video>
+
+    </div>
+    <div class="card">
+        <h2>📊 Analysis History</h2>
+
+        <table id="historyTable" border="1" width="100%">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Risk</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="/frontend/js/dashboard.js"></script>
+
+
+</body>
+</html>
