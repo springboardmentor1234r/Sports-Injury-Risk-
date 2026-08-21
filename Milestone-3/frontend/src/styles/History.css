@@ -1,0 +1,106 @@
+.history-page{
+    width:100%;
+}
+
+.history-page h1{
+    color:white;
+    font-size:36px;
+}
+
+.history-page p{
+    color:#9ca3af;
+    margin-bottom:25px;
+}
+
+.history-card{
+
+    background:#181818;
+
+    border:1px solid #2d2d2d;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    margin-bottom:20px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+.history-info h2{
+
+    color:white;
+
+    margin-bottom:12px;
+
+}
+
+.history-meta{
+
+    display:flex;
+
+    gap:20px;
+
+    color:#7CFC00;
+
+    font-weight:600;
+
+}
+
+.history-actions{
+
+    display:flex;
+
+    gap:15px;
+
+}
+
+.view-btn,
+.delete-btn{
+
+    border:none;
+
+    padding:12px 20px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+.view-btn{
+
+    background:#7CFC00;
+
+    color:black;
+
+}
+
+.delete-btn{
+
+    background:#ff4d4d;
+
+    color:white;
+
+}
+
+.empty-history{
+
+    background:#181818;
+
+    padding:40px;
+
+    border-radius:15px;
+
+    text-align:center;
+
+    color:white;
+
+}

@@ -1,0 +1,288 @@
+.home{
+    min-height:100vh;
+    background:#0B0B0B;
+    color:white;
+}
+
+/* ===========================
+   Hero
+=========================== */
+
+.hero{
+    padding:100px 30px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.hero-content{
+    max-width:900px;
+}
+
+.hero h1{
+    font-size:58px;
+    color:white;
+    margin-bottom:25px;
+}
+
+.hero p{
+    color:#cbd5e1;
+    font-size:20px;
+    line-height:1.8;
+    margin-bottom:40px;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.hero-buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.primary-btn,
+.secondary-btn{
+
+    padding:16px 36px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.primary-btn{
+
+    background:#7CFC00;
+
+    color:black;
+
+    font-weight:bold;
+}
+
+.primary-btn:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 15px 30px rgba(124,252,0,.35);
+
+}
+
+.secondary-btn{
+
+    background:#181818;
+
+    color:white;
+
+    border:1px solid #2b2b2b;
+}
+
+.secondary-btn:hover{
+
+    border-color:#7CFC00;
+
+    transform:translateY(-4px);
+
+}
+
+/* ===========================
+   Features
+=========================== */
+
+.features{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+
+    gap:30px;
+
+    padding:80px;
+
+}
+
+.feature-card{
+
+    background:#181818;
+
+    border:1px solid #2b2b2b;
+
+    border-radius:20px;
+
+    padding:35px;
+
+    text-align:center;
+
+    transition:.3s;
+}
+
+.feature-card:hover{
+
+    transform:translateY(-8px);
+
+    border-color:#7CFC00;
+
+    box-shadow:0 15px 35px rgba(124,252,0,.15);
+
+}
+
+.feature-icon{
+
+    font-size:50px;
+
+    margin-bottom:20px;
+
+}
+
+.feature-card h2{
+
+    color:#7CFC00;
+
+    margin-bottom:15px;
+
+}
+
+.feature-card p{
+
+    color:#cbd5e1;
+
+    line-height:1.7;
+
+}
+
+/* ===========================
+   Workflow
+=========================== */
+
+.workflow{
+
+    padding:80px 40px;
+
+    text-align:center;
+
+}
+
+.workflow h2{
+
+    font-size:42px;
+
+    margin-bottom:50px;
+
+}
+
+.workflow-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:25px;
+
+}
+
+.workflow-step{
+
+    background:#181818;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    border:1px solid #2b2b2b;
+
+    transition:.3s;
+
+}
+
+.workflow-step:hover{
+
+    border-color:#7CFC00;
+
+    transform:translateY(-6px);
+
+}
+
+.workflow-step span{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    width:60px;
+
+    height:60px;
+
+    margin:auto;
+
+    border-radius:50%;
+
+    background:#7CFC00;
+
+    color:black;
+
+    font-size:26px;
+
+    font-weight:bold;
+
+    margin-bottom:20px;
+
+}
+
+.workflow-step h3{
+
+    color:#7CFC00;
+
+    margin-bottom:12px;
+
+}
+
+.workflow-step p{
+
+    color:#cbd5e1;
+
+    line-height:1.6;
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width:768px){
+
+.hero h1{
+
+    font-size:40px;
+
+}
+
+.hero p{
+
+    font-size:18px;
+
+}
+
+.features{
+
+    padding:40px 20px;
+
+}
+
+.workflow{
+
+    padding:50px 20px;
+
+}
+
+}
