@@ -1,0 +1,30 @@
+SPORTS INJURY RISK DETECTION REPORT
+==================================================
+
+Joint Angles
+--------------------
+Right Knee  : 152�
+Left Knee   : 32�
+Right Elbow : 133�
+Left Elbow  : 138�
+Right Hip   : 133�
+Left Hip    : 60�
+
+Risk Assessment
+--------------------
+Risk Level : HIGH RISK
+Risk Score : 60%
+
+Detected Issues
+--------------------
+- Left Knee Over Flexion
+- Left Hip Instability
+
+Recommended Exercises
+-------------------------
+- Practice Hamstring Stretching
+- Strengthen Hip Abductor Muscles
+
+Generated On
+--------------------
+17-08-2026 08:32 PM
