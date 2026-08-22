@@ -24,7 +24,7 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    # Automatically create an empty athlete profile if role is athlete
+    # Athlete accounts always receive a separate protected athlete profile.
     if user.role == models.RoleEnum.athlete:
         profile = models.AthleteProfile(user_id=user.id)
         db.add(profile)

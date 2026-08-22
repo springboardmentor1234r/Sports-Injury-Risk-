@@ -1,0 +1,27 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import client from "../api/client";
+import Icon from "../components/Icon";
+
+const label = value => value?.replaceAll("_", " ").replace(/\b\w/g, char => char.toUpperCase());
+const riskClass = value => `risk-${value || "unassessed"}`;
+
+export default function Analyses() {
+  const [analyses, setAnalyses] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const refresh = () => client.get("/videos").then(response => { setAnalyses(response.data); setSelectedId(current => current || response.data[0]?.id); }).catch(() => setError("Analysis history could not be loaded.")).finally(() => setLoading(false));
+  useEffect(() => { refresh(); }, []);
+  const selected = analyses.find(item => item.id === selectedId) || analyses[0];
+  if (loading) return <div className="page-loading"><span className="pulse-dot"/>Loading analyses…</div>;
+  return <section className="page-enter"><div className="page-heading"><div><span className="eyebrow">ASSESSMENT LIBRARY</span><h1>Analysis history</h1><p>Explore every processed movement assessment and turn risk indicators into a better next decision.</p></div><Link to="/upload" className="primary-button"><Icon name="plus" size={18}/>Analyze a video</Link></div>{error && <div className="notice-error">{error}</div>}{!analyses.length ? <div className="empty-card"><span className="empty-icon"><Icon name="video" size={30}/></span><h3>Your assessment library is ready.</h3><p>Upload a running, jumping, squat, landing, or sport-specific drill video to create your first movement baseline.</p><Link to="/upload" className="primary-button">Upload a video <Icon name="arrow" size={17}/></Link></div> : <div className="analysis-layout"><div className="analysis-list panel"><div className="panel-title"><div><h3>Assessments</h3><p>{analyses.length} total records</p></div><button className="refresh-button" onClick={refresh} title="Refresh list">↻</button></div><div className="analysis-items">{analyses.map(item => <button key={item.id} className={`analysis-item ${item.id === selected?.id ? "selected" : ""}`} onClick={() => setSelectedId(item.id)}><span className={`mini-icon ${riskClass(item.result?.risk_level)}`}><Icon name="activity" size={18}/></span><span><b>{item.athlete_name}</b><small>{label(item.activity)} · {new Date(item.created_at).toLocaleDateString()}</small></span><em className={`risk-badge ${riskClass(item.result?.risk_level)}`}>{item.result ? `${item.result.overall_risk}` : label(item.status)}</em></button>)}</div></div><AnalysisDetail analysis={selected}/></div>}</section>;
+}
+
+function AnalysisDetail({ analysis }) {
+  if (!analysis) return null;
+  const result = analysis.result;
+  if (!result) return <article className="panel analysis-detail"><h3>Analysis is still processing</h3><p>Check back soon for biomechanics and risk outputs.</p></article>;
+  const metrics = [["Knee valgus", `${result.metrics.knee_valgus_degrees}°`, result.metrics.knee_valgus_degrees > 14], ["Hip stability", `${result.metrics.hip_stability_score}/100`, result.metrics.hip_stability_score < 78], ["Trunk lean", `${result.metrics.trunk_lean_degrees}°`, result.metrics.trunk_lean_degrees > 12], ["Landing mechanics", `${result.metrics.landing_mechanics_score}/100`, result.metrics.landing_mechanics_score < 75], ["Stride consistency", `${result.metrics.stride_consistency_score}/100`, false]];
+  return <article className="analysis-detail"><div className="analysis-detail-head"><div><span className="eyebrow">ASSESSMENT KG-{String(analysis.id).padStart(5, "0")}</span><h2>{analysis.athlete_name} · {label(analysis.activity)}</h2><p>{new Date(analysis.created_at).toLocaleString()} · {analysis.pose_engine}</p></div><span className={`risk-badge large ${riskClass(result.risk_level)}`}>{result.overall_risk}/100 · {label(result.risk_level)}</span></div><div className="analysis-scores"><div><b>{result.movement_quality_score}</b><span>Movement quality</span></div><div><b>{result.biomechanical_score}</b><span>Biomechanics</span></div><div><b>{result.symmetry_score}%</b><span>Symmetry</span></div><div><b>{result.fatigue_score}</b><span>Fatigue signal</span></div></div><section className="detail-section"><div className="section-title"><Icon name="activity" size={18}/><h3>Biomechanical metrics</h3></div><div className="metric-list">{metrics.map(([name, value, alert]) => <div key={name}><span>{name}</span><b className={alert ? "metric-alert" : ""}>{value}</b></div>)}</div></section><section className="detail-section split-detail"><div><div className="section-title"><Icon name="shield" size={18}/><h3>Risk signals</h3></div><div className="probability-list">{Object.entries(result.injury_probabilities).map(([name, value]) => <div key={name}><span>{label(name)}</span><i><em style={{ width: `${value}%` }}/></i><b>{value}%</b></div>)}</div></div><div><div className="section-title"><Icon name="spark" size={18}/><h3>Recommendations</h3></div><div className="recommendations compact">{result.recommendations.map((item, index) => <div key={item.title}><span>{String(index + 1).padStart(2, "0")}</span><p><b>{item.title}</b>{item.detail}</p></div>)}</div></div></section><section className="detail-section"><div className="section-title"><Icon name="trend" size={18}/><h3>Key findings</h3></div><ul className="findings">{result.findings.map(finding => <li key={finding}>{finding}</li>)}</ul></section></article>;
+}

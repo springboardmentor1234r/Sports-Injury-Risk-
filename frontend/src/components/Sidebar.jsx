@@ -1,57 +1,24 @@
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../api/AuthContext";
+import Icon from "./Icon";
 
-const NAV_ITEMS = [
-  { label: "Dashboard", icon: "📊" },
-  { label: "Notifications", icon: "🔔" },
-  { label: "Activity", icon: "📈" },
-  { label: "Settings", icon: "⚙️" },
-  { label: "Help & Support", icon: "❓" },
-];
+const COMMON = [["/dashboard", "Overview", "grid"], ["/upload", "Analyze video", "video"], ["/analyses", "Analysis history", "activity"], ["/profile", "My profile", "user"], ["/settings", "Settings", "settings"]];
 
-export default function Sidebar() {
+export default function Sidebar({ unread }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const initials = user?.full_name
-    ? user.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
-    : "?";
-
-  return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <span className="sidebar-logo">🏃</span>
-        <div>
-          <div className="sidebar-title">AI Sports</div>
-          <div className="sidebar-subtitle">Injury Prediction</div>
-        </div>
-      </div>
-
-      <div className="sidebar-user">
-        <div className="sidebar-avatar">{initials}</div>
-        <div>
-          <div className="sidebar-user-name">{user?.full_name}</div>
-          <div className="sidebar-user-role">{user?.role.replace("_", " ")}</div>
-        </div>
-      </div>
-
-      <nav className="sidebar-nav">
-        {NAV_ITEMS.map((item, i) => (
-          <button key={item.label} className={`sidebar-link ${i === 0 ? "active" : ""}`}>
-            <span>{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      <button className="sidebar-logout" onClick={handleLogout}>
-        🚪 Logout
-      </button>
-    </aside>
-  );
+  const isAthlete = user?.role === "athlete";
+  const links = [...COMMON];
+  if (!isAthlete) links.splice(3, 0, ["/athletes", user?.role === "physiotherapist" ? "Clinical roster" : "Athletes", "users"]);
+  
+  const initials = user?.full_name?.split(" ").map(part => part[0]).slice(0, 2).join("").toUpperCase() || "KG";
+  return <aside className="sidebar">
+    <NavLink to="/dashboard" className="brand"><span className="brand-mark"><span /></span><span><b>Kinetic</b>Guard<small>Movement intelligence</small></span></NavLink>
+    <div className="workspace-label">WORKSPACE</div>
+    <nav>{links.map(([path, label, icon]) => <NavLink key={path} to={path} className={({ isActive }) => `side-link ${isActive ? "active" : ""}`}><Icon name={icon} size={18}/><span>{label}</span>{path === "/notifications" && unread ? <em>{unread}</em> : null}</NavLink>)}</nav>
+    <div className="sidebar-bottom">
+      <div className="profile-chip"><span className="avatar">{initials}</span><span><b>{user?.full_name}</b><small>{user?.role?.replaceAll("_", " ")}</small></span></div>
+      <button className="side-link logout" onClick={() => { logout(); navigate("/login"); }}><Icon name="logout" size={18}/><span>Sign out</span></button>
+    </div>
+  </aside>;
 }
