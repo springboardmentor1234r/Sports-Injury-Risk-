@@ -1,2 +1,9 @@
 fastapi
 uvicorn
+pydantic
+passlib
+opencv-python
+mediapipe
+reportlab
+python-multipart
+email-validator
